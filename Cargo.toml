@@ -1,8 +1,11 @@
 [package]
+author = "Michele Cioccarelli"
 name = "blob-dl"
 version = "0.1.0"
+description = "Neat wrapper goes brr (short about)"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.0.29", features = ["derive"] }
