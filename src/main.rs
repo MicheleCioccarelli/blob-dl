@@ -13,7 +13,7 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
 
-    tutorial::go(true);
+    tutorial::go(cli.url);
 
     println!("url: {}", cli.url);
 

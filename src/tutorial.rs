@@ -3,23 +3,21 @@ use super::preferences;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 
-pub fn go(should_set_playlist: bool) -> preferences::Preferences {
+pub fn go(parsed_url: String) -> preferences::Preferences {
     println!("Welcome [insert nice text here]");
     let term = Term::buffered_stderr();
 
+    // If the user already put a url as a command line argument, use it
     let url: String =
-        if should_set_playlist {
+        if parsed_url == String::new() {
             set_url()
         } else {
-            String::new()
+            parsed_url
         };
     let download_format = get_format(&term);
     let output_path = get_output_path(&term);
 
-    println!("Selected format: {download_format}");
-    println!("Selected Directory: {output_path}");
-    println!("Selected url: {url}");
-    preferences::Preferences::new()
+    preferences::Preferences::build(url, output_path, download_format)
 }
 
 fn get_format(term: &Term) -> String {
