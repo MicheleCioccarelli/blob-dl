@@ -3,21 +3,14 @@ use super::preferences;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 
-pub fn go(parsed_url: String) -> preferences::Preferences {
+pub fn go(url: String) -> preferences::Preferences {
     println!("Welcome [insert nice text here]");
     let term = Term::buffered_stderr();
 
-    // If the user already put a url as a command line argument, use it
-    let url: String =
-        if parsed_url == String::new() {
-            set_url()
-        } else {
-            parsed_url
-        };
     let download_format = get_format(&term);
     let output_path = get_output_path(&term);
 
-    preferences::Preferences::build(url, output_path, download_format)
+    preferences::Preferences::build(url, download_format, output_path)
 }
 
 fn get_format(term: &Term) -> String {
@@ -70,7 +63,7 @@ fn get_output_path(term: &Term) -> String {
     }
 }
 
-fn set_url() -> String {
+fn get_url() -> String {
     Input::with_theme(&ColorfulTheme::default())
         .with_prompt("url:")
         .interact_text()

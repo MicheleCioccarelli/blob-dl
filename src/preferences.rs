@@ -1,18 +1,19 @@
 pub struct Preferences {
     url: String,
-    output_path: String,
     download_format: String,
+    output_path: String,
 }
+
 // Constructors
 impl Preferences {
     pub fn new() -> Preferences {
-        Preferences { url: String::new(), output_path: String::new(), download_format: String::new() }
+        Preferences { url: String::new(), download_format: String::new(), output_path: String::new()}
     }
-    pub fn build(url: String, output_path: String, download_format: String) -> Preferences {
-        Preferences { url: url, output_path: output_path, download_format: download_format }
+    pub fn build(url: String, download_format: String, output_path: String) -> Preferences {
+        Preferences { url: url, download_format: download_format, output_path: output_path }
     }
 }
-
+/*
 // Getters and setters
 impl Preferences {
     pub fn url(&self) -> String {
@@ -33,4 +34,4 @@ impl Preferences {
     pub fn set_download_format(&mut self, download_format: String) {
         self.download_format = download_format;
     }
-}
+}*/
