@@ -6,8 +6,9 @@ mod parsing;
 fn main() {
     let matches = Command::new("blob-dl")
         .version("0.1")
-        .author("Michele Cioccarelli")
-        .about("A veery convinient wrapper [hi to anyone reading old commits :)]")
+        .author("Michele Cioccarelli, cioccarellimi@gmail.com")
+        .about("A very convenient wrapper")
+        .long_about("Long about")
         .arg(Arg::new("URL")
             //.next_line_help(true)
             .help("Link to the video/playlist you want to download")
@@ -31,4 +32,13 @@ fn main() {
             .help("Display normal youtube-dl/spotify-dl output instead of a progress bar")
         )
         .get_matches();
+
+    match matches.get_one::<String>("URL") {
+        Some(url) => println!("url : {url}"),
+        None => println!("No url provided"),
+    }
+
+    tutorial::go(matches);
+
+    //todo!("See .error() in Clap for neat error messages!");
 }
