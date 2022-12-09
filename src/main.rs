@@ -10,7 +10,7 @@ fn main() {
     //todo!("See .error() in Clap for neat error messages!");
 }
 
-fn parse_config() -> preferences::Preferences {
+fn parse_config() -> tutorial::Preferences {
     let matches = Command::new("blob-dl")
     .version("0.1")
     .author("Michele Cioccarelli, cioccarellimi@gmail.com")

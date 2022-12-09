@@ -28,7 +28,7 @@ pub fn assemble_data(matches: ArgMatches) -> Preferences {
 }
 
 #[derive(Debug)]
-struct Preferences {
+pub struct Preferences {
     url: String,
     download_format: String,
     output_path: String,
