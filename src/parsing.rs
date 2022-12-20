@@ -1,5 +1,5 @@
 use clap::{Arg, Command, ArgAction};
-use super::wizard;
+use super::assembling;
 use super::config;
 
 /// Fetches command line arguments and assembles them in
@@ -22,5 +22,5 @@ pub fn parse_config() -> config::Config {
         )
         .get_matches();
 
-    wizard::assemble_data(matches)
+    assembling::assemble_data(matches)
 }
