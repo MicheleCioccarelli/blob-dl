@@ -7,13 +7,6 @@ use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
 use std::env;
 
-enum DownloadOptions {
-    YtVideo,
-    YtPlaylist,
-    SpSong,
-    SpPlaylist,
-}
-
 trait CommandBuilder {
     fn build_command(&self) -> String;
 }

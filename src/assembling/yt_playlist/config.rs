@@ -18,6 +18,6 @@ impl ConfigYtPlaylist {
 impl assembling::CommandBuilder for ConfigYtPlaylist {
     /// Builds a yt-dl command with the needed specifications
     fn build_command(&self) -> String {
-        String::new();
+        String::new()
     }
 }

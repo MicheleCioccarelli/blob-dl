@@ -1,6 +1,5 @@
 use clap::{Arg, Command, ArgAction, ArgMatches};
 use super::assembling;
-use super::config;
 
 pub fn parse_config() -> CliConfig {
     let matches = Command::new("blob-dl")
@@ -25,9 +24,9 @@ pub fn parse_config() -> CliConfig {
 }
 
 /// Holds all the information that can be fetched as a command line argument
-struct CliConfig {
+pub struct CliConfig {
     url: String,
-    verbose: Bool,
+    verbose: bool,
 }
 
 impl CliConfig {
