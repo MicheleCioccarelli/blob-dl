@@ -1,2 +1,3 @@
-pub mod parsing;
+//! Crate docs?
+pub mod parser;
 pub mod assembling;

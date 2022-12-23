@@ -30,7 +30,6 @@ pub fn assemble_data(matches: ArgMatches) -> config::ConfigYtPlaylist {
     config::ConfigYtPlaylist::new(url, download_format, output_path, matches.get_flag("verbose"))
 }
 
-
 /// Aks for a download format in a user-friendly way.
 ///
 /// This interface needs to be remade

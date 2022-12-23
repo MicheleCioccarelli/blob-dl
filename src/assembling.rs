@@ -18,6 +18,7 @@ trait CommandBuilder {
     fn build_command(&self) -> String;
 }
 
+// Put this in a new module
 /// Calls the right wizard
 fn dispatcher() {}
 
