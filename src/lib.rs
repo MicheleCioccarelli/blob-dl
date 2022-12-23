@@ -2,4 +2,4 @@
 
 pub mod parser;
 pub mod assembling;
-mod analyzer;
+pub mod analyzer;

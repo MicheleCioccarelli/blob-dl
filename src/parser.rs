@@ -1,5 +1,4 @@
 use clap::{Arg, Command, ArgAction, ArgMatches};
-use super::assembling;
 
 pub fn parse_config() -> CliConfig {
     let matches = Command::new("blob-dl")
@@ -31,8 +30,8 @@ pub struct CliConfig {
 
 impl CliConfig {
     /// Constructs a CliConfig object based on Clap's output
-    pub fn from(matches: ArgMatches) -> CliConfig{
-        let url = match matches.get_one::<String>("name") {
+    pub fn from(matches: ArgMatches) -> CliConfig {
+        let url = match matches.get_one::<String>("URL") {
             Some(url) => url.clone(),
             None => String::new(),
         };
