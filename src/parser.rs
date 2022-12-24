@@ -42,4 +42,11 @@ impl CliConfig {
             verbose,
         }
     }
+
+    pub fn url(&self) -> &String {
+        &self.url
+    }
+    pub fn verbose(&self) -> bool {
+        self.verbose
+    }
 }

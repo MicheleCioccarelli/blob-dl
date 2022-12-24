@@ -4,17 +4,18 @@ mod sp_playlist;
 mod yt_video;
 mod sp_album;
 
+use crate::analyzer;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
 use std::env;
 
-trait CommandBuilder {
-    fn build_command(&self) -> String;
+/// [Rewrite this in the future] Calls the right wizard to generate the required command
+pub(crate) fn generate_command(url: &String, download_option: analyzer::DownloadOption, verbose: bool) -> String {
+    match download_option {
+        analyzer::DownloadOption::YtPlaylist => yt_playlist::wizard::assemble_data(url, verbose).build_command(),
+        _ => (),
+    }
 }
-
-// Put this in a new module
-/// Calls the right wizard
-fn dispatcher() {}
 
 // Helper functions common to all wizards
 
@@ -45,12 +46,4 @@ fn get_output_path(term: &Term) -> String {
             .interact_text()
             .expect("Error getting path selection, please retry"),
     }
-}
-
-/// Asks for a url to download in a user-friendly way
-fn get_url() -> String {
-    Input::with_theme(&ColorfulTheme::default())
-        .with_prompt("url:")
-        .interact_text()
-        .expect("Undocumented library error")
 }

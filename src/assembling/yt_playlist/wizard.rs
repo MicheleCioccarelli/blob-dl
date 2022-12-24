@@ -8,26 +8,13 @@ use crate::assembling;
 /// to start downloading a youtube playlist
 ///
 /// Takes in the command line arguments list
-pub fn assemble_data(matches: ArgMatches) -> config::ConfigYtPlaylist {
+pub(crate) fn assemble_data(url: &String, verbose: bool) -> config::ConfigYtPlaylist {
     let term = Term::buffered_stderr();
 
-    let url: String = match matches.get_one::<String>("URL") {
-        Some(_url) => _url.to_owned(),
-        // This shouldn't happen as URL is a required argument
-        None => assembling::get_url(),
-    };
-    let download_format: String = match matches.get_one::<String>("format") {
-        Some(_format) => _format.to_owned(),
-        // Ask for a format using a tutorial
-        None => get_format(&term),
-    };
-    let output_path: String = match matches.get_one::<String>("output-path") {
-        Some(_output_path) => _output_path.to_owned(),
-        // Ask for an output path using a tutorial
-        None => assembling::get_output_path(&term),
-    };
-
-    config::ConfigYtPlaylist::new(url, download_format, output_path, matches.get_flag("verbose"))
+    config::ConfigYtPlaylist::new(url: url,
+                                  download_format: get_format(&term),
+                                  output_path: assembling::get_output_path(&term),
+                                  verbose)
 }
 
 /// Aks for a download format in a user-friendly way.
