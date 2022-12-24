@@ -2,6 +2,7 @@ mod yt_playlist;
 mod sp_track;
 mod sp_playlist;
 mod yt_video;
+mod sp_album;
 
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
