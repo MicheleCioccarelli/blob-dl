@@ -10,7 +10,7 @@ fn main() {
 
     let testing_url = String::from("https://open.spotify.com/album/7rbdgYKz1DI4gXMWveqS5T?si=NRVoWbrbTXaOmVC4YpjE7A&utm_source=copy-link");
     // Processed command line arguments live here
-    //let config = parser::parse_config();
+    let config = parser::parse_config();
 
     println!("Tested url: {}", testing_url);
     analyzer::analyze_url(testing_url);

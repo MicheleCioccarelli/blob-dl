@@ -13,7 +13,10 @@ use std::env;
 pub(crate) fn generate_command(url: &String, download_option: analyzer::DownloadOption, verbose: bool) -> String {
     match download_option {
         analyzer::DownloadOption::YtPlaylist => yt_playlist::wizard::assemble_data(url, verbose).build_command(),
-        _ => (),
+        analyzer::DownloadOption::YtVideo =>    yt_video::wizard::assemble_data(url, verbose).build_command(),
+        analyzer::DownloadOption::SpTrack =>    sp_track::wizard::assemble_data(url, verbose).build_command(),
+        analyzer::DownloadOption::SpPlaylist => sp_playlist::wizard::assemble_data(url, verbose).build_command(),
+        analyzer::DownloadOption::SpAlbum =>    sp_album::wizard::assemble_data(url, verbose).build_command(),
     }
 }
 

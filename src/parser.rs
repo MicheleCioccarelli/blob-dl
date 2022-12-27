@@ -6,9 +6,9 @@ pub fn parse_config() -> CliConfig {
         .author("cioccarellimi@gmail.com")
         .about("A very convenient wrapper")
         .long_about("Long about")
-        .arg(Arg::new("URL")
+        .arg(Arg::new("SOURCE")
             .next_line_help(true)
-            .help("Link to the video/song/playlist you want to download")
+            .help("Url to the binary large object you want to download or the path to a batch file")
             .required(true)
         )
         .arg(Arg::new("verbose")
@@ -31,7 +31,7 @@ pub struct CliConfig {
 impl CliConfig {
     /// Constructs a CliConfig object based on Clap's output
     pub fn from(matches: ArgMatches) -> CliConfig {
-        let url = match matches.get_one::<String>("URL") {
+        let url = match matches.get_one::<String>("SOURCE") {
             Some(url) => url.clone(),
             None => String::new(),
         };

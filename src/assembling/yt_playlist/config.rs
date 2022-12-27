@@ -1,6 +1,6 @@
 use crate::assembling;
 
-/// Contains all the information needed to download a youtube playlist
+/// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug)]
 pub(crate) struct ConfigYtPlaylist {
     url: String,
@@ -15,6 +15,6 @@ impl ConfigYtPlaylist {
     }
     /// Builds a yt-dl command with the needed specifications
     pub(crate) fn build_command(&self) -> String {
-        String::new()
+        todo!()
     }
 }
