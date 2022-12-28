@@ -11,7 +11,7 @@ pub fn dispatch(config: &parser::CliConfig) {
     let download_option = analyzer::analyze_url(config.url());
 
     let mut command = match download_option {
-        Some(option) => assembling::generate_command(&config.url(), &option, config.verbose()),
+        Some(option) => assembling::generate_command(&config.url(), &option),
         None => panic!("Could not understand the url"),
     };
 

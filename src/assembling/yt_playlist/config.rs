@@ -13,7 +13,7 @@ pub(crate) struct ConfigYtPlaylist {
     quality: assembling::Quality,
     /// Whether to include a file's index (in the playlist it is downloaded from) in its name
     include_indexes: bool,
-    verbose: bool,
+    output_style: assembling::OutputStyle,
 }
 
 impl ConfigYtPlaylist {
@@ -24,14 +24,21 @@ impl ConfigYtPlaylist {
         output_path: String,
         quality: assembling::Quality,
         include_indexes: bool,
-        verbose: bool
+        output_style: assembling::OutputStyle
     ) -> ConfigYtPlaylist {
-        ConfigYtPlaylist { url, media_selected, download_format, output_path, quality, include_indexes, verbose }
+        ConfigYtPlaylist { url, media_selected, download_format, output_path, quality, include_indexes, output_style }
+    }
+
+    fn output_style(&self) -> &assembling::OutputStyle {
+        &self.output_style
     }
 
     /// Builds a yt-dl command with the needed specifications (downloads a playlist)
     pub(crate) fn build_command(&self) -> std::process::Command {
         let mut command = std::process::Command::new("youtube-dl");
+
+        // Continue even when errors are encountered
+        command.arg("-i");
 
         // Setup output directory and naming scheme
         command.arg("-o");
@@ -74,7 +81,7 @@ impl ConfigYtPlaylist {
 
         // Add the playlist's url
         command.arg(&self.url);
-        println!("Command: {:?}", command);
+
         command
     }
 }

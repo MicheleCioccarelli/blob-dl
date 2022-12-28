@@ -9,7 +9,7 @@ use url::Url;
 /// to start downloading a spotify track
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String, verbose: bool) -> config::ConfigSpTrack {
+pub(crate) fn assemble_data(url: &String) -> config::ConfigSpTrack {
     let term = Term::buffered_stderr();
 
     // Handle errors?
@@ -17,7 +17,7 @@ pub(crate) fn assemble_data(url: &String, verbose: bool) -> config::ConfigSpTrac
     config::ConfigSpTrack::new(url.clone(),
                                   get_format(&term),
                                   assembling::get_output_path(&term),
-                                  verbose)
+    )
 }
 
 /// Aks for a download format in a user-friendly way.

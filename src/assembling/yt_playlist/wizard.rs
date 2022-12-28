@@ -10,7 +10,7 @@ use crate::assembling::MediaSelection;
 /// to start downloading a youtube playlist
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String, verbose: bool) -> config::ConfigYtPlaylist {
+pub(crate) fn assemble_data(url: &String) -> config::ConfigYtPlaylist {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
@@ -18,19 +18,21 @@ pub(crate) fn assemble_data(url: &String, verbose: bool) -> config::ConfigYtPlay
 
     let format = get_format(&term, &media);
 
-    let output = assembling::get_output_path(&term);
+    let output_dir = assembling::get_output_path(&term);
 
     let quality = get_quality(&term);
 
     let preference = get_index_preference(&term);
 
+    let output_style = get_output_style(&term);
+
     config::ConfigYtPlaylist::new(url.clone(),
                                   media,
                                   format,
-                                  output,
+                                  output_dir,
                                   quality,
                                   preference,
-                                  verbose)
+                                  output_style)
 }
 
 /// Asks the user whether they want to download video files or audio-only
@@ -105,6 +107,25 @@ fn get_index_preference(term: &Term) -> bool {
     match index_preference {
         0 => true,
         1 => false,
+        _ => panic!("Error getting media selection")
+    }
+}
+
+fn get_output_style(term: &Term) -> assembling::OutputStyle {
+    let download_formats = &[
+        "Only show errors",
+        "Show the full output",
+    ];
+    // Ask the user which format they want the downloaded files to be in
+    let index_preference = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Which part of youtube-dl's output do you want to see?")
+        .default(0)
+        .items(download_formats)
+        .interact_on(&term).expect("Error getting your choice, please retry");
+
+    match index_preference {
+        0 => assembling::OutputStyle::OnlyErrors,
+        1 => assembling::OutputStyle::Full,
         _ => panic!("Error getting media selection")
     }
 }

@@ -11,12 +11,6 @@ pub fn parse_config() -> CliConfig {
             .help("Url to the binary large object you want to download or the path to a batch file")
             .required(true)
         )
-        .arg(Arg::new("verbose")
-            .short('v')
-            .long("verbose")
-            .action(ArgAction::SetTrue)
-            .help("Display normal youtube-dl/spotify-dl output instead of a progress bar")
-        )
         .get_matches();
 
     CliConfig::from(matches)
@@ -25,7 +19,6 @@ pub fn parse_config() -> CliConfig {
 /// Holds all the information that can be fetched as a command line argument
 pub struct CliConfig {
     url: String,
-    verbose: bool,
 }
 
 impl CliConfig {
@@ -35,18 +28,13 @@ impl CliConfig {
             Some(url) => url.clone(),
             None => String::new(),
         };
-        let verbose = matches.get_flag("verbose");
 
         CliConfig {
             url,
-            verbose,
         }
     }
 
     pub fn url(&self) -> &String {
         &self.url
-    }
-    pub fn verbose(&self) -> bool {
-        self.verbose
     }
 }
