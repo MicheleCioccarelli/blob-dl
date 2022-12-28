@@ -8,9 +8,10 @@ use crate::analyzer;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
 use std::env;
+use clap::builder::Str;
 
 /// [Rewrite this in the future] Calls the right wizard to generate the required command
-pub(crate) fn generate_command(url: &String, download_option: analyzer::DownloadOption, verbose: bool) -> String {
+pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption, verbose: bool) -> std::process::Command {
     match download_option {
         analyzer::DownloadOption::YtPlaylist => yt_playlist::wizard::assemble_data(url, verbose).build_command(),
         analyzer::DownloadOption::YtVideo =>    yt_video::wizard::assemble_data(url, verbose).build_command(),
@@ -20,7 +21,19 @@ pub(crate) fn generate_command(url: &String, download_option: analyzer::Download
     }
 }
 
-// Helper functions common to all wizards
+/// Whether the user wants to download video files or audio-only
+#[derive(Debug)]
+pub(crate) enum MediaSelection {
+    Video,
+    Audio,
+}
+
+/// youtube-dl quality options
+#[derive(Debug)]
+pub(crate) enum Quality {
+    Bestquality,
+    Worstquality,
+}
 
 /// Asks for an directory to store downloaded file(s) in
 ///
@@ -33,6 +46,7 @@ fn get_output_path(term: &Term) -> String {
 
     let output_path = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Where do you want the downloaded file(s) to go?")
+        .default(0)
         .items(output_path_options)
         .interact_on(&term)
         .expect("Error getting path selection, please retry");

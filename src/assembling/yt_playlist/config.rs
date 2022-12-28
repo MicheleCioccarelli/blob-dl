@@ -1,20 +1,80 @@
+use std::ops::Add;
+use clap::builder::Str;
 use crate::assembling;
+use crate::assembling::Quality;
 
 /// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug)]
 pub(crate) struct ConfigYtPlaylist {
     url: String,
+    media_selected: assembling::MediaSelection,
     download_format: String,
     output_path: String,
+    quality: assembling::Quality,
+    /// Whether to include a file's index (in the playlist it is downloaded from) in its name
+    include_indexes: bool,
     verbose: bool,
 }
 
 impl ConfigYtPlaylist {
-    pub(crate) fn new(url: String, download_format: String, output_path: String, verbose: bool) -> ConfigYtPlaylist {
-        ConfigYtPlaylist { url, download_format, output_path, verbose }
+    pub(crate) fn new (
+        url: String,
+        media_selected: assembling::MediaSelection,
+        download_format: String,
+        output_path: String,
+        quality: assembling::Quality,
+        include_indexes: bool,
+        verbose: bool
+    ) -> ConfigYtPlaylist {
+        ConfigYtPlaylist { url, media_selected, download_format, output_path, quality, include_indexes, verbose }
     }
-    /// Builds a yt-dl command with the needed specifications
-    pub(crate) fn build_command(&self) -> String {
-        todo!()
+
+    /// Builds a yt-dl command with the needed specifications (downloads a playlist)
+    pub(crate) fn build_command(&self) -> std::process::Command {
+        let mut command = std::process::Command::new("youtube-dl");
+
+        // Setup output directory and naming scheme
+        command.arg("-o");
+        command.arg(
+            {
+                let mut path_and_scheme = String::new();
+
+                // Add the user's output path (empty string for current directory)
+                path_and_scheme.push_str(self.output_path.as_str());
+
+                // Create a directory named after the playlist
+                path_and_scheme.push_str("/%(playlist)s/");
+
+                if self.include_indexes {
+                    path_and_scheme.push_str("%(playlist_index)s_");
+                }
+
+                // Add the video's title to the file name
+                path_and_scheme.push_str("%(title)s");
+                // Add the correct file extension
+                path_and_scheme.push_str(".%(ext)s");
+                path_and_scheme
+            });
+
+        // Quality and format selection
+        command.arg("-f");
+        command.arg(
+            {
+                let mut quality_format = match self.quality {
+                    Quality::Bestquality => String::from("best"),
+                    Quality::Worstquality => String::from("worst"),
+                };
+
+                // Add file format
+                quality_format.push_str("[ext=");
+                quality_format.push_str(self.download_format.as_str());
+                quality_format.push_str("]");
+                quality_format
+            });
+
+        // Add the playlist's url
+        command.arg(&self.url);
+        println!("Command: {:?}", command);
+        command
     }
 }

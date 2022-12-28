@@ -14,7 +14,7 @@ impl ConfigYtVideo {
         ConfigYtVideo { url, download_format, output_path, verbose }
     }
     /// Builds a yt-dl command with the needed specifications
-    pub(crate) fn build_command(&self) -> String {
+    pub(crate) fn build_command(&self) -> std::process::Command {
         todo!()
     }
 }
