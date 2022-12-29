@@ -36,8 +36,9 @@ pub(crate) enum Quality {
 }
 
 #[derive(Debug)]
+// TODO rename this
 pub(crate) enum OutputStyle {
-    OnlyErrors,
+    RedirectErrors,
     Full,
 }
 

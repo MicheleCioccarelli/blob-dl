@@ -8,6 +8,6 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.0.29", features = ["derive"] }
-dialoguer = "0.10.2"
 execute = "0.2.11"
+requestty = "0.5.0"
 url = "2.3.1"

@@ -113,19 +113,19 @@ fn get_index_preference(term: &Term) -> bool {
 
 fn get_output_style(term: &Term) -> assembling::OutputStyle {
     let download_formats = &[
-        "Only show errors",
-        "Show the full output",
+        "Yes",
+        "No",
     ];
     // Ask the user which format they want the downloaded files to be in
-    let index_preference = Select::with_theme(&ColorfulTheme::default())
+    let output_style = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Which part of youtube-dl's output do you want to see?")
         .default(0)
         .items(download_formats)
-        .interact_on(&term).expect("Error getting your choice, please retry");
+        .interact_on(&term).expect("Do you want a file with all the urls which were not downloaded due to an error?");
 
-    match index_preference {
-        0 => assembling::OutputStyle::OnlyErrors,
+    match output_style {
+        0 => assembling::OutputStyle::RedirectErrors,
         1 => assembling::OutputStyle::Full,
-        _ => panic!("Error getting media selection")
+        _ => panic!("Error getting error redirection preference")
     }
 }

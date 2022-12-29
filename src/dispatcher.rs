@@ -2,7 +2,7 @@ use crate::analyzer;
 use crate::parser;
 use crate::assembling;
 
-use std::process::Command;
+use std::process::{Command, Stdio};
 use execute::Execute;
 
 /// Given a command-line configuration calls the right wizard
@@ -15,8 +15,11 @@ pub fn dispatch(config: &parser::CliConfig) {
         None => panic!("Could not understand the url"),
     };
 
-    // Run the command
-    command.execute_output().expect("Error executing the command");
+    //command.stderr(Stdio::piped());
 
+    // Run the command
+    let output = command.execute_output().expect("Error executing the command");
+
+    println!("======================================================\nCaptured output: \n{:?}", output);
     // Process -dl output based on CliConfig flags
 }

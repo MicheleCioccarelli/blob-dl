@@ -8,7 +8,7 @@ pub fn parse_config() -> CliConfig {
         .long_about("Long about")
         .arg(Arg::new("SOURCE")
             .next_line_help(true)
-            .help("Url to the binary large object you want to download or the path to a batch file")
+            .help("Url to the binary large object you want to download or the path to a url-list file")
             .required(true)
         )
         .get_matches();

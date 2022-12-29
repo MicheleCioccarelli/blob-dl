@@ -64,20 +64,25 @@ impl ConfigYtPlaylist {
             });
 
         // Quality and format selection
-        command.arg("-f");
-        command.arg(
-            {
-                let mut quality_format = match self.quality {
-                    Quality::Bestquality => String::from("best"),
-                    Quality::Worstquality => String::from("worst"),
-                };
+        match self.media_selected {
+            assembling::MediaSelection::Video => {
+                command.arg("-f");
+                command.arg(
+                    {
+                        let mut quality_format = match self.quality {
+                            Quality::Bestquality => String::from("best"),
+                            Quality::Worstquality => String::from("worst"),
+                        };
 
-                // Add file format
-                quality_format.push_str("[ext=");
-                quality_format.push_str(self.download_format.as_str());
-                quality_format.push_str("]");
-                quality_format
-            });
+                        // Add file format
+                        quality_format.push_str("[ext=");
+                        quality_format.push_str(self.download_format.as_str());
+                        quality_format.push_str("]");
+                        quality_format
+                    });
+            },
+            assembling::MediaSelection::Audio => (),
+        };
 
         // Add the playlist's url
         command.arg(&self.url);
