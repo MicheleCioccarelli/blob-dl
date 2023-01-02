@@ -90,3 +90,62 @@ impl ConfigYtPlaylist {
         command
     }
 }
+
+/// Stores all information about a given video's format and quality options
+#[derive(Debug)]
+pub(crate) struct Format {
+    code: u32,
+    file_extension: String,
+    resolution: String,
+    audio_only: bool,
+}
+
+impl Format {
+    /// # TODO: Fix error handling
+    /// # Usa insiemistica (intersezione tra insiemi di id) e mappe per comparare
+    /// Returns an Option\<Format\> object when given a line from the output of the command
+    /// "youtube-dl -F \<URL\>"
+    /// # Returns Some(Format)
+    /// When `ytdl_output_line` contains information about (audio-only or video) quality and format for a youtube url
+    ///
+    /// # Returns None
+    /// If `ytdl_output_line` isn't about video quality and format
+    /// (for example lines starting with \[info\] or \[youtube\])
+    ///
+    /// or when `ytdl_output_line` is about a video-only format
+    pub(crate) fn from(ytdl_output_line: &str) -> Option<Format> {
+        // Skip lines without useful format information
+        if ytdl_output_line.contains("[") ||
+            ytdl_output_line.contains("format") ||
+            ytdl_output_line.contains("video only") ||
+            ytdl_output_line.contains("ERROR") {
+            return None;
+        };
+        let table_elements: Vec<&str> = line.split_whitespace().collect();
+        let code = table_elements[0].parse().expect("Problem parsing id");
+        let extension = String::from(table_elements[1]);
+        let mut resolution = String::new();
+
+        // Audio only files' resolution is marked as "audio only", video files have an actual resolution
+        let audio_only =  if table_elements[2] == "audio" {
+            true
+        } else {
+            resolution = String::from(table_elements[2]);
+            false
+        };
+        Some(Format { code: code, file_extension: extension, resolution: resolution, audio_only: audio_only })
+    }
+
+    fn code(&self) -> u32 {
+        self.code
+    }
+    fn file_extension(&self) -> &String {
+        &self.file_extension
+    }
+    fn resolution(&self) -> &String {
+        &self.resolution
+    }
+    fn audio_only(&self) -> bool {
+        self.audio_only
+    }
+}

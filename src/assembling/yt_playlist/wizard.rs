@@ -55,10 +55,37 @@ fn get_media_selection(term: &Term) -> assembling::MediaSelection {
     }
 }
 
-/// Aks for a download format in a user-friendly way.
+/// Asks the user to specify a download format and quality
 ///
-/// This interface needs to be remade
+/// Either best-quality or worst-quality can be selected for the whole playlist, or a format can be picked for each
+/// video. If all videos have a format and quality in common, they can be easily applied
 fn get_format(term: &Term, media_selected: &MediaSelection) -> String {
+    let mut f_vec: Vec<Format> = vec![];
+
+    if ytdl_output.contains("ERROR") {
+        panic!();
+    }
+
+    for line in ytdl_output.lines().rev() {
+        // Skip lines without useful format information
+        if line.contains("[") || line.contains("format") || line.contains("video only") {
+            continue;
+        };
+        // Since the regex eliminated useless lines, each vector contains useful information
+        let table_elements: Vec<&str> = line.split_whitespace().collect();
+        let code = table_elements[0].parse().expect("Problem parsing id");
+        let extention = String::from(table_elements[1]);
+        let mut resolution = String::new();
+        // Audio only files' resolution is marked as "audio only", video files have an acutal resolution
+        let audio_only =  if table_elements[2] == "audio" {
+            true
+        } else {
+            resolution = String::from(table_elements[2]);
+            false
+        };
+        f_vec.push(Format { code: code, file_extention: extention, resolution: resolution, audio_only: audio_only });
+    }
+    // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
     println!("format picker not yet implemented");
     match media_selected {
         MediaSelection::Video => {
