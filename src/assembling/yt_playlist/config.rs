@@ -121,7 +121,7 @@ impl Format {
             ytdl_output_line.contains("ERROR") {
             return None;
         };
-        let table_elements: Vec<&str> = line.split_whitespace().collect();
+        let table_elements: Vec<&str> = ytdl_output_line.split_whitespace().collect();
         let code = table_elements[0].parse().expect("Problem parsing id");
         let extension = String::from(table_elements[1]);
         let mut resolution = String::new();

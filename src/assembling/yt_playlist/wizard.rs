@@ -10,33 +10,33 @@ use crate::assembling::MediaSelection;
 /// to start downloading a youtube playlist
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String) -> config::ConfigYtPlaylist {
+pub(crate) fn assemble_data(url: &String) -> Result<config::ConfigYtPlaylist, std::io::Error> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
-    let media = get_media_selection(&term);
+    let media = get_media_selection(&term)?;
 
     let format = get_format(&term, &media);
 
-    let output_dir = assembling::get_output_path(&term);
+    let output_dir = assembling::get_output_path(&term)?;
 
-    let quality = get_quality(&term);
+    let quality = get_quality(&term)?;
 
-    let preference = get_index_preference(&term);
+    let preference = get_index_preference(&term)?;
 
-    let output_style = get_output_style(&term);
+    let output_style = get_output_style(&term)?;
 
-    config::ConfigYtPlaylist::new(url.clone(),
+    Ok(config::ConfigYtPlaylist::new(url.clone(),
                                   media,
                                   format,
                                   output_dir,
                                   quality,
                                   preference,
-                                  output_style)
+                                  output_style))
 }
 
 /// Asks the user whether they want to download video files or audio-only
-fn get_media_selection(term: &Term) -> assembling::MediaSelection {
+fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
     let download_formats = &[
         "Video",
         "Audio-only",
@@ -46,11 +46,11 @@ fn get_media_selection(term: &Term) -> assembling::MediaSelection {
         .with_prompt("Do you want to download video files or audio-only?")
         .default(0)
         .items(download_formats)
-        .interact_on(&term).expect("Error getting the correct format, please retry");
+        .interact_on(&term)?;
 
     match media_selection {
-        0 => assembling::MediaSelection::Video,
-        1 => assembling::MediaSelection::Audio,
+        0 => Ok(assembling::MediaSelection::Video),
+        1 => Ok(assembling::MediaSelection::Audio),
         _ => panic!("Error getting media selection")
     }
 }
@@ -60,46 +60,11 @@ fn get_media_selection(term: &Term) -> assembling::MediaSelection {
 /// Either best-quality or worst-quality can be selected for the whole playlist, or a format can be picked for each
 /// video. If all videos have a format and quality in common, they can be easily applied
 fn get_format(term: &Term, media_selected: &MediaSelection) -> String {
-    let mut f_vec: Vec<Format> = vec![];
-
-    if ytdl_output.contains("ERROR") {
-        panic!();
-    }
-
-    for line in ytdl_output.lines().rev() {
-        // Skip lines without useful format information
-        if line.contains("[") || line.contains("format") || line.contains("video only") {
-            continue;
-        };
-        // Since the regex eliminated useless lines, each vector contains useful information
-        let table_elements: Vec<&str> = line.split_whitespace().collect();
-        let code = table_elements[0].parse().expect("Problem parsing id");
-        let extention = String::from(table_elements[1]);
-        let mut resolution = String::new();
-        // Audio only files' resolution is marked as "audio only", video files have an acutal resolution
-        let audio_only =  if table_elements[2] == "audio" {
-            true
-        } else {
-            resolution = String::from(table_elements[2]);
-            false
-        };
-        f_vec.push(Format { code: code, file_extention: extention, resolution: resolution, audio_only: audio_only });
-    }
     // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
-    println!("format picker not yet implemented");
-    match media_selected {
-        MediaSelection::Video => {
-            println!("mp4 = default for videos");
-            String::from("mp4")
-        }
-        MediaSelection::Audio => {
-            println!("mp3 = default for audio-only");
-            String::from("mp3")
-        }
-    }
+    todo!()
 }
 
-fn get_quality(term: &Term) -> assembling::Quality {
+fn get_quality(term: &Term) -> Result<assembling::Quality, std::io::Error> {
     let download_formats = &[
         "Best quality",
         "Worst quality",
@@ -109,17 +74,17 @@ fn get_quality(term: &Term) -> assembling::Quality {
         .with_prompt("Which quality do you want the downloaded files to be in?")
         .default(0)
         .items(download_formats)
-        .interact_on(&term).expect("Error getting the correct quality, please retry");
+        .interact_on(&term)?;
 
     match quality_selection {
-        0 => assembling::Quality::Bestquality,
-        1 => assembling::Quality::Worstquality,
-        _ => panic!("Error getting quality selection")
+        0 => Ok(assembling::Quality::Bestquality),
+        1 => Ok(assembling::Quality::Worstquality),
+        _ => panic!("he only options are 0 and 1")
     }
 }
 
 /// Whether the downloaded files should include their index in the playlist as a part of their name
-fn get_index_preference(term: &Term) -> bool {
+fn get_index_preference(term: &Term) -> Result<bool, std::io::Error> {
     let download_formats = &[
         "Yes",
         "No",
@@ -129,16 +94,16 @@ fn get_index_preference(term: &Term) -> bool {
         .with_prompt("Do you a video's index in the playlist to be in its name?")
         .default(0)
         .items(download_formats)
-        .interact_on(&term).expect("Error getting the correct format, please retry");
+        .interact_on(&term)?;
 
     match index_preference {
-        0 => true,
-        1 => false,
-        _ => panic!("Error getting media selection")
+        0 => Ok(true),
+        1 => Ok(false),
+        _ => panic!("The only options are 0 and 1")
     }
 }
 
-fn get_output_style(term: &Term) -> assembling::OutputStyle {
+fn get_output_style(term: &Term) -> Result<assembling::OutputStyle, std::io::Error> {
     let download_formats = &[
         "Yes",
         "No",
@@ -148,11 +113,11 @@ fn get_output_style(term: &Term) -> assembling::OutputStyle {
         .with_prompt("Which part of youtube-dl's output do you want to see?")
         .default(0)
         .items(download_formats)
-        .interact_on(&term).expect("Do you want a file with all the urls which were not downloaded due to an error?");
+        .interact_on(&term)?;
 
     match output_style {
-        0 => assembling::OutputStyle::RedirectErrors,
-        1 => assembling::OutputStyle::Full,
-        _ => panic!("Error getting error redirection preference")
+        0 => Ok(assembling::OutputStyle::RedirectErrors),
+        1 => Ok(assembling::OutputStyle::Full),
+        _ => panic!("The only options are 0 and 1")
     }
 }
