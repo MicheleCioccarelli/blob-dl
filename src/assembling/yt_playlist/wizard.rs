@@ -117,21 +117,36 @@ mod format {
         if output.stderr.len() > 0 {
             panic!("Youtube-dl gave an error, for every line with an ERROR, Unavailable should be the Format");
         };
-        let mut all_videos: Vec<VideoFormats> = vec![];
-        let mut video: VideoFormats = vec![];
+        let mut all_videos: Vec<VideoFormats> = Vec::new();
+        let mut video: Some(VideoFormats) = Vec::new();
 
-        for line in output.stdout.as_str()?.split("[download] Downloading video") {
-            // Ignore all useless lines
-            if line.contains("[") ||
-                line.contains("format") ||
-                line.contains("video only") {
+        for paragraph in output.as_str().split("[download] Downloading video") {
+            // The first line is discarded, it tells information about the index of the current video in the playlist
+            println!("split paragraph: {}", paragraph);
+            for line in paragraph.lines().skip(1) {
+                // Ignore all useless lines
+                if line.contains("[") ||
+                    line.contains("format") ||
+                    line.contains("video only") {
+                    continue;
+                };
+                //if line.contains("ERROR") {
+                //    // Put a None or a placeholder in this case, an empty array is ignored
+                //    panic!("Found an error in ytdl -F output");
+                //}
+                println!("Accepted line: {}", line);
+                if let Some(fmto) = Format::from_command(line) {
+                    // TODO See if this exits the function on failure
+                    video.push(fmto);
+                }
+            }
+            if video.is_empty() {
                 continue;
-            };
-            // TODO Make a video's format None if there is a youtube-dl ERROR
-            // TODO See if this exits the function on failure
-            video.push(Format::from_command(line)?);
-        }
-
+            }
+            all_videos.push(video.clone());
+            video.clear();
+        };
+        println!("Videos: {:#?}", all_videos);
         todo!()
     }
 }
