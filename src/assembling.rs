@@ -10,6 +10,8 @@ use dialoguer::console::Term;
 use std::env;
 use clap::builder::Str;
 
+// TODO: Re-read how to make children modules for better privacy management
+
 /// [Rewrite this in the future] Calls the right wizard to generate the required command
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> std::process::Command {
     todo!()
@@ -65,14 +67,14 @@ fn get_output_path(term: &Term) -> Result<String, std::io::Error> {
 }
 
 mod youtube {
-    pub enum VideoQualityAndFormatPreferences {
+    pub(crate) enum VideoQualityAndFormatPreferences {
         CustomFormat(Format),
         BestQuality,
         WorstQuality,
     }
-    /// Stores all information about a given youtube video's format and quality options
+    /// Stores all information about a format available for a video (file extension, size, resolution, code)
     #[derive(Debug)]
-    pub(crate) struct Format {
+     pub(crate) struct Format {
         code: u32,
         file_extension: String,
         resolution: String,
@@ -102,13 +104,6 @@ mod youtube {
         ///
         /// When `ytdl_output_line` is an error/warning (these lines start with `ERROR` or `WARNING`)
         pub fn from_command(ytdl_output_line: &str) -> Option<Format> {
-            // Skip lines without useful format information
-            if ytdl_output_line.contains("[") ||
-                ytdl_output_line.contains("format") ||
-                ytdl_output_line.contains("video only") ||
-                ytdl_output_line.contains("ERROR") {
-                return None;
-            };
             // Collect all elements in a line in a single vector
             let table_elements: Vec<&str> = ytdl_output_line.split_whitespace().collect();
             // 8 is the minimum amount of fields in a valid output
