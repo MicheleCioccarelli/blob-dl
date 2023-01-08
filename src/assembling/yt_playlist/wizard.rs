@@ -1,12 +1,10 @@
 use clap::ArgMatches;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
-use super::config;
 use crate::assembling;
 use url::Url;
 use crate::assembling::MediaSelection;
-use crate::assembling::youtube;
-use crate::assembling::yt_playlist::wizard::QualityScope::AllVideos;
+use crate::assembling::yt_video;
 
 /// Returns a ConfigYtPlaylist object with all the necessary data
 /// to start downloading a youtube playlist
@@ -61,13 +59,12 @@ mod format {
     use std::io::BufRead;
     use std::process::{Command, Stdio};
     use execute::Execute;
-    use crate::assembling::youtube::Format;
 
     /// Asks the user to specify a download format and quality
     ///
     /// Either best-quality or worst-quality can be selected for the whole playlist, or a format can be picked for each
     /// video. If all videos have a format and quality in common, they can be easily applied
-    pub(super) fn get_format(term: &Term, media_selected: &MediaSelection) -> Result<assembling::VideoQualityAndFormatPreferences, std::io::Error> {
+    pub(super) fn get_format(term: &Term, media_selected: &MediaSelection) -> Result<Vec<YtVideoFormats>, std::io::Error> {
         // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
 
         // Each element of this vector describes the quality option for a video in the playlist
@@ -100,74 +97,65 @@ mod format {
         SingleVideo,
     }
 
-    /// A list of all the download formats available for a video
-    ///
-    /// If a video's format information is unavailable (maybe because it is age-restricted)
-    /// and thus youtube-dl cannot fetch any information about it, the Option is None.
-    ///
-    /// In every other case there is Some
-    type VideoFormats = Option<Vec<Format>>;
+    use crate::assembling::yt_video::config::{VideoFormat, YtVideoFormats, VideoQualityAndFormatPreferences};
 
-    /// Returns a Vec with a format object for every video in the playlist
-    fn fetch_formats(playlist_url: &String) -> Result<Vec<VideoFormats>, std::io::Error> {
+    /// Returns a Vec with every video's format information
+    fn fetch_formats(playlist_url: &String) -> Result<Vec<YtVideoFormats>, std::io::Error> {
         let command = Command::new("youtube-dl").arg("-F").arg(playlist_url);
-        // Store youtube-dl's output
-        let output = command.execute_output().unwrap();
-        // If youtube-dl printed something to standard error
-        if output.stderr.len() > 0 {
-            panic!("Youtube-dl gave an error, for every line with an ERROR, Unavailable should be the Format");
-        };
-        let mut all_videos: Vec<VideoFormats> = Vec::new();
-        let mut video: Some(VideoFormats) = Vec::new();
+        // Store youtube-dl's full output
+        let output = command.execute_output()?;
+        // A lost of every video in the playlist's available formats
+        let mut all_videos: Vec<YtVideoFormats> = Vec::new();
+        /* A list of all the download formats available for a video, if its format information is unavailable
+         * (maybe because it is age-restricted) and thus youtube-dl cannot fetch any information about it,
+         * the Option is None. In every other case there is Some
+         */
+        let mut video = YtVideoFormats::new();
 
         for paragraph in output.as_str().split("[download] Downloading video") {
+            // Create a new video on every iteration because pushing on a Vec requires moving
+            let mut video = YtVideoFormats::new();
             // The first line is discarded, it tells information about the index of the current video in the playlist
-            println!("split paragraph: {}", paragraph);
             for line in paragraph.lines().skip(1) {
-                // Ignore all useless lines
+                // Ignore all irrelevant lines (they violate VideoFormat::from_command()'s contract
                 if line.contains("[") ||
                     line.contains("format") ||
                     line.contains("video only") {
                     continue;
                 };
-                //if line.contains("ERROR") {
-                //    // Put a None or a placeholder in this case, an empty array is ignored
-                //    panic!("Found an error in ytdl -F output");
-                //}
-                println!("Accepted line: {}", line);
-                if let Some(fmto) = Format::from_command(line) {
-                    // TODO See if this exits the function on failure
-                    video.push(fmto);
-                }
+                // The line is about a video or audio-only format or is a youtube-dl error
+                video.add_format(VideoQualityAndFormatPreferences::UniqueFormat(VideoFormat::from_command(line)));
             }
+            // Ignore some quirks of string splitting
             if video.is_empty() {
                 continue;
             }
-            all_videos.push(video.clone());
-            video.clear();
+            // Add the current video to the "playlist"
+            all_videos.push(video);
         };
         println!("Videos: {:#?}", all_videos);
-        todo!()
+        Ok(all_videos)
     }
 }
 
 fn get_quality(term: &Term) -> Result<assembling::Quality, std::io::Error> {
-    let download_formats = &[
-        "Best quality",
-        "Worst quality",
-    ];
-
-    let quality_selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Which quality do you want the downloaded files to be in?")
-        .default(0)
-        .items(download_formats)
-        .interact_on(&term)?;
-
-    match quality_selection {
-        0 => Ok(assembling::Quality::Bestquality),
-        1 => Ok(assembling::Quality::Worstquality),
-        _ => panic!("he only options are 0 and 1")
-    }
+    panic!("get_quality() will be deleted soon")
+    // let download_formats = &[
+    //     "Best quality",
+    //     "Worst quality",
+    // ];
+    //
+    // let quality_selection = Select::with_theme(&ColorfulTheme::default())
+    //     .with_prompt("Which quality do you want the downloaded files to be in?")
+    //     .default(0)
+    //     .items(download_formats)
+    //     .interact_on(&term)?;
+    //
+    // match quality_selection {
+    //     0 => Ok(assembling::Quality::Bestquality),
+    //     1 => Ok(assembling::Quality::Worstquality),
+    //     _ => panic!("he only options are 0 and 1")
+    // }
 }
 
 /// Whether the downloaded files should include their index in the playlist as a part of their name
