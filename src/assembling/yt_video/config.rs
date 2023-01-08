@@ -18,6 +18,7 @@ impl ConfigYtVideo {
     }
 }
 
+#[derive(Debug)]
 pub(crate) enum VideoQualityAndFormatPreferences {
     UniqueFormat(Option<VideoFormat>),
     BestQuality,
@@ -131,7 +132,7 @@ impl VideoFormat {
         &self.resolution
     }
     fn is_audio_only(&self) -> bool {
-        self.format == "audio"
+        self.file_extension == "audio"
     }
 }
 
@@ -148,5 +149,8 @@ impl YtVideoFormats {
     }
     pub(crate) fn add_format(&mut self, format: VideoQualityAndFormatPreferences) {
         self.available_formats.push(format);
+    }
+    pub(crate) fn is_empty(&self) -> bool {
+        self.available_formats.is_empty()
     }
 }

@@ -1,6 +1,6 @@
-use std::ops::Add;
 use clap::builder::Str;
 use crate::assembling;
+use crate::assembling::yt_video;
 
 /// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug)]
@@ -8,7 +8,7 @@ pub(crate) struct ConfigYtPlaylist {
     url: String,
     media_selected: assembling::MediaSelection,
     // Each element in the Vec is the quality that a video needs to be downloaded in
-    download_format: Vec<assembling::youtube::VideoQualityAndFormatPreferences>,
+    download_format: Vec<yt_video::config::VideoQualityAndFormatPreferences>,
     output_path: String,
     /// Whether to include a file's index (in the playlist it is downloaded from) in its name
     include_indexes: bool,
@@ -19,7 +19,7 @@ impl ConfigYtPlaylist {
     pub(crate) fn new (
         url: String,
         media_selected: assembling::MediaSelection,
-        download_format: Vec<assembling::youtube::VideoQualityAndFormatPreferences>,
+        download_format: Vec<yt_video::config::VideoQualityAndFormatPreferences>,
         output_path: String,
         include_indexes: bool,
         output_style: assembling::OutputStyle

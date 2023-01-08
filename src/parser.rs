@@ -1,4 +1,4 @@
-use clap::{Arg, Command, ArgAction, ArgMatches};
+use clap::{Arg, Command, ArgMatches};
 
 pub fn parse_config() -> CliConfig {
     let matches = Command::new("blob-dl")

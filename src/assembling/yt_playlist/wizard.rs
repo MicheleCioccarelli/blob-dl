@@ -4,6 +4,7 @@ use dialoguer::{theme::ColorfulTheme, Input, Select};
 use crate::assembling;
 use url::Url;
 use crate::assembling::MediaSelection;
+use crate::assembling::yt_playlist::config;
 use crate::assembling::yt_video;
 
 /// Returns a ConfigYtPlaylist object with all the necessary data
@@ -20,19 +21,20 @@ pub(crate) fn assemble_data(url: &String) -> Result<config::ConfigYtPlaylist, st
 
     let output_dir = assembling::get_output_path(&term)?;
 
-    let quality = get_quality(&term)?;
+    // let quality = get_quality(&term);
 
     let preference = get_index_preference(&term)?;
 
     let output_style = get_output_style(&term)?;
 
-    Ok(config::ConfigYtPlaylist::new(url.clone(),
-                                  media,
-                                  format,
-                                  output_dir,
-                                  quality,
-                                  preference,
-                                  output_style))
+    // Ok(config::ConfigYtPlaylist::new(url.clone(),
+    //                               media,
+    //                               format,
+    //                               output_dir,
+    //                               ,
+    //                               preference,
+    //                               output_style))
+    todo!()
 }
 
 /// Asks the user whether they want to download video files or audio-only
@@ -49,8 +51,8 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
         .interact_on(&term)?;
 
     match media_selection {
-        0 => Ok(assembling::MediaSelection::Video),
-        1 => Ok(assembling::MediaSelection::Audio),
+        0 => Ok(MediaSelection::Video),
+        1 => Ok(MediaSelection::Audio),
         _ => panic!("Error getting media selection")
     }
 }
@@ -68,7 +70,7 @@ mod format {
         // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
 
         // Each element of this vector describes the quality option for a video in the playlist
-        let mut all_preferences: Vec<youtube::VideoQualityAndFormatPreferences> = vec![];
+        let mut all_preferences: Vec<VideoQualityAndFormatPreferences> = vec![];
 
         let mut user_selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Do you want a single quality setting to be applied to all videos or do you want to choose one for each video?")
@@ -92,6 +94,7 @@ mod format {
         };
         todo!()
     }
+    #[derive(PartialEq)]
     enum QualityScope {
         AllVideos,
         SingleVideo,
@@ -101,7 +104,9 @@ mod format {
 
     /// Returns a Vec with every video's format information
     fn fetch_formats(playlist_url: &String) -> Result<Vec<YtVideoFormats>, std::io::Error> {
-        let command = Command::new("youtube-dl").arg("-F").arg(playlist_url);
+        let mut command = Command::new("youtube-dl");
+        command.arg("-F");
+        command.arg(playlist_url);
         // Store youtube-dl's full output
         let output = command.execute_output()?;
         // A lost of every video in the playlist's available formats
@@ -112,7 +117,10 @@ mod format {
          */
         let mut video = YtVideoFormats::new();
 
-        for paragraph in output.as_str().split("[download] Downloading video") {
+        for paragraph in String::from_utf8(output.stdout)
+                                        .unwrap()
+                                        .as_str()
+                                        .split("[download] Downloading video") {
             // Create a new video on every iteration because pushing on a Vec requires moving
             let mut video = YtVideoFormats::new();
             // The first line is discarded, it tells information about the index of the current video in the playlist
@@ -138,7 +146,7 @@ mod format {
     }
 }
 
-fn get_quality(term: &Term) -> Result<assembling::Quality, std::io::Error> {
+fn get_quality(term: &Term) -> std::io::Error {
     panic!("get_quality() will be deleted soon")
     // let download_formats = &[
     //     "Best quality",

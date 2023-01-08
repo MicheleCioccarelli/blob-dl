@@ -1,5 +1,4 @@
 use blob_dl::parser;
-use blob_dl::analyzer;
 use blob_dl::dispatcher::dispatch;
 
 fn main() {
