@@ -58,7 +58,6 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
 }
 mod format {
     use super::*;
-    use std::io::BufRead;
     use std::process::{Command, Stdio};
     use execute::Execute;
 

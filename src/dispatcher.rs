@@ -1,8 +1,6 @@
 use crate::analyzer;
 use crate::parser;
 use crate::assembling;
-
-use std::process::{Command, Stdio};
 use execute::Execute;
 
 /// Given a command-line configuration calls the right wizard

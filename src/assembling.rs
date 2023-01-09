@@ -1,14 +1,10 @@
 mod yt_playlist;
-mod sp_track;
-mod sp_playlist;
 mod yt_video;
-mod sp_album;
 
 use crate::analyzer;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
 use std::env;
-use clap::builder::Str;
 
 // TODO: Re-read how to make children modules for better privacy management
 
