@@ -9,12 +9,12 @@ use url::Url;
 /// to start downloading a youtube video
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String) -> Result<config::ConfigYtVideo, std::io::Error> {
+pub(crate) fn assemble_data(url: &String) -> Result<config::YtVideoConfig, std::io::Error> {
     let term = Term::buffered_stderr();
 
     // Handle errors?
 
-    Ok(config::ConfigYtVideo::new(url.clone(),
+    Ok(config::YtVideoConfig::new(url.clone(),
                                   get_format(&term),
                                   assembling::get_output_path(&term)?
     ))

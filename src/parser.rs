@@ -16,6 +16,8 @@ pub fn parse_config() -> CliConfig {
     CliConfig::from(matches)
 }
 
+// Quite overkill implementation below
+
 /// Holds all the information that can be fetched as a command line argument
 pub struct CliConfig {
     url: String,
@@ -28,12 +30,10 @@ impl CliConfig {
             Some(url) => url.clone(),
             None => String::new(),
         };
-
         CliConfig {
             url,
         }
     }
-
     pub fn url(&self) -> &String {
         &self.url
     }

@@ -1,5 +1,5 @@
 use blob_dl::parser;
-use blob_dl::dispatcher::dispatch;
+use blob_dl::dispatcher;
 
 fn main() {
     // yt_playlist =  https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX
@@ -19,7 +19,7 @@ fn main() {
     // // Processed command line arguments live here
     let config = parser::parse_config();
 
-    dispatch(&config);
+    // dispatch(&config);
 
     //println!("{:?}", config);
 

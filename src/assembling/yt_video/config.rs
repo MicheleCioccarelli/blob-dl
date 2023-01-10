@@ -2,15 +2,15 @@ use crate::assembling;
 
 /// Contains all the information needed to download a youtube video [WIP]
 #[derive(Debug)]
-pub(crate) struct ConfigYtVideo {
+pub(crate) struct YtVideoConfig {
     url: String,
     download_format: String,
     output_path: String,
 }
 
-impl ConfigYtVideo {
-    pub(crate) fn new(url: String, download_format: String, output_path: String) -> ConfigYtVideo {
-        ConfigYtVideo { url, download_format, output_path }
+impl YtVideoConfig {
+    pub(crate) fn new(url: String, download_format: String, output_path: String) -> YtVideoConfig {
+        YtVideoConfig { url, download_format, output_path }
     }
     /// Builds a yt-dl command with the needed specifications
     pub(crate) fn build_command(&self) -> std::process::Command {
@@ -19,6 +19,8 @@ impl ConfigYtVideo {
 }
 
 #[derive(Debug)]
+/// If the user chooses best quality or worst quality, a special command can be passed to youtube-dl
+/// If they want to pick a specific format it is a UniqueFormat and requires special handling
 pub(crate) enum VideoQualityAndFormatPreferences {
     UniqueFormat(Option<VideoFormat>),
     BestQuality,
@@ -138,12 +140,12 @@ impl VideoFormat {
 
 /// All of the formats a particular video can be downloaded in
 #[derive(Debug)]
-pub(crate) struct YtVideoFormats {
+pub struct VideoFormats {
     available_formats: Vec<VideoQualityAndFormatPreferences>,
 }
-impl YtVideoFormats {
-    pub(crate) fn new() -> YtVideoFormats {
-        YtVideoFormats {
+impl VideoFormats {
+    pub(crate) fn new() -> VideoFormats {
+        VideoFormats {
             available_formats: vec![]
         }
     }

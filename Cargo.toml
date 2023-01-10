@@ -10,4 +10,5 @@ edition = "2021"
 clap = { version = "4.0.29", features = ["derive"] }
 dialoguer = "0.10.2"
 execute = "0.2.11"
+spinoff = "0.6.0"
 url = "2.3.1"
