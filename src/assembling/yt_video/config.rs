@@ -2,25 +2,42 @@ use crate::assembling;
 
 /// Contains all the information needed to download a youtube video [WIP]
 #[derive(Debug)]
-pub(crate) struct YtVideoConfig {
-    url: String,
-    download_format: String,
+pub(crate) struct YtVideoConfig<'a> {
+    // Ref to the url stored in CliConfig
+    url: &'a String,
+    /// All formats this video can be downloaded in, fetched using `youtube-dl -F url`
+    available_formats: Vec<VideoFormat>,
+    selected_quality: VideoQualityAndFormatPreferences,
     output_path: String,
+    /// List of all ids from available_formats
+    available_ids: Vec<u32>,
 }
 
-impl YtVideoConfig {
-    pub(crate) fn new(url: String, download_format: String, output_path: String) -> YtVideoConfig {
-        YtVideoConfig { url, download_format, output_path }
+impl<'a> YtVideoConfig<'a> {
+    pub(crate) fn new(url: &String,
+                      available_formats: Vec<VideoFormat>,
+                      selected_quality: VideoQualityAndFormatPreferences,
+                      output_path: String)
+                      -> YtVideoConfig {
+        // Processing available_formats
+        let available_ids = YtVideoConfig::get_ids(&available_formats);
+
+        YtVideoConfig { url, available_formats, selected_quality, output_path, available_ids}
     }
     /// Builds a yt-dl command with the needed specifications
     pub(crate) fn build_command(&self) -> std::process::Command {
         todo!()
     }
+
+    /// Collects all available ids from available_formats in a Vec
+    fn get_ids(available_formats: &Vec<VideoFormat>) -> Vec<u32> {
+        available_formats.iter().map(|format| format.code()).collect()
+    }
 }
 
+
 #[derive(Debug)]
-/// If the user chooses best quality or worst quality, a special command can be passed to youtube-dl
-/// If they want to pick a specific format it is a UniqueFormat and requires special handling
+/// What quality and format the user wants a specific video to be downloaded in
 pub(crate) enum VideoQualityAndFormatPreferences {
     UniqueFormat(Option<VideoFormat>),
     BestQuality,
@@ -40,9 +57,10 @@ pub(crate) struct VideoFormat {
     is_best: bool,
 }
 impl VideoFormat {
-    // # Usa insiemistica (intersezione tra insiemi di id) e mappe per comparare
     /// Returns an Option\<Format\> object when given a line from the output of the command
     /// "youtube-dl -F \<URL\>"
+    ///
+    /// This function is intended to be used in a wizard
     /// # Returns Some(Format)
     /// When `ytdl_output_line` contains information about
     /// - audio-only quality and format for a youtube url

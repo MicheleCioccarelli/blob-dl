@@ -16,8 +16,6 @@ pub fn parse_config() -> CliConfig {
     CliConfig::from(matches)
 }
 
-// Quite overkill implementation below
-
 /// Holds all the information that can be fetched as a command line argument
 pub struct CliConfig {
     url: String,
@@ -28,7 +26,7 @@ impl CliConfig {
     pub fn from(matches: ArgMatches) -> CliConfig {
         let url = match matches.get_one::<String>("SOURCE") {
             Some(url) => url.clone(),
-            None => String::new(),
+            None => panic!("SOURCE is a required argument"),
         };
         CliConfig {
             url,

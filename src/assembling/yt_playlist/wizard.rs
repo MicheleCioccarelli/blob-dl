@@ -12,7 +12,7 @@ use crate::assembling::yt_video;
 /// to start downloading a youtube playlist
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String) -> Result<config::ConfigYtPlaylist, std::io::Error> {
+pub(crate) fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::Error> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only

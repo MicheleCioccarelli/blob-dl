@@ -4,9 +4,9 @@ use crate::assembling::yt_video;
 
 /// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug)]
-pub(crate) struct ConfigYtPlaylist {
-    url: String,
-    media_selected: assembling::MediaSelection,
+pub(crate) struct YtPlaylistConfig<'a> {
+    // Ref to the url stored in CliConfig
+    url: &'a String,
     // Each element in the Vec is the quality that a video needs to be downloaded in
     download_format: Vec<yt_video::config::VideoQualityAndFormatPreferences>,
     output_path: String,
@@ -15,7 +15,7 @@ pub(crate) struct ConfigYtPlaylist {
     output_style: assembling::OutputStyle,
 }
 
-impl ConfigYtPlaylist {
+impl YtPlaylistConfig {
     pub(crate) fn new (
         url: String,
         media_selected: assembling::MediaSelection,
@@ -23,8 +23,8 @@ impl ConfigYtPlaylist {
         output_path: String,
         include_indexes: bool,
         output_style: assembling::OutputStyle
-    ) -> ConfigYtPlaylist {
-        ConfigYtPlaylist { url, media_selected, download_format, output_path, include_indexes, output_style }
+    ) -> YtPlaylistConfig {
+        YtPlaylistConfig { url, media_selected, download_format, output_path, include_indexes, output_style }
     }
 
     fn output_style(&self) -> &assembling::OutputStyle {

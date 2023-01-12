@@ -20,12 +20,6 @@ pub(crate) fn generate_command(url: &String, download_option: &analyzer::Downloa
     }*/
 }
 
-/// Whether the user wants to download video files or audio-only
-#[derive(Debug)]
-pub(crate) enum MediaSelection {
-    Video,
-    Audio,
-}
 
 #[derive(Debug)]
 // TODO rename this
