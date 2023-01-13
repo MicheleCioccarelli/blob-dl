@@ -6,7 +6,7 @@ pub(crate) struct YtVideoConfig<'a> {
     // Ref to the url stored in CliConfig
     url: &'a String,
     /// All formats this video can be downloaded in, fetched using `youtube-dl -F url`
-    available_formats: Vec<VideoFormat>,
+    available_formats: VideoSpecs,
     selected_quality: VideoQualityAndFormatPreferences,
     output_path: String,
     /// List of all ids from available_formats
@@ -15,12 +15,12 @@ pub(crate) struct YtVideoConfig<'a> {
 
 impl<'a> YtVideoConfig<'a> {
     pub(crate) fn new(url: &String,
-                      available_formats: Vec<VideoFormat>,
+                      available_formats: VideoSpecs,
                       selected_quality: VideoQualityAndFormatPreferences,
                       output_path: String)
                       -> YtVideoConfig {
         // Processing available_formats
-        let available_ids = YtVideoConfig::get_ids(&available_formats);
+        let available_ids = available_formats.get_ids();
 
         YtVideoConfig { url, available_formats, selected_quality, output_path, available_ids}
     }
@@ -28,18 +28,12 @@ impl<'a> YtVideoConfig<'a> {
     pub(crate) fn build_command(&self) -> std::process::Command {
         todo!()
     }
-
-    /// Collects all available ids from available_formats in a Vec
-    fn get_ids(available_formats: &Vec<VideoFormat>) -> Vec<u32> {
-        available_formats.iter().map(|format| format.code()).collect()
-    }
 }
-
 
 #[derive(Debug)]
 /// What quality and format the user wants a specific video to be downloaded in
 pub(crate) enum VideoQualityAndFormatPreferences {
-    UniqueFormat(Option<VideoFormat>),
+    UniqueFormat(u32),
     BestQuality,
     WorstQuality,
 }
@@ -158,16 +152,20 @@ impl VideoFormat {
 
 /// All of the formats a particular video can be downloaded in
 #[derive(Debug)]
-pub struct VideoFormats {
-    available_formats: Vec<VideoQualityAndFormatPreferences>,
+pub struct VideoSpecs {
+    available_formats: Vec<VideoFormat>,
 }
-impl VideoFormats {
-    pub(crate) fn new() -> VideoFormats {
-        VideoFormats {
+impl VideoSpecs {
+    pub(crate) fn new() -> VideoSpecs {
+        VideoSpecs {
             available_formats: vec![]
         }
     }
-    pub(crate) fn add_format(&mut self, format: VideoQualityAndFormatPreferences) {
+    /// Collects all available ids from available_formats in a Vec
+    pub(crate) fn get_ids(&self) -> Vec<u32> {
+        self.available_formats.iter().map(|format| format.code()).collect()
+    }
+    pub(crate) fn add_format(&mut self, format: VideoFormat) {
         self.available_formats.push(format);
     }
     pub(crate) fn is_empty(&self) -> bool {

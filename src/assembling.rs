@@ -20,14 +20,6 @@ pub(crate) fn generate_command(url: &String, download_option: &analyzer::Downloa
     }*/
 }
 
-
-#[derive(Debug)]
-// TODO rename this
-pub(crate) enum OutputStyle {
-    RedirectErrors,
-    Full,
-}
-
 /// Asks for an directory to store downloaded file(s) in
 ///
 /// The current directory can be selected or one can be typed in

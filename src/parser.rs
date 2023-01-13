@@ -18,6 +18,7 @@ pub fn parse_config() -> CliConfig {
 
 /// Holds all the information that can be fetched as a command line argument
 pub struct CliConfig {
+    // Refs to this String are stored in other Config objects
     url: String,
 }
 

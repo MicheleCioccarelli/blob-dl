@@ -1,34 +1,31 @@
 use clap::builder::Str;
 use crate::assembling;
 use crate::assembling::yt_video;
+use crate::assembling::yt_video::config::VideoQualityAndFormatPreferences;
 
 /// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug)]
 pub(crate) struct YtPlaylistConfig<'a> {
-    // Ref to the url stored in CliConfig
+    /// Ref to the url stored in CliConfig
     url: &'a String,
-    // Each element in the Vec is the quality that a video needs to be downloaded in
-    download_format: Vec<yt_video::config::VideoQualityAndFormatPreferences>,
+    /// Each element is a Vec of all the available formats for a particular video
+    available_formats: Vec<yt_video::config::VideoSpecs>,
     output_path: String,
     /// Whether to include a file's index (in the playlist it is downloaded from) in its name
     include_indexes: bool,
-    output_style: assembling::OutputStyle,
+    /// The quality and format the user wants the downloaded files to be in
+    chosen_quality: Option<VideoQualityAndFormatPreferences>,
 }
 
-impl YtPlaylistConfig {
+impl<'a> YtPlaylistConfig<'a> {
     pub(crate) fn new (
-        url: String,
-        media_selected: assembling::MediaSelection,
-        download_format: Vec<yt_video::config::VideoQualityAndFormatPreferences>,
+        url: &String,
+        available_formats: Vec<yt_video::config::VideoSpecs>,
         output_path: String,
         include_indexes: bool,
-        output_style: assembling::OutputStyle
+        chosen_quality: Option<VideoQualityAndFormatPreferences>
     ) -> YtPlaylistConfig {
-        YtPlaylistConfig { url, media_selected, download_format, output_path, include_indexes, output_style }
-    }
-
-    fn output_style(&self) -> &assembling::OutputStyle {
-        &self.output_style
+        YtPlaylistConfig { url, available_formats, output_path, include_indexes, chosen_quality }
     }
 
     /// Builds a yt-dl command with the needed specifications (downloads a playlist)

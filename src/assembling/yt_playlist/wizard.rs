@@ -68,7 +68,7 @@ mod format {
     ///
     /// Either best-quality or worst-quality can be selected for the whole playlist, or a format can be picked for each
     /// video. If all videos have a format and quality in common, they can be easily applied
-    pub(super) fn get_format(term: &Term, url: &String) -> Result<Vec<VideoFormats>, std::io::Error> {
+    pub(super) fn get_format(term: &Term, url: &String) -> Result<Vec<VideoSpecs>, std::io::Error> {
         // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
 
         // Each element of this vector describes the quality option for a video in the playlist
@@ -107,10 +107,10 @@ mod format {
         SingleVideo,
     }
 
-    use crate::assembling::yt_video::config::{VideoFormat, VideoFormats, VideoQualityAndFormatPreferences};
+    use crate::assembling::yt_video::config::{VideoFormat, VideoSpecs, VideoQualityAndFormatPreferences};
 
     /// Returns a Vec with every video's format information
-    fn fetch_formats(playlist_url: &String) -> Result<Vec<VideoFormats>, std::io::Error> {
+    fn fetch_formats(playlist_url: &String) -> Result<Vec<VideoSpecs>, std::io::Error> {
         let mut command = Command::new("youtube-dl");
         command.arg("-F");
         command.arg(playlist_url);
@@ -121,19 +121,19 @@ mod format {
         let output = command.execute_output()?;
         spinner.stop();
         // A lost of every video in the playlist's available formats
-        let mut all_videos: Vec<VideoFormats> = Vec::new();
+        let mut all_videos: Vec<VideoSpecs> = Vec::new();
         /* A list of all the download formats available for a video, if its format information is unavailable
          * (maybe because it is age-restricted) and thus youtube-dl cannot fetch any information about it,
          * the Option is None. In every other case there is Some
          */
-        let mut video = VideoFormats::new();
+        let mut video = VideoSpecs::new();
 
         for paragraph in String::from_utf8(output.stdout)
                                         .unwrap()
                                         .as_str()
                                         .split("[download] Downloading video") {
             // Create a new video on every iteration because pushing on a Vec requires moving
-            let mut video = VideoFormats::new();
+            let mut video = VideoSpecs::new();
             // The first line is discarded, it tells information about the index of the current video in the playlist
             for line in paragraph.lines().skip(1) {
                 // Ignore all irrelevant lines (they violate VideoFormat::from_command()'s contract
