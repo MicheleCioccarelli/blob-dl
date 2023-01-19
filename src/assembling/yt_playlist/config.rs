@@ -15,17 +15,21 @@ pub(crate) struct YtPlaylistConfig<'a> {
     include_indexes: bool,
     /// The quality and format the user wants the downloaded files to be in
     chosen_quality: Option<VideoQualityAndFormatPreferences>,
+    /// Whether the downloaded files have to be audio-only or normal video
+    media_selected: assembling::MediaSelection,
 }
 
 impl<'a> YtPlaylistConfig<'a> {
     pub(crate) fn new (
         url: &String,
+        // TODO add support for video-only formats
         available_formats: Vec<yt_video::config::VideoSpecs>,
         output_path: String,
         include_indexes: bool,
-        chosen_quality: Option<VideoQualityAndFormatPreferences>
+        chosen_quality: Option<VideoQualityAndFormatPreferences>,
+        media_selected: assembling::MediaSelection,
     ) -> YtPlaylistConfig {
-        YtPlaylistConfig { url, available_formats, output_path, include_indexes, chosen_quality }
+        YtPlaylistConfig { url, available_formats, output_path, include_indexes, chosen_quality, media_selected }
     }
 
     /// Builds a yt-dl command with the needed specifications (downloads a playlist)

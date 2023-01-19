@@ -26,6 +26,7 @@ dependencies = [
  "clap",
  "dialoguer",
  "execute",
+ "sdset",
  "spinoff",
  "url",
 ]
@@ -392,6 +393,12 @@ name = "rustversion"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5583e89e108996506031660fe09baa5011b9dd0341b89029313006d1fb508d70"
+
+[[package]]
+name = "sdset"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbb21fe0588557792176c89bc7b943027b14f346d03c6be6a199c2860277d93a"
 
 [[package]]
 name = "spinoff"

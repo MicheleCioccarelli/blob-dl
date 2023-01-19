@@ -6,7 +6,7 @@ use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
 use std::env;
 
-// TODO: Re-read how to make children modules for better privacy management
+// TODO: Re-read how to make children modules for better privacy management and make youtube mods derive from a mod with all of their common utils
 
 /// [Rewrite this in the future] Calls the right wizard to generate the required command
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> std::process::Command {
@@ -18,6 +18,12 @@ pub(crate) fn generate_command(url: &String, download_option: &analyzer::Downloa
         analyzer::DownloadOption::SpPlaylist => sp_playlist::wizard::assemble_data(url).build_command(),
         analyzer::DownloadOption::SpAlbum =>    sp_album::wizard::assemble_data(url).build_command(),
     }*/
+}
+/// Whether the user wants to download video files or audio-only
+#[derive(Debug)]
+pub(crate) enum MediaSelection {
+    Video,
+    Audio,
 }
 
 /// Asks for an directory to store downloaded file(s) in

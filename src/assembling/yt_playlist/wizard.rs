@@ -4,7 +4,6 @@ use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use crate::assembling;
 use url::Url;
-use crate::assembling::MediaSelection;
 use crate::assembling::yt_playlist::config;
 use crate::assembling::yt_video;
 
@@ -39,7 +38,7 @@ pub(crate) fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, st
 }
 
 /// Asks the user whether they want to download video files or audio-only
-fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
+fn get_media_selection(term: &Term) -> Result<assembling::MediaSelection, std::io::Error> {
     let download_formats = &[
         "Video",
         "Audio-only",
@@ -52,74 +51,56 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
         .interact_on(&term)?;
 
     match media_selection {
-        0 => Ok(MediaSelection::Video),
-        1 => Ok(MediaSelection::Audio),
+        0 => Ok(assembling::MediaSelection::Video),
+        1 => Ok(assembling::MediaSelection::Audio),
         _ => panic!("Error getting media selection")
     }
 }
 
 mod format {
     use super::*;
+    // Doodles to entertain the user while file formats are being fetched
     use spinoff::{Spinner, Spinners, Color};
     use std::process::{Command, Stdio};
+    // Running youtube-dl -F <...>
     use execute::Execute;
-
+    // Having config:: would be ambiguous and yt_video::config:: would be too long, so these types have their paths fully imported
+    use crate::assembling::yt_video::config::{VideoFormat, VideoSpecs, VideoQualityAndFormatPreferences};
+    // Math library for finding the intersection of all available format ids
+    use sdset::multi::OpBuilder;
+    use sdset::{SetOperation, Set, SetBuf};
     /// Asks the user to specify a download format and quality
     ///
     /// Either best-quality or worst-quality can be selected for the whole playlist, or a format can be picked for each
     /// video. If all videos have a format and quality in common, they can be easily applied
-    pub(super) fn get_format(term: &Term, url: &String) -> Result<Vec<VideoSpecs>, std::io::Error> {
+    pub(super) fn get_format(term: &Term, url: &String, media_selected: &assembling::MediaSelection) -> Result<Vec<VideoSpecs>, std::io::Error> {
         // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
+        // Fetch all available formats for the playlist
+        // todo use spinoff here
+        let mut all_available_formats = fetch_formats(url)?;
 
-        // Each element of this vector describes the quality option for a video in the playlist
-        let mut all_preferences: Vec<VideoQualityAndFormatPreferences> = vec![];
+        // Every set is the ids available for a single video
+        let mut all_sets: Vec<&Set<u32>> = vec![];
 
-        let mut user_selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Do you want a single quality setting to be applied to all videos or do you want to choose one for each video?")
+        for mut video in all_available_formats.iter_mut() {
+            let current_ids = video.refresh_and_sort_ids();
+            all_sets.push(Set::new(&b[..])?);
+        }
+
+        let op = OpBuilder::from_vec(all_sets).intersection();
+        // res contains all the ids that are common to all videos in the playlist
+        let res: SetBuf<u32> = op.into_set_buf();
+        /*
+        let user_selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Which quality do you want to apply to all videos?")
             .default(0)
-            .items(&["Apply a setting to all videos", "Choose a quality setting for each video"])
-            .interact_on(&term)?;
-        let quality_scope = match user_selection {
-            0 => QualityScope::AllVideos,
-            _ => QualityScope::SingleVideo,
-        };
-
-        // The user wants to choose a format to apply to all videos
-        if quality_scope == QualityScope::AllVideos {
-            let available_formats = fetch_formats(url)?;
-            // Find formats common between all videos
-
-            user_selection = Select::with_theme(&ColorfulTheme::default())
-                .with_prompt("Which quality do you want to apply to all videos?")
-                .default(0)
-                .items(&["Best available quality for each video", "Worst available quality for each video",
-                    "Placeholder for when uniform format selection will have been implemented"])
-                .interact_on(&term)?;
-        } else if quality_scope == QualityScope::SingleVideo {
-            // Ask for a quality selection for each video in the Playlist
-        };
+            .items(&["Best available quality for each video", "Worst available quality for each video",
+                "Placeholder for when uniform format selection will have been implemented"])
+            .interact_on(&term)?;*/
         todo!()
     }
-
-    #[derive(PartialEq)]
-    enum QualityScope {
-        AllVideos,
-        SingleVideo,
-    }
-
-    use crate::assembling::yt_video::config::{VideoFormat, VideoSpecs, VideoQualityAndFormatPreferences};
-
     /// Returns a Vec with every video's format information
-    fn fetch_formats(playlist_url: &String) -> Result<Vec<VideoSpecs>, std::io::Error> {
-        let mut command = Command::new("youtube-dl");
-        command.arg("-F");
-        command.arg(playlist_url);
-        command.stdout(Stdio::piped());
-        command.stderr(Stdio::piped());
-        // Store youtube-dl's full output and let the user know that something is going on
-        let spinner = Spinner::new(Spinners::Dots12, "Fetching format info...", Color::Red);
-        let output = command.execute_output()?;
-        spinner.stop();
+    fn fetch_formats(output: &String) -> Result<Vec<VideoSpecs>, std::io::Error> {
         // A lost of every video in the playlist's available formats
         let mut all_videos: Vec<VideoSpecs> = Vec::new();
         /* A list of all the download formats available for a video, if its format information is unavailable
@@ -128,22 +109,21 @@ mod format {
          */
         let mut video = VideoSpecs::new();
 
-        for paragraph in String::from_utf8(output.stdout)
-                                        .unwrap()
-                                        .as_str()
-                                        .split("[download] Downloading video") {
+        for paragraph in output
+            .as_str()
+            .split("[download] Downloading video") {
             // Create a new video on every iteration because pushing on a Vec requires moving
             let mut video = VideoSpecs::new();
             // The first line is discarded, it tells information about the index of the current video in the playlist
             for line in paragraph.lines().skip(1) {
                 // Ignore all irrelevant lines (they violate VideoFormat::from_command()'s contract
-                if line.contains("[") ||
-                    line.contains("format") ||
+                // Each line which doesn't start with a code has to be ignored
+                if !line.chars().next().unwrap().is_numeric() ||
                     line.contains("video only") {
                     continue;
                 };
                 // The line is about a video or audio-only format or is a youtube-dl error
-                video.add_format(VideoQualityAndFormatPreferences::UniqueFormat(VideoFormat::from_command(line)));
+                video.add_format(VideoFormat::from_command(line));
             }
             // Ignore some quirks of string splitting
             if video.is_empty() {
@@ -152,7 +132,6 @@ mod format {
             // Add the current video to the "playlist"
             all_videos.push(video);
         };
-        println!("Videos: {:#?}", all_videos);
         Ok(all_videos)
     }
 }
