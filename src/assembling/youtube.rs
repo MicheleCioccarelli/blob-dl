@@ -1,38 +1,13 @@
-use crate::assembling;
+mod yt_playlist;
+mod yt_video;
 
-/// Contains all the information needed to download a youtube video [WIP]
+// Structs and enums used in both child modules
+
+/// Whether the user wants to download video files or audio-only
 #[derive(Debug)]
-pub(crate) struct YtVideoConfig<'a> {
-    // Ref to the url stored in CliConfig
-    url: &'a String,
-    /// All formats this video can be downloaded in, fetched using `youtube-dl -F url`
-    available_formats: VideoSpecs,
-    selected_quality: VideoQualityAndFormatPreferences,
-    output_path: String,
-}
-
-impl<'a> YtVideoConfig<'a> {
-    pub(crate) fn new(url: &String,
-                      available_formats: VideoSpecs,
-                      selected_quality: VideoQualityAndFormatPreferences,
-                      output_path: String)
-                      -> YtVideoConfig {
-        // Processing available_formats
-        YtVideoConfig { url, available_formats, selected_quality, output_path}
-    }
-    /// Builds a yt-dl command with the needed specifications
-    pub(crate) fn build_command(&self) -> std::process::Command {
-        todo!()
-    }
-}
-
-#[derive(Debug)]
-/// What quality and format the user wants a specific video to be downloaded in
-pub(crate) enum VideoQualityAndFormatPreferences {
-    // Code of the selected format
-    UniqueFormat(u32),
-    BestQuality,
-    WorstQuality,
+pub(crate) enum MediaSelection {
+    Video,
+    Audio,
 }
 
 /// Stores all information about a format available for a video (file extension, size, resolution, code)
@@ -170,4 +145,13 @@ impl VideoSpecs {
     pub(crate) fn is_empty(&self) -> bool {
         self.available_formats.is_empty()
     }
+}
+
+#[derive(Debug)]
+/// What quality and format the user wants a specific video to be downloaded in
+pub(crate) enum VideoQualityAndFormatPreferences {
+    // Code of the selected format
+    UniqueFormat(u32),
+    BestQuality,
+    WorstQuality,
 }

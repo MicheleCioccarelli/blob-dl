@@ -1,5 +1,4 @@
-mod yt_playlist;
-mod yt_video;
+mod youtube;
 
 use crate::analyzer;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
@@ -19,12 +18,7 @@ pub(crate) fn generate_command(url: &String, download_option: &analyzer::Downloa
         analyzer::DownloadOption::SpAlbum =>    sp_album::wizard::assemble_data(url).build_command(),
     }*/
 }
-/// Whether the user wants to download video files or audio-only
-#[derive(Debug)]
-pub(crate) enum MediaSelection {
-    Video,
-    Audio,
-}
+
 
 /// Asks for an directory to store downloaded file(s) in
 ///

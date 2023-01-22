@@ -1,15 +1,15 @@
-use clap::ArgMatches;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use super::config;
-use crate::assembling;
-use url::Url;
+use super::super::*;
 
 /// Returns a ConfigYtVideo object with all the necessary data
 /// to start downloading a youtube video
 ///
 /// Takes in the command line arguments list
 pub(crate) fn assemble_data(url: &String) -> Result<config::YtVideoConfig, std::io::Error> {
+    todo!();/*
+    let term = Term::buffered_stderr();
     let term = Term::buffered_stderr();
 
     // Handle errors?
@@ -18,6 +18,11 @@ pub(crate) fn assemble_data(url: &String) -> Result<config::YtVideoConfig, std::
                                   get_format(&term),
                                   assembling::get_output_path(&term)?
     ))
+    // Handle errors?
+    Ok(config::YtVideoConfig::new(url.clone(),
+                                  get_format(&term),
+                                  assembling::get_output_path(&term)?
+    ))*/
 }
 
 /// Aks for a download format in a user-friendly way.

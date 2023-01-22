@@ -1,11 +1,9 @@
 // Refactor some of these in the future
-use clap::ArgMatches;
 use dialoguer::console::Term;
-use dialoguer::{theme::ColorfulTheme, Input, Select};
+use dialoguer::{theme::ColorfulTheme, Select};
+use super::super::*;
+use super::config;
 use crate::assembling;
-use url::Url;
-use crate::assembling::yt_playlist::config;
-use crate::assembling::yt_video;
 
 /// Returns a ConfigYtPlaylist object with all the necessary data
 /// to start downloading a youtube playlist
@@ -17,15 +15,13 @@ pub(crate) fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, st
     // Whether the user wants to download video files or audio-only
     let media = get_media_selection(&term)?;
 
-    let available_formats = format::get_format(&term, url)?;
+    let available_formats = format::get_format(&term, url, &media)?;
 
     let output_dir = assembling::get_output_path(&term)?;
 
     // let quality = get_quality(&term);
 
     let preference = get_index_preference(&term)?;
-
-    let output_style = get_output_style(&term)?;
 
     // Ok(config::ConfigYtPlaylist::new(url.clone(),
     //                               media,
@@ -38,7 +34,7 @@ pub(crate) fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, st
 }
 
 /// Asks the user whether they want to download video files or audio-only
-fn get_media_selection(term: &Term) -> Result<assembling::MediaSelection, std::io::Error> {
+fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
     let download_formats = &[
         "Video",
         "Audio-only",
@@ -51,8 +47,8 @@ fn get_media_selection(term: &Term) -> Result<assembling::MediaSelection, std::i
         .interact_on(&term)?;
 
     match media_selection {
-        0 => Ok(assembling::MediaSelection::Video),
-        1 => Ok(assembling::MediaSelection::Audio),
+        0 => Ok(MediaSelection::Video),
+        1 => Ok(MediaSelection::Audio),
         _ => panic!("Error getting media selection")
     }
 }
@@ -64,16 +60,15 @@ mod format {
     use std::process::{Command, Stdio};
     // Running youtube-dl -F <...>
     use execute::Execute;
-    // Having config:: would be ambiguous and yt_video::config:: would be too long, so these types have their paths fully imported
-    use crate::assembling::yt_video::config::{VideoFormat, VideoSpecs, VideoQualityAndFormatPreferences};
     // Math library for finding the intersection of all available format ids
     use sdset::multi::OpBuilder;
     use sdset::{SetOperation, Set, SetBuf};
+
     /// Asks the user to specify a download format and quality
     ///
     /// Either best-quality or worst-quality can be selected for the whole playlist, or a format can be picked for each
     /// video. If all videos have a format and quality in common, they can be easily applied
-    pub(super) fn get_format(term: &Term, url: &String, media_selected: &assembling::MediaSelection) -> Result<Vec<VideoSpecs>, std::io::Error> {
+    pub(super) fn get_format(term: &Term, url: &String, media_selected: &MediaSelection) -> Result<Vec<VideoSpecs>, std::io::Error> {
         // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
         // Fetch all available formats for the playlist
         // todo use spinoff here
@@ -84,12 +79,13 @@ mod format {
 
         for mut video in all_available_formats.iter_mut() {
             let current_ids = video.refresh_and_sort_ids();
-            all_sets.push(Set::new(&b[..])?);
+            all_sets.push(Set::new(&current_ids[..]).expect("Add error handling to format fetching"));
         }
 
         let op = OpBuilder::from_vec(all_sets).intersection();
         // res contains all the ids that are common to all videos in the playlist
         let res: SetBuf<u32> = op.into_set_buf();
+
         /*
         let user_selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Which quality do you want to apply to all videos?")
@@ -152,25 +148,6 @@ fn get_index_preference(term: &Term) -> Result<bool, std::io::Error> {
     match index_preference {
         0 => Ok(true),
         1 => Ok(false),
-        _ => panic!("The only options are 0 and 1")
-    }
-}
-
-fn get_output_style(term: &Term) -> Result<assembling::OutputStyle, std::io::Error> {
-    let download_formats = &[
-        "Yes",
-        "No",
-    ];
-    // Ask the user which format they want the downloaded files to be in
-    let output_style = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Which part of youtube-dl's output do you want to see?")
-        .default(0)
-        .items(download_formats)
-        .interact_on(&term)?;
-
-    match output_style {
-        0 => Ok(assembling::OutputStyle::RedirectErrors),
-        1 => Ok(assembling::OutputStyle::Full),
         _ => panic!("The only options are 0 and 1")
     }
 }

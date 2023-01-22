@@ -1,7 +1,4 @@
-use clap::builder::Str;
-use crate::assembling;
-use crate::assembling::yt_video;
-use crate::assembling::yt_video::config::VideoQualityAndFormatPreferences;
+use super::super::*;
 
 /// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug)]
@@ -9,25 +6,25 @@ pub(crate) struct YtPlaylistConfig<'a> {
     /// Ref to the url stored in CliConfig
     url: &'a String,
     /// Each element is a Vec of all the available formats for a particular video
-    available_formats: Vec<yt_video::config::VideoSpecs>,
+    available_formats: Vec<VideoSpecs>,
     output_path: String,
     /// Whether to include a file's index (in the playlist it is downloaded from) in its name
     include_indexes: bool,
     /// The quality and format the user wants the downloaded files to be in
     chosen_quality: Option<VideoQualityAndFormatPreferences>,
     /// Whether the downloaded files have to be audio-only or normal video
-    media_selected: assembling::MediaSelection,
+    media_selected: MediaSelection,
 }
 
 impl<'a> YtPlaylistConfig<'a> {
     pub(crate) fn new (
         url: &String,
         // TODO add support for video-only formats
-        available_formats: Vec<yt_video::config::VideoSpecs>,
+        available_formats: Vec<VideoSpecs>,
         output_path: String,
         include_indexes: bool,
         chosen_quality: Option<VideoQualityAndFormatPreferences>,
-        media_selected: assembling::MediaSelection,
+        media_selected: MediaSelection,
     ) -> YtPlaylistConfig {
         YtPlaylistConfig { url, available_formats, output_path, include_indexes, chosen_quality, media_selected }
     }

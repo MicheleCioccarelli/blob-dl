@@ -21,6 +21,8 @@ fn main() {
 
     // dispatch(&config);
 
+    todo!("Write unit tests");
+
     //println!("{:?}", config);
 
     //todo!("See .error() in Clap for neat error messages!");
