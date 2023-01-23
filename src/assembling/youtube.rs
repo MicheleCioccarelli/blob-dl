@@ -1,11 +1,13 @@
-mod yt_playlist;
+// todo make this private
+pub mod yt_playlist;
 mod yt_video;
 
 // Structs and enums used in both child modules
 
 /// Whether the user wants to download video files or audio-only
 #[derive(Debug)]
-pub(crate) enum MediaSelection {
+//todo make this pub(crate)
+pub enum MediaSelection {
     Video,
     Audio,
 }
@@ -108,7 +110,7 @@ impl VideoFormat {
     /// Returns a String containing all format information which can be displayed to someone picking formats
     pub(crate) fn to_frontend(&self) -> String {
         // todo get a better name
-        format!("{}-{} (size: {}", self.file_extension, self.resolution, self.size)
+        format!("{}-{} (size: {})", self.file_extension, self.resolution, self.size)
     }
 }
 

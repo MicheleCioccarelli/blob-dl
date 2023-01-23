@@ -1,4 +1,5 @@
 use blob_dl::parser;
+use blob_dl::assembling::youtube::yt_playlist::wizard::assemble_data;
 
 fn main() {
     // yt_playlist =  https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX
@@ -17,6 +18,8 @@ fn main() {
 
     // // Processed command line arguments live here
     let config = parser::parse_config();
+    
+    assemble_data(&"https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX".to_string());
 
     // dispatch(&config);
 

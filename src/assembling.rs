@@ -1,4 +1,6 @@
-mod youtube;
+
+// todo make this private
+pub mod youtube;
 
 use crate::analyzer;
 use dialoguer::{theme::ColorfulTheme, Input, Select};

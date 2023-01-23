@@ -1,2 +1,3 @@
 pub(super) mod config;
-pub(super) mod wizard;
+// todo make this pub(super)
+pub mod wizard;

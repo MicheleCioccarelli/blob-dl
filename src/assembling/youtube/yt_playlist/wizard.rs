@@ -4,12 +4,12 @@ use dialoguer::{theme::ColorfulTheme, Select};
 use super::super::*;
 use super::config;
 use crate::assembling;
-
+// todo make this pub(crate)
 /// Returns a ConfigYtPlaylist object with all the necessary data
 /// to start downloading a youtube playlist
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::Error> {
+pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::Error> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
@@ -17,9 +17,9 @@ pub(crate) fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, st
 
     let available_formats = format::get_format(&term, url, &media)?;
 
-    let output_dir = assembling::get_output_path(&term)?;
+    //let output_dir = assembling::get_output_path(&term)?;
 
-    let preference = get_index_preference(&term)?;
+    //let preference = get_index_preference(&term)?;
 
     // Ok(config::ConfigYtPlaylist::new(url.clone(),
     //                               media,
@@ -29,6 +29,7 @@ pub(crate) fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, st
     //                               preference,
     //                               output_style))
     todo!()
+
 }
 
 /// Asks the user whether they want to download video files or audio-only
@@ -67,7 +68,8 @@ mod format {
     ///
     /// Either best-quality or worst-quality can be selected for the whole playlist, or a format can be picked for each
     /// video. If all videos have a format and quality in common, they can be easily applied
-    pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection) -> Result<Vec<VideoSpecs>, std::io::Error> {
+    // todo change this visibility to pub(super)
+    pub fn get_format(term: &Term, url: &str, media_selected: &MediaSelection) -> Result<Vec<VideoSpecs>, std::io::Error> {
         // todo encapsulate into more functions
         // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
         let sp = Spinner::new(Spinners::Dots10, "Fetching available formats...", Magenta);

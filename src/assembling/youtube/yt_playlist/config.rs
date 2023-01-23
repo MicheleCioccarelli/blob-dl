@@ -2,7 +2,8 @@ use super::super::*;
 
 /// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug)]
-pub(crate) struct YtPlaylistConfig<'a> {
+//todo make this pub(crate)
+pub struct YtPlaylistConfig<'a> {
     /// Ref to the url stored in CliConfig
     url: &'a String,
     /// Each element is a Vec of all the available formats for a particular video
