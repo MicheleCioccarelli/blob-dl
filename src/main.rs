@@ -1,5 +1,4 @@
 use blob_dl::parser;
-use blob_dl::dispatcher;
 
 fn main() {
     // yt_playlist =  https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX

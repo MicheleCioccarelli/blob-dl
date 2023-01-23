@@ -11,7 +11,7 @@ pub(crate) enum MediaSelection {
 }
 
 /// Stores all information about a format available for a video (file extension, size, resolution, code)
-#[derive(Debug)]
+#[derive(Debug, PartialOrd, PartialEq)]
 pub(crate) struct VideoFormat {
     code: u32,
     file_extension: String,
@@ -19,8 +19,6 @@ pub(crate) struct VideoFormat {
     resolution: String,
     // Size of the downloaded file
     size: String,
-    // Whether the current format is the best available for a given video
-    is_best: bool,
 }
 impl VideoFormat {
     /// Returns an Option\<Format\> object when given a valid ine from the output of the command
@@ -60,7 +58,7 @@ impl VideoFormat {
         */
 
         let code: u32 = table_elements_iter.next().expect(&err_msg)
-            .parse().ok().expect(&err_msg);
+            .parse().expect(&err_msg);
 
         let file_extension = String::from(table_elements_iter.next().expect(&err_msg));
 
@@ -85,22 +83,12 @@ impl VideoFormat {
                 size = String::from(table_elements_iter.next().expect(&err_msg));
             }
         }
-
-        let last_element = table_elements_iter.last().expect(&err_msg);
-
-        // The last element of ytdl_output_line tells you whether this line had the best available format
-        let is_best = if last_element == "(best)" {
-            true
-        } else {
-            false
-        };
         // All information has been parsed
         VideoFormat {
             code,
             file_extension,
             resolution,
             size,
-            is_best,
         }
     }
 
@@ -115,6 +103,12 @@ impl VideoFormat {
     }
     fn is_audio_only(&self) -> bool {
         self.file_extension == "audio"
+    }
+
+    /// Returns a String containing all format information which can be displayed to someone picking formats
+    pub(crate) fn to_frontend(&self) -> String {
+        // todo get a better name
+        format!("{}-{} (size: {}", self.file_extension, self.resolution, self.size)
     }
 }
 
@@ -144,6 +138,9 @@ impl VideoSpecs {
     }
     pub(crate) fn is_empty(&self) -> bool {
         self.available_formats.is_empty()
+    }
+    pub(crate) fn available_formats(&self) -> &Vec<VideoFormat>{
+        &self.available_formats
     }
 }
 
