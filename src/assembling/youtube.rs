@@ -5,7 +5,7 @@ mod yt_video;
 // Structs and enums used in both child modules
 
 /// Whether the user wants to download video files or audio-only
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 //todo make this pub(crate)
 pub enum MediaSelection {
     Video,
@@ -22,6 +22,7 @@ pub(crate) struct VideoFormat {
     // Size of the downloaded file
     size: String,
 }
+
 impl VideoFormat {
     /// Returns an Option\<Format\> object when given a valid ine from the output of the command
     /// "youtube-dl -F \<URL\>"
@@ -110,7 +111,7 @@ impl VideoFormat {
     /// Returns a String containing all format information which can be displayed to someone picking formats
     pub(crate) fn to_frontend(&self) -> String {
         // todo get a better name
-        format!("{}-{} (size: {})", self.file_extension, self.resolution, self.size)
+        format!("{}-{} (size: {}) [DEBUG ID: {}]", self.file_extension, self.resolution, self.size, self.code)
     }
 }
 
@@ -146,9 +147,10 @@ impl VideoSpecs {
     }
 }
 
+// todo make pub(crate)
 #[derive(Debug)]
 /// What quality and format the user wants a specific video to be downloaded in
-pub(crate) enum VideoQualityAndFormatPreferences {
+pub enum VideoQualityAndFormatPreferences {
     // Code of the selected format
     UniqueFormat(u32),
     BestQuality,

@@ -18,9 +18,12 @@ fn main() {
 
     // // Processed command line arguments live here
     let config = parser::parse_config();
-    
-    assemble_data(&"https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX".to_string());
 
+    let url = "https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX".to_string();
+
+    let output = assemble_data(&url);
+
+    println!("Got {:#?}", output);
     // dispatch(&config);
 
     todo!("Write unit tests");

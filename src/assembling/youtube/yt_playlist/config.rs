@@ -6,13 +6,13 @@ use super::super::*;
 pub struct YtPlaylistConfig<'a> {
     /// Ref to the url stored in CliConfig
     url: &'a String,
-    /// Each element is a Vec of all the available formats for a particular video
-    available_formats: Vec<VideoSpecs>,
+
     output_path: String,
     /// Whether to include a file's index (in the playlist it is downloaded from) in its name
     include_indexes: bool,
     /// The quality and format the user wants the downloaded files to be in
-    chosen_quality: Option<VideoQualityAndFormatPreferences>,
+    /// Maybe put these extra flags in their own struct in the future
+    chosen_format: VideoQualityAndFormatPreferences,
     /// Whether the downloaded files have to be audio-only or normal video
     media_selected: MediaSelection,
 }
@@ -20,14 +20,12 @@ pub struct YtPlaylistConfig<'a> {
 impl<'a> YtPlaylistConfig<'a> {
     pub(crate) fn new (
         url: &String,
-        // TODO add support for video-only formats
-        available_formats: Vec<VideoSpecs>,
         output_path: String,
         include_indexes: bool,
-        chosen_quality: Option<VideoQualityAndFormatPreferences>,
+        chosen_quality: VideoQualityAndFormatPreferences,
         media_selected: MediaSelection,
     ) -> YtPlaylistConfig {
-        YtPlaylistConfig { url, available_formats, output_path, include_indexes, chosen_quality, media_selected }
+        YtPlaylistConfig { url, output_path, include_indexes, chosen_format: chosen_quality, media_selected }
     }
 
     /// Builds a yt-dl command with the needed specifications (downloads a playlist)
