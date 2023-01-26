@@ -1,4 +1,4 @@
-use url::{Url, Host, Position};
+use url::{Url};
 
 /// All of the supported sources
 pub enum DownloadOption {
@@ -16,9 +16,9 @@ pub enum DownloadOption {
 ///
 /// Returns None if the url isn't supported by blob-dl
 ///
-pub fn analyze_url(command_line_url: &String) -> Option<DownloadOption> {
-    // .ok() converts from a Result to an Option
-    let url = Url::parse(&command_line_url).ok();
+pub fn analyze_url(command_line_url: &str) -> Option<DownloadOption> {
+    // .ok() converts from Result to Option
+    let url = Url::parse(command_line_url).ok();
 
     if let Some(matched_url) = url {
         if let Some(domain_name) = matched_url.domain() {

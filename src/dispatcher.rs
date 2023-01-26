@@ -3,8 +3,6 @@ use crate::parser;
 use crate::assembling;
 use execute::Execute;
 
-// Major refactoring incoming
-
 /// Given a command-line configuration calls the right wizard
 pub fn dispatch(config: &parser::CliConfig) {
 

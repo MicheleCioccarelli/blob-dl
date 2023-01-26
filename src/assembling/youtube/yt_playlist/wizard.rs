@@ -52,6 +52,8 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
     }
 }
 
+// todo make private
+pub
 mod format {
     use super::*;
     // Doodles to entertain the user while file formats are being fetched
@@ -132,12 +134,15 @@ mod format {
         }
     }
 
-    fn get_ytdl_formats(url: &str) -> Result<Output, std::io::Error> {
+    // todo make private
+    pub fn get_ytdl_formats(url: &str) -> Result<Output, std::io::Error> {
         let sp = Spinner::new(Spinners::Dots10, "Fetching available formats...", Magenta);
 
         // Fetch all available formats for the playlist
         let mut command = Command::new("youtube-dl");
         command.arg("-F");
+        // Continue even if you get errors
+        command.arg("-i");
         command.arg(url);
         command.stdout(Stdio::piped());
         let output = command.execute_output();
@@ -145,8 +150,9 @@ mod format {
         output
     }
 
+    //todo make pub(super)
     /// Returns a Vec with every video's format information
-    pub(super) fn fetch_formats(output: String) -> Result<Vec<VideoSpecs>, std::io::Error> {
+    pub fn fetch_formats(output: String) -> Result<Vec<VideoSpecs>, std::io::Error> {
         // A lost of every video in the playlist's available formats
         let mut all_videos: Vec<VideoSpecs> = Vec::new();
 

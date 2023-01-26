@@ -1,7 +1,8 @@
 use blob_dl::parser;
-use blob_dl::assembling::youtube::yt_playlist::wizard::assemble_data;
+use blob_dl::assembling::youtube::yt_playlist::wizard;
+use std::error::Error;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     // yt_playlist =  https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX
     // yt_video    =  https://www.youtube.com/watch?v=ishbTyLs6ps&list=PLGup6kBfcU7Le5laEaCLgTKtlDcxMqGxZ&index=106&shuffle=2655
     // sp_track    =  https://open.spotify.com/track/7sgNkxl87zjuZlDgSFu6ax?si=pdQk2GT2Ra-KV0A2d3615w&utm_source=copy-link
@@ -16,19 +17,19 @@ fn main() {
     // Only run this function after errors are handled
     //blob_dl::run(config);
 
-    // // Processed command line arguments live here
+    // Processed command line arguments live here
     let config = parser::parse_config();
 
-    let url = "https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX".to_string();
+    let url = "https://youtube.com/playlist?list=PL0VY8z2vWH4maAvEAAZnhxEfyLwBary_z".to_string();
 
-    let output = assemble_data(&url);
+    let ytdl_formats = wizard::format::get_ytdl_formats(&url)?;
+    let output = wizard::format::fetch_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
 
     println!("Got {:#?}", output);
-    // dispatch(&config);
 
-    todo!("Write unit tests");
+    // without -i got 8 videos
 
-    //println!("{:?}", config);
+    Ok(())
 
     //todo!("See .error() in Clap for neat error messages!");
 }
