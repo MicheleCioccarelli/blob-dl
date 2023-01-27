@@ -1,6 +1,7 @@
 use blob_dl::parser;
 use blob_dl::assembling::youtube::yt_playlist::wizard;
 use std::error::Error;
+use blob_dl::dispatcher::dispatch;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // yt_playlist =  https://www.youtube.com/playlist?list=PLxKHVMqMZqUTIQiG1xfD3yc6PJiUmdAqX
@@ -17,17 +18,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Only run this function after errors are handled
     //blob_dl::run(config);
 
-    // Processed command line arguments live here
+
+    // Processed command line arguments (for now just the playlist url) live here
     let config = parser::parse_config();
 
-    let url = "https://youtube.com/playlist?list=PL0VY8z2vWH4maAvEAAZnhxEfyLwBary_z".to_string();
-
-    let ytdl_formats = wizard::format::get_ytdl_formats(&url)?;
-    let output = wizard::format::fetch_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
-
-    println!("Got {:#?}", output);
-
-    // without -i got 8 videos
+    // Ask for more input, Generate a command, Execute ytdl
+    dispatch(&config);
 
     Ok(())
 

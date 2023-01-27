@@ -1,2 +1,2 @@
-pub(super) mod config;
-pub(super) mod wizard;
+pub mod wizard;
+pub mod config;

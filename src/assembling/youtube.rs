@@ -1,6 +1,5 @@
-// todo make this private
 pub mod yt_playlist;
-mod yt_video;
+pub mod yt_video;
 
 // Structs and enums used in both child modules
 

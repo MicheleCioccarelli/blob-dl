@@ -5,11 +5,15 @@ use super::super::*;
 use super::config;
 use crate::assembling;
 
-// todo make this pub(crate)
-/// Returns a ConfigYtPlaylist object with all the necessary data
-/// to start downloading a youtube playlist
+/// This is a wizard for downloading a youtube playlist
 ///
-/// Takes in the command line arguments list
+/// It asks for:
+/// - Video or Audio
+/// - Quality/Format
+/// - Output path
+/// - Index inclusion
+///
+/// Returns a fully configured YtPlaylistConfig, build_command() can be called
 pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::Error> {
     let term = Term::buffered_stderr();
 
