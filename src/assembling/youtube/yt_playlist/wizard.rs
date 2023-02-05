@@ -20,7 +20,7 @@ pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::
     // Whether the user wants to download video files or audio-only
     let media_selected = get_media_selection(&term)?;
 
-    let chosen_quality = format::get_format(&term, url, &media_selected)?;
+    let chosen_format = format::get_format(&term, url, &media_selected)?;
 
     let output_path = assembling::get_output_path(&term)?;
 
@@ -30,45 +30,19 @@ pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::
         url,
         output_path,
         include_indexes,
-        chosen_quality,
+        chosen_format,
         media_selected,
     ))
 }
 
-/// Asks the user whether they want to download video files or audio-only
-fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
-    let download_formats = &[
-        "Video",
-        "Audio-only",
-    ];
-
-    // Ask the user which format they want the downloaded files to be in
-    let media_selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Do you want to download video files or audio-only?")
-        .default(0)
-        .items(download_formats)
-        .interact_on(term)?;
-
-    match media_selection {
-        0 => Ok(MediaSelection::Video),
-        1 => Ok(MediaSelection::Audio),
-        _ => panic!("Error getting media selection")
-    }
-}
 
 // todo make private
 pub
 mod format {
     use super::*;
-    // Doodles to entertain the user while file formats are being fetched
-    use spinoff::{Spinner, Spinners};
-    use std::process::{Command, Output, Stdio};
-    // Running youtube-dl -F <...>
-    use execute::Execute;
     // Math library for finding the intersection of all available format ids
     use sdset::multi::OpBuilder;
     use sdset::{SetOperation, Set, SetBuf};
-    use spinoff::Color::Magenta;
 
     /// Asks the user to choose a download format and quality
     ///
@@ -136,58 +110,6 @@ mod format {
             1 => Ok(VideoQualityAndFormatPreferences::WorstQuality),
             _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2]))
         }
-    }
-
-    // todo make private
-    pub fn get_ytdl_formats(url: &str) -> Result<Output, std::io::Error> {
-        let sp = Spinner::new(Spinners::Dots10, "Fetching available formats...", Magenta);
-
-        // Fetch all available formats for the playlist
-        let mut command = Command::new("youtube-dl");
-        command.arg("-F");
-        // Continue even if you get errors
-        command.arg("-i");
-        command.arg(url);
-        command.stdout(Stdio::piped());
-        let output = command.execute_output();
-        sp.stop();
-        output
-    }
-
-    //todo make pub(super)
-    /// Returns a Vec with every video's format information
-    pub fn fetch_formats(output: String) -> Result<Vec<VideoSpecs>, std::io::Error> {
-        // A lost of every video in the playlist's available formats
-        let mut all_videos: Vec<VideoSpecs> = Vec::new();
-
-        for paragraph in output
-            .split("[download] Downloading video") {
-            // Create a new video on every iteration because pushing on a Vec requires moving
-            let mut video = VideoSpecs::new();
-
-            // The first line is discarded, it tells information about the index of the current video in the playlist
-            for line in paragraph.lines().skip(1) {
-                // Ignore all irrelevant lines (they violate VideoFormat::from_command()'s contract
-                // Each line which doesn't start with a code has to be ignored
-                if !line.chars().next().unwrap().is_numeric() ||
-                    line.contains("video only") {
-                    continue;
-                };
-
-                // The line is about a video or audio-only format or is a youtube-dl error
-                video.add_format(VideoFormat::from_command(line));
-            }
-
-            // Ignore some quirks of string splitting
-            if video.is_empty() {
-                continue;
-            }
-
-            // Add the current video to the "playlist"
-            all_videos.push(video);
-        };
-
-        Ok(all_videos)
     }
 }
 

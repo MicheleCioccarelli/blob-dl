@@ -1,7 +1,83 @@
 pub mod yt_playlist;
 pub mod yt_video;
 
-// Structs and enums used in both child modules
+use dialoguer::console::Term;
+use dialoguer::{theme::ColorfulTheme, Select};
+/// Asks the user whether they want to download video files or audio-only
+fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
+    let download_formats = &[
+        "Video",
+        "Audio-only",
+    ];
+
+    // Ask the user which format they want the downloaded files to be in
+    let media_selection = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Do you want to download video files or audio-only?")
+        .default(0)
+        .items(download_formats)
+        .interact_on(term)?;
+
+    match media_selection {
+        0 => Ok(MediaSelection::Video),
+        1 => Ok(MediaSelection::Audio),
+        _ => panic!("Error getting media selection")
+    }
+}
+
+use spinoff::{Spinner, Spinners};
+use std::process::{Command, Output, Stdio};
+// Running youtube-dl -F <...>
+use execute::Execute;
+/// Returns th output of <youtube-dl -F url>
+fn get_ytdl_formats(url: &str) -> Result<Output, std::io::Error> {
+    let sp = Spinner::new(Spinners::Dots10, "Fetching available formats...", spinoff::Color::Cyan);
+
+    // Fetch all available formats for the playlist
+    let mut command = Command::new("youtube-dl");
+    command.arg("-F");
+    // Continue even if you get errors
+    command.arg("-i");
+    command.arg(url);
+    command.stdout(Stdio::piped());
+    let output = command.execute_output();
+    sp.stop();
+    output
+}
+
+/// Returns a Vec with every video's format information
+pub(super) fn fetch_formats(ytdl_output: String) -> Result<Vec<VideoSpecs>, std::io::Error> {
+    // A lost of every video in the playlist's available formats
+    let mut all_videos: Vec<VideoSpecs> = Vec::new();
+
+    for paragraph in ytdl_output
+        .split("[download] Downloading video") {
+        // Create a new video on every iteration because pushing on a Vec requires moving
+        let mut video = VideoSpecs::new();
+
+        // The first line is discarded, it tells information about the index of the current video in the playlist
+        for line in paragraph.lines().skip(1) {
+            // Ignore all irrelevant lines (they violate VideoFormat::from_command()'s contract
+            // Each line which doesn't start with a code has to be ignored
+            if !line.chars().next().unwrap().is_numeric() ||
+                line.contains("video only") {
+                continue;
+            };
+
+            // The line is about a video or audio-only format or is a youtube-dl error
+            video.add_format(VideoFormat::from_command(line));
+        }
+
+        // Ignore some quirks of string splitting
+        if video.is_empty() {
+            continue;
+        }
+
+        // Add the current video to the "playlist"
+        all_videos.push(video);
+    };
+
+    Ok(all_videos)
+}
 
 /// Whether the user wants to download video files or audio-only
 #[derive(Debug, Eq, PartialEq)]

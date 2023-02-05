@@ -1,6 +1,7 @@
 use url::{Url};
 
 /// All of the supported sources
+#[derive(Debug)]
 pub enum DownloadOption {
     YtVideo,
     YtPlaylist,

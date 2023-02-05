@@ -21,7 +21,6 @@ pub(crate) fn generate_command(url: &String, download_option: &analyzer::Downloa
     }
 }
 
-
 /// Asks for an directory to store downloaded file(s) in
 ///
 /// The current directory can be selected or one can be typed in

@@ -22,10 +22,10 @@ impl<'a> YtPlaylistConfig<'a> {
         url: &String,
         output_path: String,
         include_indexes: bool,
-        chosen_quality: VideoQualityAndFormatPreferences,
+        chosen_format: VideoQualityAndFormatPreferences,
         media_selected: MediaSelection,
     ) -> YtPlaylistConfig {
-        YtPlaylistConfig { url, output_path, include_indexes, chosen_format: chosen_quality, media_selected }
+        YtPlaylistConfig { url, output_path, include_indexes, chosen_format, media_selected }
     }
 
     /// Builds a yt-dl command with the needed specifications (downloads a playlist)
@@ -53,8 +53,6 @@ impl<'a> YtPlaylistConfig<'a> {
 
                 // Add the video's title to the file name
                 path_and_scheme.push_str("%(title)s");
-                // Add the correct file extension
-                path_and_scheme.push_str(".%(ext)s");
                 path_and_scheme
             });
 
