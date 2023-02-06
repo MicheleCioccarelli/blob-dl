@@ -1,6 +1,6 @@
 use blob_dl::parser;
-use blob_dl::assembling::youtube::yt_playlist::wizard;
 use std::error::Error;
+use url::{Url};
 use blob_dl::dispatcher::dispatch;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -18,6 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Only run this function after errors are handled
     //blob_dl::run(config);
 
+    //let url = Url::parse("https://www.youtube.com/watch?v=u3O9tzqh8Fg&list=PLdDckWvN8lvDYx5kN90JXluqyuoWAApsS&index=3").ok();
 
     // Processed command line arguments (for now just the playlist url) live here
     let config = parser::parse_config();

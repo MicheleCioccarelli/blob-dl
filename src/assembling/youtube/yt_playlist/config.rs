@@ -35,6 +35,9 @@ impl<'a> YtPlaylistConfig<'a> {
         // Continue even when errors are encountered
         command.arg("-i");
 
+        // If the url refers to a video in a playlist, download the whole playlist
+        command.arg("--yes-playlist");
+
         // Setup output directory and naming scheme
         command.arg("-o");
         command.arg(

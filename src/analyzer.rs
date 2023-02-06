@@ -1,4 +1,6 @@
 use url::{Url};
+use dialoguer::console::Term;
+use dialoguer::{theme::ColorfulTheme, Select};
 
 /// All of the supported sources
 #[derive(Debug)]
@@ -46,6 +48,23 @@ pub fn analyze_url(command_line_url: &str) -> Option<DownloadOption> {
 
 /// Given a youtube url determines whether it refers to a video/playlist/something unsupported
 fn inspect_yt_url(yt_url: Url) -> Option<DownloadOption> {
+    // todo test this feature
+    if yt_url.query()?.contains("list") && yt_url.query()?.contains("index") {
+        let term = Term::buffered_stderr();
+
+        // The url refers to a video in a playlist, ask the user which one they want to download
+        let user_selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("The url refers to a video in a playlist, which do you want to download?")
+            .default(0)
+            .items(&["Only the video", "The whole playlist"])
+            .interact_on(&term).unwrap(); // todo fix this unwrap
+
+        return match user_selection {
+            0 => Some(DownloadOption::YtVideo),
+            _ => Some(DownloadOption::YtPlaylist),
+        }
+    }
+
     if yt_url.path().contains("playlist") {
         return Some(DownloadOption::YtPlaylist);
     }
