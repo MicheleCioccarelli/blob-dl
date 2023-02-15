@@ -26,8 +26,8 @@ impl<'a> YtVideoConfig<'a> {
         YtVideoConfig { url, chosen_format, output_path, media_selected}
     }
     /// Builds a yt-dl command with the needed specifications
-    pub(crate) fn build_command(&self) -> Command {
-        let mut command = Command::new("youtube-dl");
+    pub(crate) fn build_command(&self) -> process::Command {
+        let mut command = process::Command::new("youtube-dl");
 
         // Setup output directory and naming scheme
         command.arg("-o");

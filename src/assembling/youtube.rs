@@ -24,21 +24,23 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
     }
 }
 
-use spinoff::{Spinner, Spinners};
-use std::process::{Command, Output, Stdio};
+use spinoff;
+use std::process;
 // Running youtube-dl -F <...>
 use execute::Execute;
+use crate::DEBUG;
+
 /// Returns th output of <youtube-dl -F url>
-fn get_ytdl_formats(url: &str) -> Result<Output, std::io::Error> {
-    let sp = Spinner::new(Spinners::Dots10, "Fetching available formats...", spinoff::Color::Cyan);
+fn get_ytdl_formats(url: &str) -> Result<process::Output, std::io::Error> {
+    let sp = spinoff::Spinner::new(spinoff::Spinners::Dots10, "Fetching available formats...", spinoff::Color::Cyan);
 
     // Fetch all available formats for the playlist
-    let mut command = Command::new("youtube-dl");
+    let mut command = process::Command::new("youtube-dl");
     command.arg("-F");
     // Continue even if you get errors
     command.arg("-i");
     command.arg(url);
-    command.stdout(Stdio::piped());
+    command.stdout(process::Stdio::piped());
     let output = command.execute_output();
     sp.stop();
     output
@@ -46,6 +48,7 @@ fn get_ytdl_formats(url: &str) -> Result<Output, std::io::Error> {
 
 /// Returns a Vec with every video's format information
 pub(super) fn fetch_formats(ytdl_output: String) -> Result<Vec<VideoSpecs>, std::io::Error> {
+    //todo videos which require 18 years to see make ugly errors pop up
     // A lost of every video in the playlist's available formats
     let mut all_videos: Vec<VideoSpecs> = Vec::new();
 
@@ -186,7 +189,11 @@ impl VideoFormat {
     /// Returns a String containing all format information which can be displayed to someone picking formats
     pub(crate) fn to_frontend(&self) -> String {
         // todo get a better name
-        format!("{}-{} (size: {}) [DEBUG ID: {}]", self.file_extension, self.resolution, self.size, self.code)
+        if DEBUG {
+            format!("{}-{} (size: {}) [DEBUG ID: {}]", self.file_extension, self.resolution, self.size, self.code)
+        } else {
+            format!("{}-{} (size: {})", self.file_extension, self.resolution, self.size)
+        }
     }
 }
 

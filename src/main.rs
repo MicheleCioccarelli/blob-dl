@@ -1,6 +1,5 @@
 use blob_dl::parser;
 use std::error::Error;
-use url::{Url};
 use blob_dl::dispatcher::dispatch;
 
 fn main() -> Result<(), Box<dyn Error>> {

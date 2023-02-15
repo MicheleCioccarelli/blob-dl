@@ -1,6 +1,5 @@
 use dialoguer::console::Term;
-use dialoguer::{theme::ColorfulTheme, Input, Select};
-use super::config;
+use dialoguer::{theme::ColorfulTheme, Select};
 use super::super::*;
 use crate::assembling;
 use crate::assembling::youtube::yt_video::config::YtVideoConfig;

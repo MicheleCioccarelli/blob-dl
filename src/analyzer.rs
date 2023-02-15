@@ -49,7 +49,7 @@ pub fn analyze_url(command_line_url: &str) -> Option<DownloadOption> {
 /// Given a youtube url determines whether it refers to a video/playlist/something unsupported
 fn inspect_yt_url(yt_url: Url) -> Option<DownloadOption> {
     // todo test this feature
-    if yt_url.query()?.contains("list") && yt_url.query()?.contains("index") {
+    if yt_url.query()?.contains("list") || yt_url.query()?.contains("index") {
         let term = Term::buffered_stderr();
 
         // The url refers to a video in a playlist, ask the user which one they want to download

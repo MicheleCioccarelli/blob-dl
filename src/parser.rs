@@ -2,7 +2,7 @@ use clap::{Arg, Command, ArgMatches};
 
 pub fn parse_config() -> CliConfig {
     let matches = Command::new("blob-dl")
-        .version("0.1")
+        .version("0.2")
         .author("cioccarellimi@gmail.com")
         .about("A very convenient wrapper")
         .long_about("Long about")
