@@ -35,9 +35,6 @@ pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::
     ))
 }
 
-
-// todo make private
-pub
 mod format {
     use super::*;
     // Math library for finding the intersection of all available format ids
@@ -47,14 +44,11 @@ mod format {
     /// Asks the user to choose a download format and quality
     ///
     /// The chosen format will be applied to the entire playlist
-    // todo change this visibility to pub(super)
-    pub fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
+    pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
         -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
-        // To download multiple formats -f 22/17/18 chooses the one which is available and most to the left
-
-        let ytdl_formats = get_ytdl_formats(url)?;
-        let mut all_available_formats = fetch_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
+        let ytdl_formats = get_ytdlp_formats(url)?;
+        let mut all_available_formats = parse_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
 
         // Every set is the ids available for a single video
         let mut all_sets: Vec<&Set<u32>> = vec![];

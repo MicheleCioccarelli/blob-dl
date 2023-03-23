@@ -74,6 +74,7 @@ impl<'a> YtVideoConfig<'a> {
                         }
                     });
             },
+            _ => panic!("Not yet implemented"),
         };
 
         // Add the playlist's url

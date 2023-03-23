@@ -31,10 +31,10 @@ fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
     -> Result<VideoQualityAndFormatPreferences, std::io::Error>
 {
     // Get a list of all the formats available for this video
-    let ytdl_formats = get_ytdl_formats(url)?;
+    let ytdl_formats = get_ytdlp_formats(url)?;
     // todo this expect
     // All formats available for this video in a Vec
-    let available_formats = fetch_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
+    let available_formats = parse_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
 
     // A list of all the format options that can be picked
     let mut format_options = vec![
