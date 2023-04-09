@@ -26,15 +26,18 @@ pub(crate) fn assemble_data(url: &String) -> Result<YtVideoConfig, std::io::Erro
     ))
 }
 
-/// Asks the user to choose a download format and quality
+/// Asks the user to choose a download format and quality between the ones
+/// available for the current video.
+///
+/// The options are filtered between video, audio-only and video-only
 fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
     -> Result<VideoQualityAndFormatPreferences, std::io::Error>
 {
-    // Get a list of all the formats available for this video
+    // Get a JSON dump of all the available formats for the current url
     let ytdl_formats = get_ytdlp_formats(url)?;
     // todo this expect
-    // All formats available for this video in a Vec
-    let available_formats = parse_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
+    // Serialize the JSON which contains the format information for the current video
+    let serialized_formats = serialize_formats(std::str::from_utf8(&ytdl_formats.stdout[..]).expect("Error managing JSON formats"))?;
 
     // A list of all the format options that can be picked
     let mut format_options = vec![
@@ -45,24 +48,24 @@ fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
     // Ids which the user can pick according to the current media selection
     let mut correct_ids = vec![];
 
-    // If there were some formats available, analyze them
-    if let Some(first_video_formats) = available_formats.first() {
-        for format in first_video_formats.available_formats() {
-            // Skip audio-only files if the user wants full video
-            if *media_selected == MediaSelection::Video && format.resolution == "audio" {
-                continue;
-            }
+    // Choose which formats to show to the user
+    for format in serialized_formats {
+        // Skip audio-only files if the user wants full video
+        if *media_selected == MediaSelection::Video && format.resolution == "audio only" {
+            continue;
+        }
 
-            // Skip video files if the user wants audio-only
-            if *media_selected == MediaSelection::Audio && format.resolution != "audio" {
-                continue;
-            }
+        // Skip video files if the user wants audio-only
+        if *media_selected == MediaSelection::Audio && format.resolution != "audio only" {
+            continue;
+        }
 
-            // Add to the list of available formats the current one formatted in a nice way
-            format_options.push(format.to_frontend());
-            correct_ids.push(format.code);
-            }
-    }
+        //todo add filtering for video-only formats
+
+        // Add to the list of available formats the current one formatted in a nice way
+        format_options.push(format.to_frontend());
+        correct_ids.push(format.code);
+        }
 
     let user_selection = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Which quality do you want to apply to all videos?")

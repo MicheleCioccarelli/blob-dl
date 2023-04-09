@@ -26,7 +26,6 @@ dependencies = [
  "clap",
  "dialoguer",
  "execute",
- "sdset",
  "serde",
  "serde_json",
  "spinoff",
@@ -372,12 +371,6 @@ name = "ryu"
 version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041"
-
-[[package]]
-name = "sdset"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbb21fe0588557792176c89bc7b943027b14f346d03c6be6a199c2860277d93a"
 
 [[package]]
 name = "serde"

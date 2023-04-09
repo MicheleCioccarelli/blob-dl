@@ -3,6 +3,24 @@ pub mod yt_video;
 
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
+use serde::{Deserialize, Serialize};
+use serde_json;
+
+/// Returns an intersection Vec
+fn intersection<'a, T: Eq> (vec1: &'a Vec<T>, vec2: &'a Vec<T>) -> Vec<&'a T> {
+    let mut intersections = vec![];
+
+    for element_1 in vec1.iter() {
+        for element_2 in vec2.iter() {
+            if element_1 == element_2 {
+                // Intersection element found!
+                intersections.push(element_1);
+            }
+        }
+    }
+
+    intersections
+}
 
 /// Asks the user whether they want to download video files or audio-only
 fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
@@ -31,7 +49,7 @@ use std::process;
 use execute::Execute;
 use crate::DEBUG;
 
-/// Returns the output of <yt-dlp -j url>
+/// Returns the output of <yt-dlp -j url>: a JSON dump of all the available format information for a video
 fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     // Neat animation to entertain the user while the information is being downloaded
     let sp = spinoff::Spinner::new(spinoff::Spinners::Dots10, "Fetching available formats...", spinoff::Color::Cyan);
@@ -49,15 +67,13 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     output
 }
 
-/// Returns a Vec with every video's format information. json_dump should be the output of `yt-dlp -j <url>`
-pub(super) fn parse_formats(json_dump: &str) -> Result<VideoSpecs> {
-    //todo videos which require 18 years to see make ugly errors pop up
-    // A lost of every video in the playlist's available formats
-    let mut all_formats: Vec<VideoFormat> = Vec::new();
-
+/// Serializes the information about the formats available for 1 video
+fn serialize_formats(json_dump: &str) -> serde_json::Result<Vec<VideoFormat>> {
+    // todo videos which require 18 years to see make ugly errors pop up
     // todo test if this works
-    Ok(serde_json::from_str::<VideoSpecs>(json_dump)?)
+    Ok(serde_json::from_str(json_dump)?)
 }
+
 
 /// Whether the user wants to download video files or audio-only
 #[derive(Debug, Eq, PartialEq)]
@@ -66,9 +82,6 @@ pub(crate) enum MediaSelection {
     VideoOnly,
     Audio,
 }
-
-use serde::{Deserialize, Serialize};
-use serde_json::Result;
 
 /// All the information about a particular video format
 #[derive(Deserialize, Serialize, Debug, PartialOrd, PartialEq)]
@@ -87,7 +100,7 @@ pub(crate) struct VideoFormat {
 }
 
 /// All of the formats a particular video can be downloaded in
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct VideoSpecs {
     formats: Vec<VideoFormat>,
     //available_codes: Vec<u32>,
@@ -99,6 +112,7 @@ impl VideoSpecs {
             //available_codes: vec![],
         }
     }
+    /*
     /// Updates the struct's internal list of ids and returns a ref to it
     ///
     /// It also sorts the list of ids
@@ -115,13 +129,12 @@ impl VideoSpecs {
     }
     pub(crate) fn available_formats(&self) -> &Vec<VideoFormat>{
         &self.available_formats
-    }
+    }*/
 }
 
-// todo make pub(crate)
 #[derive(Debug)]
 /// What quality and format the user wants a specific video to be downloaded in
-pub enum VideoQualityAndFormatPreferences {
+pub(crate) enum VideoQualityAndFormatPreferences {
     // Code of the selected format
     UniqueFormat(u32),
     BestQuality,

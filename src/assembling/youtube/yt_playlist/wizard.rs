@@ -48,7 +48,7 @@ mod format {
         -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
         let ytdl_formats = get_ytdlp_formats(url)?;
-        let mut all_available_formats = parse_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
+        let mut all_available_formats = serialize_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
 
         // Every set is the ids available for a single video
         let mut all_sets: Vec<&Set<u32>> = vec![];
