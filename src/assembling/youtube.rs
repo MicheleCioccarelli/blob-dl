@@ -5,22 +5,7 @@ use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 use serde::{Deserialize, Serialize};
 use serde_json;
-
-/// Returns an intersection Vec
-fn intersection<'a, T: Eq> (vec1: &'a Vec<T>, vec2: &'a Vec<T>) -> Vec<&'a T> {
-    let mut intersections = vec![];
-
-    for element_1 in vec1.iter() {
-        for element_2 in vec2.iter() {
-            if element_1 == element_2 {
-                // Intersection element found!
-                intersections.push(element_1);
-            }
-        }
-    }
-
-    intersections
-}
+use std::fmt;
 
 /// Asks the user whether they want to download video files or audio-only
 fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
@@ -47,7 +32,6 @@ use spinoff;
 use std::process;
 // Running yt-dlp -j <...>
 use execute::Execute;
-use crate::DEBUG;
 
 /// Returns the output of <yt-dlp -j url>: a JSON dump of all the available format information for a video
 fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
@@ -64,14 +48,16 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     command.stdout(process::Stdio::piped());
     let output = command.execute_output();
     sp.stop();
+
     output
 }
 
+
 /// Serializes the information about the formats available for 1 video
-fn serialize_formats(json_dump: &str) -> serde_json::Result<Vec<VideoFormat>> {
+fn serialize_formats(json_dump: &str) -> serde_json::Result<VideoSpecs> {
     // todo videos which require 18 years to see make ugly errors pop up
     // todo test if this works
-    Ok(serde_json::from_str(json_dump)?)
+    serde_json::from_str(json_dump)
 }
 
 
@@ -95,48 +81,64 @@ pub(crate) struct VideoFormat {
     audio_channels: Option<u32>,
     // Video resolution, is "audio only" for audio-only formats
     resolution: String,
-    // Measured in MiB. Unavailable on sb* formats
-    filesize: Option<u32>,
+    // Measured in bytes. Unavailable on sb* formats
+    filesize: Option<f32>,
 }
 
-/// All of the formats a particular video can be downloaded in
-#[derive(Deserialize, Serialize, Debug)]
-pub struct VideoSpecs {
-    formats: Vec<VideoFormat>,
-    //available_codes: Vec<u32>,
-}
-impl VideoSpecs {
-    pub(crate) fn new() -> VideoSpecs {
-        VideoSpecs {
-            formats: vec![],
-            //available_codes: vec![],
+impl fmt::Display for VideoFormat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(filesize) = self.filesize {
+            let filesize_section = format!(" filesize: {:.2}MB ", filesize * 0.000001);
+            if let Some(fps) = self.fps {
+                // The format is either video or video-only
+                if let Some(audio_channels) = self.audio_channels {
+                    // Full video
+                    #[cfg(debug_assertions)]
+                    return {
+                        write!(f, "[[DEBUG code : {}]] {:<6} {:<13} |{:<23}| {} audio channel(s)", self.format_id, self.ext, self.resolution, filesize_section, audio_channels)
+                    };
+                    #[cfg(not(debug_assertions))]
+                    write!(f, "{:<6} {:<13} |{:<23}| {} audio channel(s)", self.ext, self.resolution, filesize_section, audio_channels)
+                } else {
+                    // Video only
+                    #[cfg(debug_assertions)]
+                    return {
+                        write!(f, "[[DEBUG code : {:<13}]] {:<6} {:<13} |{:<23}| video only", self.format_id, self.ext, self.resolution, filesize_section)
+                    };
+                    #[cfg(not(debug_assertions))]
+                    write!(f, "{:<6} {:<13} |{:<23}| video only", self.ext, self.resolution, filesize_section)
+                }
+            } else {
+                // Audio only
+                #[cfg(debug_assertions)]
+                return {
+                    write!(f, "[[DEBUG code : {}]] {:<6} |{:<20}| {} audio channels", self.format_id, self.ext, filesize_section, self.audio_channels.unwrap())
+                };
+                #[cfg(not(debug_assertions))]
+                write!(f, "{:<6} |{:<20}| {} audio channels", self.ext, filesize_section, self.audio_channels.unwrap()) }
+        } else {
+            // The format is not video/audio-only/video-only
+            write!(f, "[[DEBUG]] Thumbnail format")
         }
     }
-    /*
-    /// Updates the struct's internal list of ids and returns a ref to it
-    ///
-    /// It also sorts the list of ids
-    pub(crate) fn refresh_and_sort_ids(&mut self) -> &Vec<u32> {
-        self.available_codes = self.available_formats.iter().map(|format| format.code()).collect();
-        self.available_codes.sort();
-        &self.available_codes
+}
+
+// A list of all the formats available for a single video
+#[derive(Deserialize, Serialize, Debug)]
+struct VideoSpecs {
+    formats: Vec<VideoFormat>,
+}
+impl VideoSpecs {
+    fn formats(&self) -> &Vec<VideoFormat> {
+        &self.formats
     }
-    pub(crate) fn add_format(&mut self, format: VideoFormat) {
-        self.available_formats.push(format);
-    }
-    pub(crate) fn is_empty(&self) -> bool {
-        self.available_formats.is_empty()
-    }
-    pub(crate) fn available_formats(&self) -> &Vec<VideoFormat>{
-        &self.available_formats
-    }*/
 }
 
 #[derive(Debug)]
 /// What quality and format the user wants a specific video to be downloaded in
 pub(crate) enum VideoQualityAndFormatPreferences {
     // Code of the selected format
-    UniqueFormat(u32),
+    UniqueFormat(String),
     BestQuality,
     WorstQuality,
 }

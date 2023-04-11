@@ -45,7 +45,7 @@ impl<'a> YtVideoConfig<'a> {
 
         // Makes the id live long enough to be used as an arg for command.
         // If it was fetched from the next match arm the temporary &str would not outlive command
-        let id = match self.chosen_format {
+        let id = match &self.chosen_format {
             VideoQualityAndFormatPreferences::UniqueFormat(id) => id.to_string(),
             _ => String::new(),
         };

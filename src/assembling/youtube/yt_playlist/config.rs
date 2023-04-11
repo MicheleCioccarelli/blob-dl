@@ -2,7 +2,6 @@ use super::super::*;
 
 /// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug)]
-//todo make this pub(crate)
 pub struct YtPlaylistConfig<'a> {
     /// Ref to the url stored in CliConfig
     url: &'a String,
@@ -29,8 +28,8 @@ impl<'a> YtPlaylistConfig<'a> {
     }
 
     /// Builds a yt-dl command with the needed specifications (downloads a playlist)
-    pub(crate) fn build_command(&self) -> std::process::Command {
-        let mut command = std::process::Command::new("youtube-dl");
+    pub(crate) fn build_command(&self) -> process::Command {
+        let mut command = process::Command::new("youtube-dl");
 
         // Continue even when errors are encountered
         command.arg("-i");
@@ -61,7 +60,7 @@ impl<'a> YtPlaylistConfig<'a> {
 
         // Makes the id live long enough to be used as an arg for command.
         // If it was fetched from the next match arm the temporary &str would not outlive command
-        let id = match self.chosen_format {
+        let id = match &self.chosen_format {
             VideoQualityAndFormatPreferences::UniqueFormat(id) => id.to_string(),
             _ => String::new(),
         };

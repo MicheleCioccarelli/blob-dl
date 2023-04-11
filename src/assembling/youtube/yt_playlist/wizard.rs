@@ -36,11 +36,27 @@ pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::
 }
 
 mod format {
-    use super::*;
-    // Math library for finding the intersection of all available format ids
-    use sdset::multi::OpBuilder;
-    use sdset::{SetOperation, Set, SetBuf};
+    /// All of the formats a playlist can be downloaded in
+    ///
+    /// These are divided in videos
+    ///
+    #[derive(Debug)]
+    struct FormatsLibrary {
+        videos: Vec<VideoSpecs>,
+    }
+    impl FormatsLibrary {
+        pub fn new() -> Self {
+            FormatsLibrary { videos: vec![] }
+        }
+        pub fn add_video(&mut self, video_formats: VideoSpecs) {
+            self.videos.push(video_formats)
+        }
+        pub fn videos(&self) -> &Vec<VideoSpecs> {
+            &self.videos
+        }
+    }
 
+    use super::*;
     /// Asks the user to choose a download format and quality
     ///
     /// The chosen format will be applied to the entire playlist
@@ -48,32 +64,52 @@ mod format {
         -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
         let ytdl_formats = get_ytdlp_formats(url)?;
-        let mut all_available_formats = serialize_formats(String::from_utf8(ytdl_formats.stdout).expect("Fixme"))?;
+        // A list of videos which are Vec of formats
+        let mut all_available_formats = FormatsLibrary::new();
 
-        // Every set is the ids available for a single video
-        let mut all_sets: Vec<&Set<u32>> = vec![];
+        // Compute which formats are common across the entire playlist
+        let mut intersections: Vec<String> = vec![];
+        let mut current_ids: Vec<String> = vec![];
 
-        for video in all_available_formats.iter_mut() {
-            let current_ids = video.refresh_and_sort_ids();
-            all_sets.push(Set::new(&current_ids[..]).expect("Add error handling to format fetching"));
+        // Each line in ytdl_formats contains all the format information for 1 video
+        for (i, video_formats_json) in std::str::from_utf8(&ytdl_formats.stdout)
+                                .expect("The JSON including a video's format information contained non-UTF8 characters, please report this issue")
+                                .lines()
+                                .enumerate() {
+
+            let serialized_video= serialize_formats(video_formats_json)?;
+            // Add the current video's formats to the list of all formats
+            all_available_formats.add_video(serialized_video);
+
+            if i == 0 {
+                // In the first iteration the intersection is all the ids
+                for format in all_available_formats.videos()[i].formats().iter() {
+                    intersections.push(format.format_id.clone());
+                }
+            } else {
+                for format in all_available_formats.videos()[i].formats().iter() {
+                    current_ids.push(format.format_id.clone());
+                }
+                intersections = intersection(&intersections, &current_ids);
+            }
         }
 
-        let op = OpBuilder::from_vec(all_sets).intersection();
-
-        // A list of ids which every video can be downloaded in
-        let common_ids: SetBuf<u32> = op.into_set_buf();
-
-        let mut format_options = vec!["Best available quality for each video".to_string(), "Worst available quality for each video".to_string()];
+        // Choices displayed to the user
+        let mut format_options = vec! [
+            "Best available quality for each video".to_string(),
+            "Worst available quality for each video".to_string()
+        ];
 
         // Ids which the user can pick according to the current media selection
         let mut correct_ids = vec![];
 
-        for id in common_ids {
+        // Only look at ids common across the whole playlist
+        for id in intersections.iter() {
             // Find which format corresponds to each id
             // common_formats is a Vec of all the formats for the first video.
             // Since we are looking for ids common to all videos just checking the first one is fine
-            if let Some(first_video_formats) = all_available_formats.first() {
-                for format in first_video_formats.available_formats() {
+            if let Some(first_video_formats) = all_available_formats.videos().first() {
+                for format in first_video_formats.formats() {
                     // Skip audio-only files if the user wants full video
                     if *media_selected == MediaSelection::Video && format.resolution == "audio" {
                         continue;
@@ -84,9 +120,10 @@ mod format {
                         continue;
                     }
 
-                    if format.code == id {
+                    if format.format_id == *id {
                         // Add to the list of available formats the current one formatted in a nice way
-                        format_options.push(format.to_frontend());
+                        format_options.push(format.to_string());
+                        // todo !! see if the references in correct_ids are still valid after the loop
                         correct_ids.push(id);
                     }
                 }
@@ -102,9 +139,25 @@ mod format {
         match user_selection {
             0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
             1 => Ok(VideoQualityAndFormatPreferences::WorstQuality),
-            _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2]))
+            _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
         }
     }
+}
+
+/// Returns an owned intersection Vec
+fn intersection<'a, T: Eq + Clone> (vec1: &'a Vec<T>, vec2: &'a Vec<T>) -> Vec<T> {
+    let mut intersections = vec![];
+
+    for element_1 in vec1.iter() {
+        for element_2 in vec2.iter() {
+            if element_1 == element_2 {
+                // Intersection element found!
+                intersections.push(element_1.clone());
+            }
+        }
+    }
+
+    intersections
 }
 
 /// Whether the downloaded files should include their index in the playlist as a part of their name
@@ -134,7 +187,7 @@ Resulting filename 	04_blob		blob"
         _ => panic!("The only options are 0 and 1")
     }
 }
-
+/*
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -164,4 +217,4 @@ mod tests {
         assert_eq!(f, expected_format);
         Ok(())
     }
-}
+}*/

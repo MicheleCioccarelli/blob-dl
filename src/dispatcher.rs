@@ -1,4 +1,4 @@
-use crate::{analyzer, DEBUG};
+use crate::analyzer;
 use crate::parser;
 use crate::assembling;
 use execute::Execute;
@@ -16,9 +16,8 @@ pub fn dispatch(config: &parser::CliConfig) -> Result<(), std::io::Error> {
         None => panic!("Could not understand the url"), // :/
     };
 
-    if DEBUG {
-        println!("[DEBUG ytdl command : {:?}]", command);
-    }
+    #[cfg(debug_assertions)]
+    println!("[DEBUG ytdl command : {:?}]", command);
 
     // Run the command
     // let output = command.execute_output().expect("Error executing the command");
@@ -34,9 +33,9 @@ use std::io::{BufRead, BufReader};
 fn run_and_observe(command: &mut Command) {
     // Run the command and capture its output
     let mut youtube_dl = command.stdout(Stdio::piped())
-    .stderr(Stdio::piped())
-    .spawn()
-    .expect("Failed to start youtube-dl process");
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("Failed to start youtube-dl process");
 
     let stdout = BufReader::new(youtube_dl.stdout.take().unwrap());
     let stderr = BufReader::new(youtube_dl.stderr.take().unwrap());
@@ -61,7 +60,8 @@ fn run_and_observe(command: &mut Command) {
         }
     }
 
-    if DEBUG {
+    #[cfg(debug_assertions)]
+    {
         println!("Captured output from youtube-dl: ");
         println!("{}", merged);
     }
