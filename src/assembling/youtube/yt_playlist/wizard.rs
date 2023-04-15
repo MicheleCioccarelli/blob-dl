@@ -148,12 +148,10 @@ mod format {
 fn intersection<'a, T: Eq + Clone> (vec1: &'a Vec<T>, vec2: &'a Vec<T>) -> Vec<T> {
     let mut intersections = vec![];
 
-    for element_1 in vec1.iter() {
-        for element_2 in vec2.iter() {
-            if element_1 == element_2 {
-                // Intersection element found!
-                intersections.push(element_1.clone());
-            }
+    for (element_1, element_2) in vec1.iter().zip(vec2.iter()) {
+        if element_1 == element_2 {
+            // Intersection element found!
+            intersections.push(element_1.clone());
         }
     }
 
