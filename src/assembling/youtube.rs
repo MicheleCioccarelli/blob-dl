@@ -10,8 +10,9 @@ use std::fmt;
 /// Asks the user whether they want to download video files or audio-only
 fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
     let download_formats = &[
-        "Video",
+        "Normal Video",
         "Audio-only",
+        "Video-only"
     ];
 
     // Ask the user which format they want the downloaded files to be in
@@ -23,7 +24,8 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
 
     match media_selection {
         0 => Ok(MediaSelection::Video),
-        1 => Ok(MediaSelection::Audio),
+        1 => Ok(MediaSelection::AudioOnly),
+        2 => Ok(MediaSelection::VideoOnly),
         _ => panic!("Error getting media selection")
     }
 }
@@ -66,7 +68,7 @@ fn serialize_formats(json_dump: &str) -> serde_json::Result<VideoSpecs> {
 pub(crate) enum MediaSelection {
     Video,
     VideoOnly,
-    Audio,
+    AudioOnly,
 }
 
 /// All the information about a particular video format
@@ -97,14 +99,14 @@ struct VideoFormat {
     filesize_approx: Option<u64>,
 }
 
-
+// todo caoncatenate instead of having a different string for debug and release
 impl fmt::Display for VideoFormat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(tbr) = self.tbr {
             // This isn't a picture format so unwrap() is safe
             let filesize = match self.filesize {
                 Some(f) => f,
-                None => self.filesize_approx.expect("bruh"),
+                None => self.filesize_approx.expect("Problem with filesize fetching"),
             };
 
             let filesize_section = format!(" filesize: {:.2}MB ", filesize as f32 * 0.000001);
@@ -168,5 +170,5 @@ pub(crate) enum VideoQualityAndFormatPreferences {
     // Code of the selected format
     UniqueFormat(String),
     BestQuality,
-    WorstQuality,
+    SmallestSize,
 }

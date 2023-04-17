@@ -58,22 +58,22 @@ impl<'a> YtVideoConfig<'a> {
                     {
                         match self.chosen_format {
                             VideoQualityAndFormatPreferences::BestQuality => "best",
-                            VideoQualityAndFormatPreferences::WorstQuality => "worst",
+                            VideoQualityAndFormatPreferences::SmallestSize => "worst",
                             VideoQualityAndFormatPreferences::UniqueFormat(_) => id.as_str(),
                         }
                     });
             },
 
-            MediaSelection::Audio => {
+            MediaSelection::AudioOnly => {
                 command.arg(
                     {
                         match self.chosen_format {
                             VideoQualityAndFormatPreferences::BestQuality => "bestaudio",
-                            VideoQualityAndFormatPreferences::WorstQuality => "worstaudio",
+                            VideoQualityAndFormatPreferences::SmallestSize => "worstaudio",
                             VideoQualityAndFormatPreferences::UniqueFormat(_) => id.as_str(),
                         }
                     });
-            },
+            }
             _ => panic!("Not yet implemented"),
         };
 

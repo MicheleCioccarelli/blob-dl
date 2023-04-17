@@ -27,9 +27,9 @@ impl<'a> YtPlaylistConfig<'a> {
         YtPlaylistConfig { url, output_path, include_indexes, chosen_format, media_selected }
     }
 
-    /// Builds a yt-dl command with the needed specifications (downloads a playlist)
+    /// Builds a yt-dlp command with the needed specifications (downloads a playlist)
     pub(crate) fn build_command(&self) -> process::Command {
-        let mut command = process::Command::new("youtube-dl");
+        let mut command = process::Command::new("yt-dlp");
 
         // Continue even when errors are encountered
         command.arg("-i");
@@ -38,25 +38,7 @@ impl<'a> YtPlaylistConfig<'a> {
         command.arg("--yes-playlist");
 
         // Setup output directory and naming scheme
-        command.arg("-o");
-        command.arg(
-            {
-                let mut path_and_scheme = String::new();
-
-                // Add the user's output path (empty string for current directory)
-                path_and_scheme.push_str(self.output_path.as_str());
-
-                // Create a directory named after the playlist
-                path_and_scheme.push_str("/%(playlist)s/");
-
-                if self.include_indexes {
-                    path_and_scheme.push_str("%(playlist_index)s_");
-                }
-
-                // Add the video's title to the file name
-                path_and_scheme.push_str("%(title)s");
-                path_and_scheme
-            });
+        choose_output_path(&mut command, &self);
 
         // Makes the id live long enough to be used as an arg for command.
         // If it was fetched from the next match arm the temporary &str would not outlive command
@@ -66,35 +48,84 @@ impl<'a> YtPlaylistConfig<'a> {
         };
 
         // Quality and format selection
-        command.arg("-f");
-        match self.media_selected {
-            MediaSelection::Video => {
-                command.arg(
-                    {
-                        match self.chosen_format {
-                            VideoQualityAndFormatPreferences::BestQuality => "best",
-                            VideoQualityAndFormatPreferences::WorstQuality => "worst",
-                            VideoQualityAndFormatPreferences::UniqueFormat(_) => id.as_str(),
-                        }
-                    });
-            },
-
-            MediaSelection::Audio => {
-                command.arg(
-                    {
-                        match self.chosen_format {
-                            VideoQualityAndFormatPreferences::BestQuality => "bestaudio",
-                            VideoQualityAndFormatPreferences::WorstQuality => "worstaudio",
-                            VideoQualityAndFormatPreferences::UniqueFormat(_) => id.as_str(),
-                        }
-                    });
-            },
-            _ => panic!("Not yet implemented"),
-        };
+        choose_format(&mut command, &self, id.as_str());
 
         // Add the playlist's url
         command.arg(self.url);
 
         command
     }
+}
+
+fn choose_output_path(command: &mut process::Command, config: &YtPlaylistConfig) {
+    command.arg("-o");
+    command.arg(
+        {
+            let mut path_and_scheme = String::new();
+
+            // Add the user's output path (empty string for current directory)
+            path_and_scheme.push_str(config.output_path.as_str());
+
+            // Create a directory named after the playlist
+            path_and_scheme.push_str("/%(playlist)s/");
+
+            if config.include_indexes {
+                path_and_scheme.push_str("%(playlist_index)s_");
+            }
+
+            // Add the video's title to the file name
+            path_and_scheme.push_str("%(title)s");
+            path_and_scheme
+        });
+}
+
+fn choose_format(command: &mut process::Command, config: &YtPlaylistConfig, id: &str) {
+    // command.arg("-f");
+    match config.media_selected {
+        MediaSelection::Video => {
+            match config.chosen_format {
+                VideoQualityAndFormatPreferences::BestQuality => {},
+
+                VideoQualityAndFormatPreferences::SmallestSize => {
+                    command.arg("-S").arg("+size,+br");
+                },
+
+                VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                    command.arg("-f").arg(id);
+                },
+            }
+        },
+
+        MediaSelection::AudioOnly => {
+            match config.chosen_format {
+                VideoQualityAndFormatPreferences::BestQuality => {
+                    command.arg("-f").arg("bestaudio");
+                },
+
+                VideoQualityAndFormatPreferences::SmallestSize => {
+                    command.arg("-f").arg("worstaudio");
+                },
+
+                VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                    command.arg("-f").arg(id);
+                },
+            }
+        }
+
+        MediaSelection::VideoOnly => {
+            match config.chosen_format {
+                VideoQualityAndFormatPreferences::BestQuality => {
+                    command.arg("-f").arg("bestvideo");
+                },
+
+                VideoQualityAndFormatPreferences::SmallestSize => {
+                    command.arg("-f").arg("worstvideo");
+                },
+
+                VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                    command.arg("-f").arg(id);
+                },
+            }
+        }
+    };
 }

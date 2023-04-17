@@ -38,13 +38,13 @@ fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
 
     // todo this expect
     // Serialize the JSON which contains the format information for the current video
-    let serialized_formats = serialize_formats(std::str::from_utf8(&ytdl_formats.stdout[..]).expect("Error managing JSON formats")).expect("AAAAAAAAAAA");
+    let serialized_formats = serialize_formats(std::str::from_utf8(&ytdl_formats.stdout[..]).expect("Error managing JSON formats")).expect("Problem serializing Formats JSON");
 
 
     // A list of all the format options that can be picked
     let mut format_options = vec![
         "Best available quality for each video".to_string(),
-        "Worst available quality for each video".to_string(),
+        "I want the resulting videos to have the smallest size possible".to_string(),
     ];
 
     // Ids which the user can pick according to the current media selection
@@ -52,18 +52,25 @@ fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
 
     // Choose which formats to show to the user
     for format in serialized_formats.formats() {
+        // Skip image formats
+        if format.vcodec == "none" && format.acodec == "none" {
+            continue;
+        }
+
         // Skip audio-only files if the user wants full video
         if *media_selected == MediaSelection::Video && format.resolution == "audio only" {
             continue;
         }
 
         // Skip video files if the user wants audio-only
-        if *media_selected == MediaSelection::Audio && format.resolution != "audio only" {
+        if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio only" {
             continue;
         }
 
-        //todo add filtering for video-only formats
-
+        // Skip video-only files if the user doesn't want video-only
+        if *media_selected == MediaSelection::VideoOnly && format.acodec != "none" {
+            continue;
+        }
         // Add to the list of available formats the current one formatted in a nice way
         format_options.push(format.to_string());
         // Update the list of ids which match what the user wants
@@ -78,7 +85,7 @@ fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
 
     match user_selection {
         0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
-        1 => Ok(VideoQualityAndFormatPreferences::WorstQuality),
+        1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
         _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
     }
 }

@@ -13,10 +13,7 @@ use std::env;
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> Result<std::process::Command, std::io::Error> {
     match download_option {
         analyzer::DownloadOption::YtPlaylist => Ok(youtube::yt_playlist::wizard::assemble_data(url)?.build_command()),
-        analyzer::DownloadOption::YtVideo =>    Ok(youtube::yt_video::wizard::assemble_data(url)?.build_command()),
-        //analyzer::DownloadOption::SpTrack =>    Ok(sp_track::wizard::assemble_data(url).build_command()),
-        //analyzer::DownloadOption::SpPlaylist => Ok(sp_playlist::wizard::assemble_data(url).build_command()),
-        //analyzer::DownloadOption::SpAlbum =>    Ok(sp_album::wizard::assemble_data(url).build_command()),
+        analyzer::DownloadOption::YtVideo(_)    => Ok(youtube::yt_video::wizard::assemble_data(url)?.build_command()),
         _ => panic!()
     }
 }

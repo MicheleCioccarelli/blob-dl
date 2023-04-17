@@ -15,6 +15,7 @@ use crate::assembling;
 ///
 /// Returns a fully configured YtPlaylistConfig, build_command() can be called
 pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::Error> {
+    println!("Playlist btw");
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
@@ -97,7 +98,7 @@ mod format {
         // Choices displayed to the user
         let mut format_options = vec! [
             "Best available quality for each video".to_string(),
-            "Worst available quality for each video".to_string()
+            "I want the resulting videos to have the smallest size possible".to_string()
         ];
 
         // Ids which the user can pick according to the current media selection
@@ -116,7 +117,7 @@ mod format {
                     }
 
                     // Skip video files if the user wants audio-only
-                    if *media_selected == MediaSelection::Audio && format.resolution != "audio" {
+                    if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio" {
                         continue;
                     }
 
@@ -138,7 +139,7 @@ mod format {
 
         match user_selection {
             0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
-            1 => Ok(VideoQualityAndFormatPreferences::WorstQuality),
+            1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
             _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
         }
     }
