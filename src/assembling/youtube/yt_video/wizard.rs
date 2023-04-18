@@ -8,13 +8,13 @@ use crate::assembling::youtube::yt_video::config::YtVideoConfig;
 /// to start downloading a youtube video
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String) -> Result<YtVideoConfig, std::io::Error> {
+pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> Result<YtVideoConfig, std::io::Error> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
     let media_selected = get_media_selection(&term)?;
 
-    let chosen_format = get_format(&term, url, &media_selected)?;
+    let chosen_format = get_format(&term, url, &media_selected, playlist_id)?;
 
     let output_path = assembling::get_output_path(&term)?;
 
@@ -30,16 +30,23 @@ pub(crate) fn assemble_data(url: &String) -> Result<YtVideoConfig, std::io::Erro
 /// available for the current video.
 ///
 /// The options are filtered between video, audio-only and video-only
-fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
+fn get_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
               -> Result<VideoQualityAndFormatPreferences, std::io::Error>
 {
     // Get a JSON dump of all the available formats for the current url
     let ytdl_formats = get_ytdlp_formats(url)?;
 
-    // todo this expect
     // Serialize the JSON which contains the format information for the current video
-    let serialized_formats = serialize_formats(std::str::from_utf8(&ytdl_formats.stdout[..]).expect("Error managing JSON formats")).expect("Problem serializing Formats JSON");
-
+    let serialized_formats = serialize_formats(
+        std::str::from_utf8(&ytdl_formats.stdout[..])
+        .expect("The JSON information about this video's formats contained non-UTF8 characters")
+            // If `url` refers to a playlist the JSON has multiple roots, only parse one
+            .lines()
+            // If the requested video isn't the first in a playlist, only parse its information
+            .nth(playlist_id)
+            // Unwrap is safe because playlist_id is non-0 only when there are multiple lines in the json
+            .unwrap()
+    ).expect("Problem serializing the video's formats from JSON");
 
     // A list of all the format options that can be picked
     let mut format_options = vec![
@@ -68,9 +75,15 @@ fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
         }
 
         // Skip video-only files if the user doesn't want video-only
+        if *media_selected == MediaSelection::Video && format.acodec == "none" {
+            continue;
+        }
+
+        //Skip normal video if the user wants video-only
         if *media_selected == MediaSelection::VideoOnly && format.acodec != "none" {
             continue;
         }
+
         // Add to the list of available formats the current one formatted in a nice way
         format_options.push(format.to_string());
         // Update the list of ids which match what the user wants

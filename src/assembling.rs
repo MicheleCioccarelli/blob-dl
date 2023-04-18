@@ -13,8 +13,8 @@ use std::env;
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> Result<std::process::Command, std::io::Error> {
     match download_option {
         analyzer::DownloadOption::YtPlaylist => Ok(youtube::yt_playlist::wizard::assemble_data(url)?.build_command()),
-        analyzer::DownloadOption::YtVideo(_)    => Ok(youtube::yt_video::wizard::assemble_data(url)?.build_command()),
-        _ => panic!()
+
+        analyzer::DownloadOption::YtVideo(playlist_id) => Ok(youtube::yt_video::wizard::assemble_data(url, *playlist_id)?.build_command()),
     }
 }
 

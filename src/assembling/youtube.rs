@@ -17,7 +17,7 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
 
     // Ask the user which format they want the downloaded files to be in
     let media_selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Do you want to download video files or audio-only?")
+        .with_prompt("Do you want to download video file(s) or audio-only?")
         .default(0)
         .items(download_formats)
         .interact_on(term)?;
@@ -99,54 +99,51 @@ struct VideoFormat {
     filesize_approx: Option<u64>,
 }
 
-// todo caoncatenate instead of having a different string for debug and release
 impl fmt::Display for VideoFormat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut result;
+
         if let Some(tbr) = self.tbr {
+            // Skip picture formats
+            // Add file extension
+            result = format!("{:<6} ", self.ext);
+
+            if self.resolution != "audio only" {
+                result = format!("{}| {:<13} ", result, self.resolution);
+            }
+
             // This isn't a picture format so unwrap() is safe
             let filesize = match self.filesize {
                 Some(f) => f,
                 None => self.filesize_approx.expect("Problem with filesize fetching"),
             };
+            // filesize is converted from bytes to MB
+            let filesize_section = format!("| filesize: {:<.2}MB", filesize as f32 * 0.000001);
+            result = format!("{}{:<24}", result, filesize_section);
 
-            let filesize_section = format!(" filesize: {:.2}MB ", filesize as f32 * 0.000001);
+            // If available, add audio channels
+            if let Some(ch) = self.audio_channels {
+                result = format!("{}| {} audio ch ", result, ch);
+            }
 
-            if let Some(fps) = self.fps {
-                // The format is either video or video-only
-                if let Some(audio_channels) = self.audio_channels {
-                    // Full video
-                    #[cfg(debug_assertions)]
-                    return {
-                        write!(f, "[[DEBUG code: {}]] {:<6} {:<13} |{:<23}| {} audio ch | tbr: {:<8.2} | vcodec: {:<13} | acodec: {:<13} |"
-                               , self.format_id, self.ext, self.resolution, filesize_section, audio_channels, tbr, self.vcodec, self.acodec)
-                    };
-                    #[cfg(not(debug_assertions))]
-                    write!(f, "{:<6} {:<13} |{:<23}| {} audio ch | tbr: {:<8.2} | vcodec: {:<13} | acodec: {:<13} |",
-                           self.ext, self.resolution, filesize_section, audio_channels, tbr, self.vcodec, self.acodec)
-                    } else {
-                        // Video only
-                        #[cfg(debug_assertions)]
-                        return {
-                            write!(f, "[[DEBUG code: {:<13}]] {:<6} {:<13} |{:<23}| 0 audio ch | tbr: {:<7.2} | vcodec: {:<13} | "
-                                   , self.format_id, self.ext, self.resolution, filesize_section, tbr, self.vcodec)
-                        };
-                        #[cfg(not(debug_assertions))]
-                        write!(f, "{:<6} {:<13} |{:<23}| 0 audio ch | tbr: {:<8.2} | vcodec: {:<13} |"
-                               , self.ext, self.resolution, filesize_section, tbr, self.vcodec)
-                    }
-                } else {
-                    // Audio only
-                    #[cfg(debug_assertions)]
-                    return {
-                        write!(f, "[[DEBUG code: {}]] {:<6} |{:<20}| {} audio ch | acodec: {:<9} |"
-                               , self.format_id, self.ext, filesize_section, self.audio_channels.expect("Audio channels unavailable"), self.acodec)
-                    };
-                    #[cfg(not(debug_assertions))]
-                    write!(f, "{:<6} |{:<20}| {} audio channels | acodec: {:<9} |"
-                           , self.ext, filesize_section, self.audio_channels.expect("Audio channels unavailable"), self.acodec)
-                }
-            } else {
-            // The format is not video/audio-only/video-only
+            result = format!("{}| tbr: {:<8.2} ", result, tbr);
+
+            if self.vcodec != "none" {
+                result = format!("{}| vcodec: {:<13} ", result, self.vcodec);
+            }
+            if self.acodec != "none" {
+                result = format!("{}| acodec: {:<13} ", result, self.acodec);
+            }
+
+            #[cfg(debug_assertions)]
+            return {
+                result = format!("[[DEBUG code: {:<3}]] {} ", self.format_id, result);
+                write!(f, "{}", result)
+            };
+
+            #[cfg(not(debug_assertions))]
+            write!(f, "{}", result)
+        } else {
             write!(f, "I shouldn't show up because I am a picture format")
         }
     }

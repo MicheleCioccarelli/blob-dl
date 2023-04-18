@@ -8,7 +8,7 @@ pub enum DownloadOption {
     /// If the url refers to a video in a playlist and the user only wants to download the video,
     ///
     /// YtVideo's value is the video's index in the playlist
-    YtVideo(Option<u32>),
+    YtVideo(usize),
     YtPlaylist,
 }
 
@@ -48,8 +48,6 @@ pub fn analyze_url(command_line_url: &str) -> Option<DownloadOption> {
 
 /// Given a youtube url determines whether it refers to a video/playlist/something unsupported
 fn inspect_yt_url(yt_url: Url) -> Option<DownloadOption> {
-    panic!("Finish handling parsing JSON for a video in a playlist at an index :)")
-    // todo test this feature
     if yt_url.query()?.contains("&index=") {
         let term = Term::buffered_stderr();
 
@@ -66,7 +64,7 @@ fn inspect_yt_url(yt_url: Url) -> Option<DownloadOption> {
                 // "&index="'s existence was checked in the previous if statement. 7 is the length of "&index="
                 let index = &query[query.find("&index=").unwrap() + 7 ..query.len()];
                 //let playlist_index: u32 = yt_url.query()?.chars().last().unwrap().parse().unwrap();
-                 Some(DownloadOption::YtVideo(None))
+                 Some(DownloadOption::YtVideo(index.parse().expect("This link has an unknown issue, please report it")))
                 },
             _ => Some(DownloadOption::YtPlaylist),
         }
@@ -79,7 +77,7 @@ fn inspect_yt_url(yt_url: Url) -> Option<DownloadOption> {
             yt_url.path().contains("/v/")   ||
             yt_url.path() == ""
     {
-        return Some(DownloadOption::YtVideo(None));
+        return Some(DownloadOption::YtVideo(0));
     }
     // The url doesn't refer to a youtube video/playlist (maybe a user, etc)
     println!("Youtube url not recognized as a video/playlist");
