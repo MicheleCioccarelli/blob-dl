@@ -14,7 +14,7 @@ pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> Result<YtVideoC
     // Whether the user wants to download video files or audio-only
     let media_selected = get_media_selection(&term)?;
 
-    let chosen_format = get_format(&term, url, &media_selected, playlist_id)?;
+    let chosen_format = format::get_format(&term, url, &media_selected, playlist_id)?;
 
     let output_path = assembling::get_output_path(&term)?;
 
@@ -26,79 +26,128 @@ pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> Result<YtVideoC
     ))
 }
 
+mod format {
+    use super::*;
 /// Asks the user to choose a download format and quality between the ones
 /// available for the current video.
 ///
 /// The options are filtered between video, audio-only and video-only
-fn get_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
-              -> Result<VideoQualityAndFormatPreferences, std::io::Error>
-{
-    // Get a JSON dump of all the available formats for the current url
-    let ytdl_formats = get_ytdlp_formats(url)?;
+    pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
+                  -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+    {
+        // A list of all the format options that can be picked
+        let mut format_options = vec![
+            "Best available quality",
+            "I want the smallest size possible",
+            "I want to see all the available formats",
+            "I want to convert the downloaded files to a specific container (requires ffmpeg)",
+        ];
 
-    // Serialize the JSON which contains the format information for the current video
-    let serialized_formats = serialize_formats(
-        std::str::from_utf8(&ytdl_formats.stdout[..])
-        .expect("The JSON information about this video's formats contained non-UTF8 characters")
-            // If `url` refers to a playlist the JSON has multiple roots, only parse one
-            .lines()
-            // If the requested video isn't the first in a playlist, only parse its information
-            .nth(playlist_id)
-            // Unwrap is safe because playlist_id is non-0 only when there are multiple lines in the json
-            .unwrap()
-    ).expect("Problem serializing the video's formats from JSON");
+        let user_selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Which format do you want to apply to the video?")
+            .default(0)
+            .items(&format_options)
+            .interact_on(term)?;
 
-    // A list of all the format options that can be picked
-    let mut format_options = vec![
-        "Best available quality for each video".to_string(),
-        "I want the resulting videos to have the smallest size possible".to_string(),
-    ];
-
-    // Ids which the user can pick according to the current media selection
-    let mut correct_ids = vec![];
-
-    // Choose which formats to show to the user
-    for format in serialized_formats.formats() {
-        // Skip image formats
-        if format.vcodec == "none" && format.acodec == "none" {
-            continue;
+        match user_selection {
+            0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
+            1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
+            2 => get_specific_format(term, url, media_selected, playlist_id),
+            _ => convert_to_format(term, media_selected),
         }
-
-        // Skip audio-only files if the user wants full video
-        if *media_selected == MediaSelection::Video && format.resolution == "audio only" {
-            continue;
-        }
-
-        // Skip video files if the user wants audio-only
-        if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio only" {
-            continue;
-        }
-
-        // Skip video-only files if the user doesn't want video-only
-        if *media_selected == MediaSelection::Video && format.acodec == "none" {
-            continue;
-        }
-
-        //Skip normal video if the user wants video-only
-        if *media_selected == MediaSelection::VideoOnly && format.acodec != "none" {
-            continue;
-        }
-
-        // Add to the list of available formats the current one formatted in a nice way
-        format_options.push(format.to_string());
-        // Update the list of ids which match what the user wants
-        correct_ids.push(format.format_id.clone());
     }
 
-    let user_selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Which quality do you want to apply to all videos?")
-        .default(0)
-        .items(&format_options)
-        .interact_on(term)?;
+    // Get a list of all available formats and ask the user to choose one
+    fn get_specific_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
+        -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+    {
+        let serialized_formats = {
+            // Get a JSON dump of all the available formats for the current url
+            let ytdl_formats = get_ytdlp_formats(url)?;
 
-    match user_selection {
-        0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
-        1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
-        _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
+            // Serialize the JSON which contains the format information for the current video
+            serialize_formats(
+                std::str::from_utf8(&ytdl_formats.stdout[..])
+                    .expect("The JSON information about this video's formats contained non-UTF8 characters")
+                    // If `url` refers to a playlist the JSON has multiple roots, only parse one
+                    .lines()
+                    // If the requested video isn't the first in a playlist, only parse its information
+                    .nth(playlist_id)
+                    // Unwrap is safe because playlist_id is non-0 only when there are multiple lines in the json
+                    .unwrap()
+            ).expect("Problem serializing the video's formats from JSON")
+        };
+
+        // Ids which the user can pick according to the current media selection
+        let mut correct_ids = vec![];
+        // Every format which conforms to media_selected will be pushed here
+        let mut format_options = vec![];
+
+        // Choose which formats to show to the user
+        for format in serialized_formats.formats() {
+            // Skip image formats
+            if format.vcodec == "none" && format.acodec == "none" {
+                continue;
+            }
+
+            // Skip audio-only files if the user wants full video
+            if *media_selected == MediaSelection::Video && format.resolution == "audio only" {
+                continue;
+            }
+
+            // Skip video files if the user wants audio-only
+            if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio only" {
+                continue;
+            }
+
+            // Skip video-only files if the user doesn't want video-only
+            if *media_selected == MediaSelection::Video && format.acodec == "none" {
+                continue;
+            }
+
+            // Skip normal video if the user wants video-only
+            if *media_selected == MediaSelection::VideoOnly && format.acodec != "none" {
+                continue;
+            }
+
+            // Add to the list of available formats the current one formatted in a nice way
+            format_options.push(format.to_string());
+            // Update the list of ids which match what the user wants
+            correct_ids.push(format.format_id.clone());
+        }
+
+        // Setup the command-line prompt
+        let user_selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Which format do you want to apply to the video?")
+            .default(0)
+            .items(&format_options)
+            .interact_on(term)?;
+
+        match user_selection {
+            0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
+            _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
+        }
+    }
+
+    // Ask the user what container they want the downloaded file to be recoded to (ytdlp postprocessor) REQUIRES FFMPEG
+    fn convert_to_format(term: &Term, media_selected: &MediaSelection)
+        -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+    {
+        // Available formats for recoding
+        let format_options = match *media_selected {
+            MediaSelection::AudioOnly => vec!["mp3", "m4a", "wav", "aac", "alac", "flac",  "opus", "vorbis"],
+
+            _                         => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
+                                              "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
+        };
+
+        // Setting up the prompt
+        let user_selection = Select::with_theme(&ColorfulTheme::default())
+            .with_prompt("Which container do you want the final file to be in?")
+            .default(0)
+            .items(&format_options)
+            .interact_on(term)?;
+
+        Ok(VideoQualityAndFormatPreferences::ConvertTo(format_options[user_selection].to_string()))
     }
 }

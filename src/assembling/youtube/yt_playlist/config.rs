@@ -93,6 +93,7 @@ fn choose_format(command: &mut process::Command, config: &YtPlaylistConfig, id: 
                 VideoQualityAndFormatPreferences::UniqueFormat(_) => {
                     command.arg("-f").arg(id);
                 },
+                _ => todo!()
             }
         },
 
@@ -109,6 +110,7 @@ fn choose_format(command: &mut process::Command, config: &YtPlaylistConfig, id: 
                 VideoQualityAndFormatPreferences::UniqueFormat(_) => {
                     command.arg("-f").arg(id);
                 },
+                _ => todo!()
             }
         }
 
@@ -125,6 +127,7 @@ fn choose_format(command: &mut process::Command, config: &YtPlaylistConfig, id: 
                 VideoQualityAndFormatPreferences::UniqueFormat(_) => {
                     command.arg("-f").arg(id);
                 },
+                _ => todo!(),
             }
         }
     };

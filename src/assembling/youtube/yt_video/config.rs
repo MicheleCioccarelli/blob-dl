@@ -60,6 +60,7 @@ impl<'a> YtVideoConfig<'a> {
                             VideoQualityAndFormatPreferences::BestQuality => "best",
                             VideoQualityAndFormatPreferences::SmallestSize => "worst",
                             VideoQualityAndFormatPreferences::UniqueFormat(_) => id.as_str(),
+                            _ => todo!()
                         }
                     });
             },
@@ -71,6 +72,7 @@ impl<'a> YtVideoConfig<'a> {
                             VideoQualityAndFormatPreferences::BestQuality => "bestaudio",
                             VideoQualityAndFormatPreferences::SmallestSize => "worstaudio",
                             VideoQualityAndFormatPreferences::UniqueFormat(_) => id.as_str(),
+                            _ => todo!()
                         }
                     });
             }

@@ -105,7 +105,7 @@ impl fmt::Display for VideoFormat {
 
         if let Some(tbr) = self.tbr {
             // Skip picture formats
-            // Add file extension
+            // Add container
             result = format!("{:<6} ", self.ext);
 
             if self.resolution != "audio only" {
@@ -149,7 +149,6 @@ impl fmt::Display for VideoFormat {
     }
 }
 
-
 // A list of all the formats available for a single video
 #[derive(Deserialize, Serialize, Debug)]
 struct VideoSpecs {
@@ -166,6 +165,8 @@ impl VideoSpecs {
 pub(crate) enum VideoQualityAndFormatPreferences {
     // Code of the selected format
     UniqueFormat(String),
+    // Recode the downloaded file to this format (post-processor)
+    ConvertTo(String),
     BestQuality,
     SmallestSize,
 }
