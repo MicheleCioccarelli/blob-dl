@@ -1,4 +1,4 @@
-<p "center">
+<p align="center">
     <img alt="Blob-dl Logo" src="../assets/blob-dl-logo-v1.png" height="150">
     <h3 align="center">blob-dl</h3>
   </a>

@@ -17,7 +17,7 @@ pub struct YtPlaylistConfig<'a> {
 }
 
 impl<'a> YtPlaylistConfig<'a> {
-    pub(crate) fn new (
+    pub(crate) fn new(
         url: &String,
         output_path: String,
         include_indexes: bool,
@@ -38,7 +38,7 @@ impl<'a> YtPlaylistConfig<'a> {
         command.arg("--yes-playlist");
 
         // Setup output directory and naming scheme
-        choose_output_path(&mut command, &self);
+        self.choose_output_path(&mut command);
 
         // Makes the id live long enough to be used as an arg for command.
         // If it was fetched from the next match arm the temporary &str would not outlive command
@@ -48,87 +48,92 @@ impl<'a> YtPlaylistConfig<'a> {
         };
 
         // Quality and format selection
-        choose_format(&mut command, &self, id.as_str());
+        self.choose_format(&mut command, id.as_str());
 
         // Add the playlist's url
         command.arg(self.url);
 
         command
     }
-}
 
-fn choose_output_path(command: &mut process::Command, config: &YtPlaylistConfig) {
-    command.arg("-o");
-    command.arg(
-        {
-            let mut path_and_scheme = String::new();
+    fn choose_output_path(&self, command: &mut process::Command) {
+        command.arg("-o");
+        command.arg(
+            {
+                let mut path_and_scheme = String::new();
 
-            // Add the user's output path (empty string for current directory)
-            path_and_scheme.push_str(config.output_path.as_str());
+                // Add the user's output path (empty string for current directory)
+                path_and_scheme.push_str(self.output_path.as_str());
 
-            // Create a directory named after the playlist
-            path_and_scheme.push_str("/%(playlist)s/");
+                // Create a directory named after the playlist
+                path_and_scheme.push_str("/%(playlist)s/");
 
-            if config.include_indexes {
-                path_and_scheme.push_str("%(playlist_index)s_");
+                if self.include_indexes {
+                    path_and_scheme.push_str("%(playlist_index)s_");
+                }
+
+                // Add the video's title to the file name
+                path_and_scheme.push_str("%(title)s");
+                path_and_scheme
+            });
+    }
+
+    fn choose_format(&self, command: &mut process::Command, id: &str) {
+        match self.media_selected {
+            MediaSelection::Video => {
+                match &self.chosen_format {
+                    VideoQualityAndFormatPreferences::BestQuality => {}
+
+                    VideoQualityAndFormatPreferences::SmallestSize => {
+                        command.arg("-S").arg("+size,+br");
+                    }
+
+                    VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                        command.arg("-f").arg(id);
+                    }
+                    VideoQualityAndFormatPreferences::ConvertTo(f) => {
+                        command.arg("--recode-video").arg(f.as_str());
+                    }
+                }
             }
 
-            // Add the video's title to the file name
-            path_and_scheme.push_str("%(title)s");
-            path_and_scheme
-        });
-}
+            MediaSelection::AudioOnly => {
+                match &self.chosen_format {
+                    VideoQualityAndFormatPreferences::BestQuality => {
+                        command.arg("-f").arg("bestaudio");
+                    }
 
-fn choose_format(command: &mut process::Command, config: &YtPlaylistConfig, id: &str) {
-    // command.arg("-f");
-    match config.media_selected {
-        MediaSelection::Video => {
-            match config.chosen_format {
-                VideoQualityAndFormatPreferences::BestQuality => {},
+                    VideoQualityAndFormatPreferences::SmallestSize => {
+                        command.arg("-f").arg("worstaudio");
+                    }
 
-                VideoQualityAndFormatPreferences::SmallestSize => {
-                    command.arg("-S").arg("+size,+br");
-                },
-
-                VideoQualityAndFormatPreferences::UniqueFormat(_) => {
-                    command.arg("-f").arg(id);
-                },
-                _ => todo!()
+                    VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                        command.arg("-f").arg(id);
+                    }
+                    VideoQualityAndFormatPreferences::ConvertTo(f) => {
+                        command.arg("-x").arg("--audio-format").arg(f.as_str());
+                    }
+                }
             }
-        },
 
-        MediaSelection::AudioOnly => {
-            match config.chosen_format {
-                VideoQualityAndFormatPreferences::BestQuality => {
-                    command.arg("-f").arg("bestaudio");
-                },
+            MediaSelection::VideoOnly => {
+                match &self.chosen_format {
+                    VideoQualityAndFormatPreferences::BestQuality => {
+                        command.arg("-f").arg("bestvideo");
+                    }
 
-                VideoQualityAndFormatPreferences::SmallestSize => {
-                    command.arg("-f").arg("worstaudio");
-                },
+                    VideoQualityAndFormatPreferences::SmallestSize => {
+                        command.arg("-f").arg("worstvideo");
+                    }
 
-                VideoQualityAndFormatPreferences::UniqueFormat(_) => {
-                    command.arg("-f").arg(id);
-                },
-                _ => todo!()
+                    VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                        command.arg("-f").arg(id);
+                    }
+                    VideoQualityAndFormatPreferences::ConvertTo(f) => {
+                        command.arg("--recode-video").arg(f.as_str());
+                    }
+                }
             }
-        }
-
-        MediaSelection::VideoOnly => {
-            match config.chosen_format {
-                VideoQualityAndFormatPreferences::BestQuality => {
-                    command.arg("-f").arg("bestvideo");
-                },
-
-                VideoQualityAndFormatPreferences::SmallestSize => {
-                    command.arg("-f").arg("worstvideo");
-                },
-
-                VideoQualityAndFormatPreferences::UniqueFormat(_) => {
-                    command.arg("-f").arg(id);
-                },
-                _ => todo!(),
-            }
-        }
-    };
+        };
+    }
 }

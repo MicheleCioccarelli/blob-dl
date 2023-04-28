@@ -23,13 +23,33 @@ impl<'a> YtVideoConfig<'a> {
                       media_selected: MediaSelection)
                       -> YtVideoConfig {
         // Processing available_formats
-        YtVideoConfig { url, chosen_format, output_path, media_selected}
+        YtVideoConfig { url, chosen_format, output_path, media_selected }
     }
     /// Builds a yt-dl command with the needed specifications
     pub(crate) fn build_command(&self) -> process::Command {
         let mut command = process::Command::new("youtube-dl");
 
         // Setup output directory and naming scheme
+        self.choose_output_path(&mut command);
+
+        // Makes the id live long enough to be used as an arg for command.
+        // If it was fetched from the next match arm the temporary &str would not outlive command
+        let id = match &self.chosen_format {
+            VideoQualityAndFormatPreferences::UniqueFormat(id) => id.to_string(),
+            _ => String::new(),
+        };
+
+        // Quality and format selection
+        self.choose_format(&mut command, &id);
+
+        // Add the playlist's url
+        command.arg(self.url);
+
+        command
+    }
+
+
+    fn choose_output_path(&self, command: &mut process::Command) {
         command.arg("-o");
         command.arg(
             {
@@ -42,46 +62,64 @@ impl<'a> YtVideoConfig<'a> {
                 path_and_scheme.push_str("%(title)s");
                 path_and_scheme
             });
+    }
 
-        // Makes the id live long enough to be used as an arg for command.
-        // If it was fetched from the next match arm the temporary &str would not outlive command
-        let id = match &self.chosen_format {
-            VideoQualityAndFormatPreferences::UniqueFormat(id) => id.to_string(),
-            _ => String::new(),
-        };
-
-        // Quality and format selection
-        command.arg("-f");
+    fn choose_format(&self, command: &mut process::Command, id: &str) {
         match self.media_selected {
             MediaSelection::Video => {
-                command.arg(
-                    {
-                        match self.chosen_format {
-                            VideoQualityAndFormatPreferences::BestQuality => "best",
-                            VideoQualityAndFormatPreferences::SmallestSize => "worst",
-                            VideoQualityAndFormatPreferences::UniqueFormat(_) => id.as_str(),
-                            _ => todo!()
-                        }
-                    });
-            },
+                match &self.chosen_format {
+                    VideoQualityAndFormatPreferences::BestQuality => {}
+
+                    VideoQualityAndFormatPreferences::SmallestSize => {
+                        command.arg("-S").arg("+size,+br");
+                    }
+
+                    VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                        command.arg("-f").arg(id);
+                    }
+                    VideoQualityAndFormatPreferences::ConvertTo(f) => {
+                        command.arg("--recode-video").arg(f.as_str());
+                    }
+                }
+            }
 
             MediaSelection::AudioOnly => {
-                command.arg(
-                    {
-                        match self.chosen_format {
-                            VideoQualityAndFormatPreferences::BestQuality => "bestaudio",
-                            VideoQualityAndFormatPreferences::SmallestSize => "worstaudio",
-                            VideoQualityAndFormatPreferences::UniqueFormat(_) => id.as_str(),
-                            _ => todo!()
-                        }
-                    });
+                match &self.chosen_format {
+                    VideoQualityAndFormatPreferences::BestQuality => {
+                        command.arg("-f").arg("bestaudio");
+                    }
+
+                    VideoQualityAndFormatPreferences::SmallestSize => {
+                        command.arg("-f").arg("worstaudio");
+                    }
+
+                    VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                        command.arg("-f").arg(id);
+                    }
+                    VideoQualityAndFormatPreferences::ConvertTo(f) => {
+                        command.arg("-x").arg("--audio-format").arg(f.as_str());
+                    }
+                }
             }
-            _ => panic!("Not yet implemented"),
+
+            MediaSelection::VideoOnly => {
+                match &self.chosen_format {
+                    VideoQualityAndFormatPreferences::BestQuality => {
+                        command.arg("-f").arg("bestvideo");
+                    }
+
+                    VideoQualityAndFormatPreferences::SmallestSize => {
+                        command.arg("-f").arg("worstvideo");
+                    }
+
+                    VideoQualityAndFormatPreferences::UniqueFormat(_) => {
+                        command.arg("-f").arg(id);
+                    }
+                    VideoQualityAndFormatPreferences::ConvertTo(f) => {
+                        command.arg("--recode-video").arg(f.as_str());
+                    }
+                }
+            }
         };
-
-        // Add the playlist's url
-        command.arg(self.url);
-
-        command
     }
 }

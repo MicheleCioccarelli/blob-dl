@@ -27,10 +27,11 @@ pub fn analyze_url(command_line_url: &str) -> Option<DownloadOption> {
         if let Some(domain_name) = matched_url.domain() {
             // All youtube-related urls have "youtu" in them
             if domain_name.contains("youtu") {
-                return inspect_yt_url(matched_url); } else {
-            //} else if domain_name.contains("spotify") {
-            //     return inspect_sp_url(matched_url);
-            // } else {
+                return inspect_yt_url(matched_url);
+            } else {
+                //} else if domain_name.contains("spotify") {
+                //     return inspect_sp_url(matched_url);
+                // } else {
                 // The provided url wasn't for spotify or youtube
                 println!("Not a supported website");
             }
@@ -62,20 +63,19 @@ fn inspect_yt_url(yt_url: Url) -> Option<DownloadOption> {
             0 => {
                 let query = yt_url.query()?;
                 // "&index="'s existence was checked in the previous if statement. 7 is the length of "&index="
-                let index = &query[query.find("&index=").unwrap() + 7 ..query.len()];
+                let index = &query[query.find("&index=").unwrap() + 7..query.len()];
                 //let playlist_index: u32 = yt_url.query()?.chars().last().unwrap().parse().unwrap();
-                 Some(DownloadOption::YtVideo(index.parse().expect("This link has an unknown issue, please report it")))
-                },
+                Some(DownloadOption::YtVideo(index.parse().expect("This link has an unknown issue, please report it")))
+            }
             _ => Some(DownloadOption::YtPlaylist),
-        }
+        };
     }
 
     if yt_url.path().contains("playlist") {
         return Some(DownloadOption::YtPlaylist);
-    }
-    else if yt_url.path().contains("watch") ||
-            yt_url.path().contains("/v/")   ||
-            yt_url.path() == ""
+    } else if yt_url.path().contains("watch") ||
+        yt_url.path().contains("/v/") ||
+        yt_url.path() == ""
     {
         return Some(DownloadOption::YtVideo(0));
     }

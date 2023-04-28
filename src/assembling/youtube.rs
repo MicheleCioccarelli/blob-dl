@@ -154,6 +154,7 @@ impl fmt::Display for VideoFormat {
 struct VideoSpecs {
     formats: Vec<VideoFormat>,
 }
+
 impl VideoSpecs {
     fn formats(&self) -> &Vec<VideoFormat> {
         &self.formats

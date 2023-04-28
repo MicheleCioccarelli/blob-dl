@@ -28,19 +28,21 @@ pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> Result<YtVideoC
 
 mod format {
     use super::*;
-/// Asks the user to choose a download format and quality between the ones
-/// available for the current video.
-///
-/// The options are filtered between video, audio-only and video-only
+
+    /// Asks the user to choose a download format and quality between the ones
+    /// available for the current video.
+    ///
+    /// The options are filtered between video, audio-only and video-only
     pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
-                  -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+                             -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
+        panic!("Add a quality slider for audio (--audio-quality QUALITY [0, 10]");
         // A list of all the format options that can be picked
         let mut format_options = vec![
-            "Best available quality",
-            "I want the smallest size possible",
-            "I want to see all the available formats",
-            "I want to convert the downloaded files to a specific container (requires ffmpeg)",
+            "Best possible quality [ffmpeg required]",
+            "Smallest file size",
+            "Choose a file format (only youtube-supported formats for this video) [no ffmpeg]",
+            "Choose a file format (any format) [ffmpeg required]",
         ];
 
         let user_selection = Select::with_theme(&ColorfulTheme::default())
@@ -59,7 +61,7 @@ mod format {
 
     // Get a list of all available formats and ask the user to choose one
     fn get_specific_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
-        -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+                           -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
         let serialized_formats = {
             // Get a JSON dump of all the available formats for the current url
@@ -131,14 +133,14 @@ mod format {
 
     // Ask the user what container they want the downloaded file to be recoded to (ytdlp postprocessor) REQUIRES FFMPEG
     fn convert_to_format(term: &Term, media_selected: &MediaSelection)
-        -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+                         -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
         // Available formats for recoding
         let format_options = match *media_selected {
-            MediaSelection::AudioOnly => vec!["mp3", "m4a", "wav", "aac", "alac", "flac",  "opus", "vorbis"],
+            MediaSelection::AudioOnly => vec!["mp3", "m4a", "wav", "aac", "alac", "flac", "opus", "vorbis"],
 
-            _                         => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
-                                              "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
+            _ => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
+                      "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
         };
 
         // Setting up the prompt

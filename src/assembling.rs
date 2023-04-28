@@ -1,4 +1,3 @@
-
 // todo make this private
 pub mod youtube;
 
@@ -28,7 +27,7 @@ fn get_output_path(term: &Term) -> Result<String, std::io::Error> {
     ];
 
     let output_path = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Where do you want the downloaded file(s) to go?")
+        .with_prompt("Where do you want the downloaded file(s) to be saved?")
         .default(0)
         .items(output_path_options)
         .interact_on(&term)?;
@@ -39,6 +38,7 @@ fn get_output_path(term: &Term) -> Result<String, std::io::Error> {
             .as_path()
             .display()
             .to_string()),
+
         // Return a directory typed in by the user
         _ => Ok(Input::with_theme(&ColorfulTheme::default())
             .with_prompt("Output path:")
