@@ -59,7 +59,7 @@ impl<'a> YtVideoConfig<'a> {
                 path_and_scheme.push_str(self.output_path.as_str());
 
                 // Add the video's title to the file name
-                path_and_scheme.push_str("%(title)s");
+                path_and_scheme.push_str("(title)s.%(ext)s");
                 path_and_scheme
             });
     }

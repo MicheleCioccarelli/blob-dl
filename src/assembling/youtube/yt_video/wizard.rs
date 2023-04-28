@@ -36,7 +36,7 @@ mod format {
     pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
                              -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
-        panic!("Add a quality slider for audio (--audio-quality QUALITY [0, 10]");
+        //panic!("Add a quality slider for audio (--audio-quality QUALITY [0, 10]");
         // A list of all the format options that can be picked
         let mut format_options = vec![
             "Best possible quality [ffmpeg required]",
