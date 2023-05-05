@@ -116,7 +116,7 @@ mod format {
                     }
 
                     // Skip audio-only files if the user wants full video
-                    if *media_selected == MediaSelection::Video && format.resolution == "audio only" {
+                    if *media_selected == MediaSelection::FullVideo && format.resolution == "audio only" {
                         continue;
                     }
 
@@ -126,7 +126,7 @@ mod format {
                     }
 
                     // Skip video-only files if the user doesn't want video-only
-                    if *media_selected == MediaSelection::Video && format.acodec == "none" {
+                    if *media_selected == MediaSelection::FullVideo && format.acodec == "none" {
                         continue;
                     }
 
@@ -198,10 +198,13 @@ mod format {
     {
         // Available formats for recoding
         let format_options = match *media_selected {
+            // Only show audio-only formats
             MediaSelection::AudioOnly => vec!["mp3", "m4a", "wav", "aac", "alac", "flac", "opus", "vorbis"],
-
-            _ => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
-                      "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
+            // Only show formats which aren't audio-only
+            MediaSelection::VideoOnly => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aiff", "mka", "ogg"],
+            // Show all the available formats
+            MediaSelection::FullVideo => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
+                                              "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
         };
 
         // Setting up the prompt

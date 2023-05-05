@@ -23,7 +23,7 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
         .interact_on(term)?;
 
     match media_selection {
-        0 => Ok(MediaSelection::Video),
+        0 => Ok(MediaSelection::FullVideo),
         1 => Ok(MediaSelection::AudioOnly),
         2 => Ok(MediaSelection::VideoOnly),
         _ => panic!("Error getting media selection")
@@ -53,8 +53,6 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
 
     output
 }
-
-
 /// Serializes the information about the formats available for 1 video
 fn serialize_formats(json_dump: &str) -> serde_json::Result<VideoSpecs> {
     // todo videos which require 18 years to see make ugly errors pop up
@@ -66,7 +64,7 @@ fn serialize_formats(json_dump: &str) -> serde_json::Result<VideoSpecs> {
 /// Whether the user wants to download video files or audio-only
 #[derive(Debug, Eq, PartialEq)]
 pub(crate) enum MediaSelection {
-    Video,
+    FullVideo,
     VideoOnly,
     AudioOnly,
 }

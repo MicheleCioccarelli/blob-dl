@@ -36,33 +36,35 @@ mod format {
     pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
                              -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
-        //panic!("Add a quality slider for audio (--audio-quality QUALITY [0, 10]");
         // A list of all the format options that can be picked
-        let mut format_options = vec![
+        let format_options = vec![
             "Best possible quality [ffmpeg required]",
             "Smallest file size",
             "Choose a file format (only youtube-supported formats for this video) [no ffmpeg]",
             "Choose a file format (any format) [ffmpeg required]",
         ];
 
+        // Set up a prompt for the user
         let user_selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Which format do you want to apply to the video?")
             .default(0)
             .items(&format_options)
             .interact_on(term)?;
 
+        // See individual function documentations for more context
         match user_selection {
             0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
             1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
-            2 => get_specific_format(term, url, media_selected, playlist_id),
+            2 => get_format_from_yt(term, url, media_selected, playlist_id),
             _ => convert_to_format(term, media_selected),
         }
     }
 
-    // Get a list of all available formats and ask the user to choose one
-    fn get_specific_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
-                           -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+    // Presents the user with the formats youtube provides directly for download, without the need for ffmpeg
+    fn get_format_from_yt(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
+                          -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
+        // Serialize all available formats from the youtube API (through yt-dlp -F)
         let serialized_formats = {
             // Get a JSON dump of all the available formats for the current url
             let ytdl_formats = get_ytdlp_formats(url)?;
@@ -91,22 +93,18 @@ mod format {
             if format.vcodec == "none" && format.acodec == "none" {
                 continue;
             }
-
             // Skip audio-only files if the user wants full video
-            if *media_selected == MediaSelection::Video && format.resolution == "audio only" {
+            if *media_selected == MediaSelection::FullVideo && format.resolution == "audio only" {
                 continue;
             }
-
             // Skip video files if the user wants audio-only
             if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio only" {
                 continue;
             }
-
             // Skip video-only files if the user doesn't want video-only
-            if *media_selected == MediaSelection::Video && format.acodec == "none" {
+            if *media_selected == MediaSelection::FullVideo && format.acodec == "none" {
                 continue;
             }
-
             // Skip normal video if the user wants video-only
             if *media_selected == MediaSelection::VideoOnly && format.acodec != "none" {
                 continue;
@@ -118,17 +116,15 @@ mod format {
             correct_ids.push(format.format_id.clone());
         }
 
-        // Setup the command-line prompt
+        // Set up a prompt for the user
         let user_selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Which format do you want to apply to the video?")
             .default(0)
             .items(&format_options)
             .interact_on(term)?;
 
-        match user_selection {
-            0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
-            _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
-        }
+        // Return the format corresponding to what the user selected, the choices are limited so there shouldn't be out-of-bounds problems
+        Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
     }
 
     // Ask the user what container they want the downloaded file to be recoded to (ytdlp postprocessor) REQUIRES FFMPEG
@@ -137,13 +133,16 @@ mod format {
     {
         // Available formats for recoding
         let format_options = match *media_selected {
+            // Only show audio-only formats
             MediaSelection::AudioOnly => vec!["mp3", "m4a", "wav", "aac", "alac", "flac", "opus", "vorbis"],
-
-            _ => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
-                      "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
+            // Only show formats which aren't audio-only
+            MediaSelection::VideoOnly => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aiff", "mka", "ogg"],
+            // Show all the available formats
+            MediaSelection::FullVideo => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
+                                              "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
         };
 
-        // Setting up the prompt
+        // Set up a prompt for the user
         let user_selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Which container do you want the final file to be in?")
             .default(0)

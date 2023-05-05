@@ -66,7 +66,7 @@ impl<'a> YtVideoConfig<'a> {
 
     fn choose_format(&self, command: &mut process::Command, id: &str) {
         match self.media_selected {
-            MediaSelection::Video => {
+            MediaSelection::FullVideo => {
                 match &self.chosen_format {
                     VideoQualityAndFormatPreferences::BestQuality => {}
 
