@@ -5,8 +5,6 @@ use super::super::*;
 use super::config;
 use crate::assembling;
 
-// todo a common file with all the magic strings
-
 /// This is a wizard for downloading a youtube playlist
 ///
 /// It asks for:
@@ -69,10 +67,10 @@ mod format {
     {
         // A list of all the format options that can be picked
         let mut format_options = vec![
-            "Best possible quality for each video [ffmpeg required]",
-            "Smallest file size for each video",
-            "Choose a file format for each video (only youtube-supported formats for this video) [no ffmpeg]",
-            "Choose a file format for each video (any format) [ffmpeg required]",
+            crate::BEST_QUALITY_PROMPT,
+            crate::SMALLEST_QUALITY_PROMPT,
+            crate::YT_FORMAT_PROMPT,
+            crate::CONVERT_FORMAT_PROMPT,
         ];
 
         // Set up a prompt for the user
@@ -161,7 +159,7 @@ mod format {
 
         // Each line in ytdl_formats contains all the format information for 1 video
         for (i, video_formats_json) in std::str::from_utf8(&json_formats.stdout)
-                .expect("The JSON including a video's format information contained non-UTF8 characters, please report this issue")
+                .expect(crate::JSON_PARSING_ERROR)
                 .lines()
                 .enumerate() {
             let serialized_video = serialize_formats(video_formats_json)?;
@@ -206,7 +204,6 @@ fn get_index_preference(term: &Term) -> Result<bool, std::io::Error> {
         "No",
     ];
 
-
     // Ask the user which format they want the downloaded files to be in
     let index_preference = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Do you want the video's index (from the playlist) to be prefixed in its filename?")
@@ -220,34 +217,3 @@ fn get_index_preference(term: &Term) -> Result<bool, std::io::Error> {
         _ => panic!("The only options are 0 and 1")
     }
 }
-/*
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_from_command() -> Result<(), std::io::Error> {
-        let test_str = "139          m4a        audio only DASH audio   50k , m4a_dash container, mp4a.40.5 (22050Hz), 2.45MiB";
-        let f = VideoFormat::from_command(test_str);
-        let expected_format = VideoFormat {
-            code: 139,
-            file_extension: String::from("m4a"),
-            resolution: String::from("audio"),
-            size: String::from("50k"),
-        };
-
-        assert_eq!(f, expected_format);
-
-        let test_str = "22           mp4        1280x720   720p  468k , avc1.64001F, 30fps, mp4a.40.2 (44100Hz) (best)";
-        let f = VideoFormat::from_command(test_str);
-        let expected_format = VideoFormat {
-            code: 22,
-            file_extension: String::from("mp4"),
-            resolution: String::from("1280x720"),
-            size: String::from("468k"),
-        };
-
-        assert_eq!(f, expected_format);
-        Ok(())
-    }
-}*/

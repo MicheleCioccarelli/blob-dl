@@ -37,11 +37,11 @@ mod format {
                              -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
         // A list of all the format options that can be picked
-        let format_options = vec![
-            "Best possible quality [ffmpeg required]",
-            "Smallest file size",
-            "Choose a file format (only youtube-supported formats for this video) [no ffmpeg]",
-            "Choose a file format (any format) [ffmpeg required]",
+        let mut format_options = vec![
+            crate::BEST_QUALITY_PROMPT,
+            crate::SMALLEST_QUALITY_PROMPT,
+            crate::YT_FORMAT_PROMPT,
+            crate::CONVERT_FORMAT_PROMPT,
         ];
 
         // Set up a prompt for the user
@@ -72,14 +72,14 @@ mod format {
             // Serialize the JSON which contains the format information for the current video
             serialize_formats(
                 std::str::from_utf8(&ytdl_formats.stdout[..])
-                    .expect("The JSON information about this video's formats contained non-UTF8 characters")
+                    .expect(crate::JSON_PARSING_ERROR)
                     // If `url` refers to a playlist the JSON has multiple roots, only parse one
                     .lines()
                     // If the requested video isn't the first in a playlist, only parse its information
                     .nth(playlist_id)
                     // Unwrap is safe because playlist_id is non-0 only when there are multiple lines in the json
                     .unwrap()
-            ).expect("Problem serializing the video's formats from JSON")
+            ).expect(crate::JSON_SERIALIZATION_ERROR)
         };
 
         // Ids which the user can pick according to the current media selection
