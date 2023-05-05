@@ -126,29 +126,4 @@ mod format {
         // Return the format corresponding to what the user selected, the choices are limited so there shouldn't be out-of-bounds problems
         Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
     }
-
-    // Ask the user what container they want the downloaded file to be recoded to (ytdlp postprocessor) REQUIRES FFMPEG
-    fn convert_to_format(term: &Term, media_selected: &MediaSelection)
-                         -> Result<VideoQualityAndFormatPreferences, std::io::Error>
-    {
-        // Available formats for recoding
-        let format_options = match *media_selected {
-            // Only show audio-only formats
-            MediaSelection::AudioOnly => vec!["mp3", "m4a", "wav", "aac", "alac", "flac", "opus", "vorbis"],
-            // Only show formats which aren't audio-only
-            MediaSelection::VideoOnly => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aiff", "mka", "ogg"],
-            // Show all the available formats
-            MediaSelection::FullVideo => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
-                                              "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
-        };
-
-        // Set up a prompt for the user
-        let user_selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Which container do you want the final file to be in?")
-            .default(0)
-            .items(&format_options)
-            .interact_on(term)?;
-
-        Ok(VideoQualityAndFormatPreferences::ConvertTo(format_options[user_selection].to_string()))
-    }
 }

@@ -35,6 +35,7 @@ use std::process;
 // Running yt-dlp -j <...>
 use execute::Execute;
 
+// Functions identical for both playlists and videos
 /// Returns the output of <yt-dlp -j url>: a JSON dump of all the available format information for a video
 fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     // Neat animation to entertain the user while the information is being downloaded
@@ -53,14 +54,41 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
 
     output
 }
+
+
+// Ask the user what container they want the downloaded file to be recoded to (ytdlp postprocessor) REQUIRES FFMPEG
+fn convert_to_format(term: &Term, media_selected: &MediaSelection)
+                     -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+{
+    // Available formats for recoding
+    let format_options = match *media_selected {
+        // Only show audio-only formats
+        MediaSelection::AudioOnly => vec!["mp3", "m4a", "wav", "aac", "alac", "flac", "opus", "vorbis"],
+        // Only show formats which aren't audio-only
+        MediaSelection::VideoOnly => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aiff", "mka", "ogg"],
+        // Show all the available formats
+        MediaSelection::FullVideo => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
+                                          "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
+    };
+
+    // Setting up the prompt
+    let user_selection = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Which container do you want the final file to be in?")
+        .default(0)
+        .items(&format_options)
+        .interact_on(term)?;
+
+    Ok(VideoQualityAndFormatPreferences::ConvertTo(format_options[user_selection].to_string()))
+}
+
 /// Serializes the information about the formats available for 1 video
 fn serialize_formats(json_dump: &str) -> serde_json::Result<VideoSpecs> {
     // todo videos which require 18 years to see make ugly errors pop up
-    // todo test if this works
     serde_json::from_str(json_dump)
 }
 
 
+// Common enums and structs
 /// Whether the user wants to download video files or audio-only
 #[derive(Debug, Eq, PartialEq)]
 pub(crate) enum MediaSelection {
@@ -95,6 +123,23 @@ struct VideoFormat {
     tbr: Option<f64>,
     // When filesize is null, this may be available
     filesize_approx: Option<u64>,
+}
+
+// A list of all the formats available for a single video
+#[derive(Deserialize, Serialize, Debug)]
+struct VideoSpecs {
+    formats: Vec<VideoFormat>,
+}
+
+#[derive(Debug)]
+/// What quality and format the user wants a specific video to be downloaded in
+pub(crate) enum VideoQualityAndFormatPreferences {
+    // Code of the selected format
+    UniqueFormat(String),
+    // Recode the downloaded file to this format (post-processor)
+    ConvertTo(String),
+    BestQuality,
+    SmallestSize,
 }
 
 impl fmt::Display for VideoFormat {
@@ -147,25 +192,8 @@ impl fmt::Display for VideoFormat {
     }
 }
 
-// A list of all the formats available for a single video
-#[derive(Deserialize, Serialize, Debug)]
-struct VideoSpecs {
-    formats: Vec<VideoFormat>,
-}
-
 impl VideoSpecs {
     fn formats(&self) -> &Vec<VideoFormat> {
         &self.formats
     }
-}
-
-#[derive(Debug)]
-/// What quality and format the user wants a specific video to be downloaded in
-pub(crate) enum VideoQualityAndFormatPreferences {
-    // Code of the selected format
-    UniqueFormat(String),
-    // Recode the downloaded file to this format (post-processor)
-    ConvertTo(String),
-    BestQuality,
-    SmallestSize,
 }

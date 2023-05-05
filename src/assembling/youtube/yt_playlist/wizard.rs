@@ -39,7 +39,7 @@ pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::
 }
 
 mod format {
-    /// All of the formats a playlist can be downloaded in
+    /// All of the formats a particular playlist can be downloaded in
     ///
     /// These are divided in videos
     ///
@@ -47,7 +47,6 @@ mod format {
     struct FormatsLibrary {
         videos: Vec<VideoSpecs>,
     }
-
     impl FormatsLibrary {
         pub fn new() -> Self {
             FormatsLibrary { videos: vec![] }
@@ -76,6 +75,7 @@ mod format {
             "Choose a file format for each video (any format) [ffmpeg required]",
         ];
 
+        // Set up a prompt for the user
         let user_selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Which quality do you want to apply to all videos?")
             .default(0)
@@ -85,28 +85,28 @@ mod format {
         match user_selection {
             0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
             1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
-            2 => get_specific_format(term, url, media_selected),
+            2 => get_format_from_yt(term, url, media_selected),
             _ => convert_to_format(term, media_selected),
         }
     }
 
-    // Show the user a list of formats common across the whole playlist
-    fn get_specific_format(term: &Term, url: &str, media_selected: &MediaSelection)
-        -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+    // Show the user a list of formats common across the whole playlist, picked from those available directly from yt.
+    fn get_format_from_yt(term: &Term, url: &str, media_selected: &MediaSelection)
+                          -> Result<VideoQualityAndFormatPreferences, std::io::Error>
     {
+        // Get a list of all the formats available for the playlist
         let ytdl_formats = get_ytdlp_formats(url)?;
 
+        // Filter out formats not available for all the videos
         let (intersections, all_available_formats) = get_common_formats(ytdl_formats)?;
 
-        // Ids which the user can pick according to the current media selection
+        // Ids which the user can pick according to the current media selection (VideoOnly / AudioOnly / FullVideo)
         let mut correct_ids = vec![];
         // Format options that will be shown to the user
-        let mut format_options = vec![];
+        let mut ui_format_options = vec![];
 
         // Only look at ids common across the whole playlist
         for id in intersections.iter() {
-            // Find which format corresponds to each id
-            // common_formats is a Vec of all the formats for the first video.
             // Since we are looking for ids common to all videos just checking the first one is fine
             if let Some(first_video_formats) = all_available_formats.videos().first() {
                 for format in first_video_formats.formats() {
@@ -114,22 +114,18 @@ mod format {
                     if format.vcodec == "none" && format.acodec == "none" {
                         continue;
                     }
-
                     // Skip audio-only files if the user wants full video
                     if *media_selected == MediaSelection::FullVideo && format.resolution == "audio only" {
                         continue;
                     }
-
                     // Skip video files if the user wants audio-only
                     if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio only" {
                         continue;
                     }
-
                     // Skip video-only files if the user doesn't want video-only
                     if *media_selected == MediaSelection::FullVideo && format.acodec == "none" {
                         continue;
                     }
-
                     //Skip normal video if the user wants video-only
                     if *media_selected == MediaSelection::VideoOnly && format.acodec != "none" {
                         continue;
@@ -137,32 +133,29 @@ mod format {
 
                     if format.format_id == *id {
                         // Add to the list of available formats the current one formatted in a nice way
-                        format_options.push(format.to_string());
-                        // todo !! see if the references in correct_ids are still valid after the loop
+                        ui_format_options.push(format.to_string());
                         correct_ids.push(id);
                     }
                 }
             }
         }
 
-        // todo extract this in its own function
         let user_selection = Select::with_theme(&ColorfulTheme::default())
             .with_prompt("Which quality do you want to apply to all videos?")
             .default(0)
-            .items(&format_options)
+            .items(&ui_format_options)
             .interact_on(term)?;
 
-        match user_selection {
-            _ => Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection].clone()))
-        }
+        Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection].clone()))
     }
 
     // Finds the formats available for all videos in the playlist and the list of all the available formats
     fn get_common_formats(json_formats: process::Output) -> Result<(Vec<String>, FormatsLibrary), std::io::Error> {
-        // A list of videos which are Vec of formats
+        // A list of videos, which are Vec of formats
         let mut all_available_formats = FormatsLibrary::new();
 
         // Compute which formats are common across the entire playlist
+
         let mut intersections: Vec<String> = vec![];
         let mut current_ids: Vec<String> = vec![];
 
@@ -190,32 +183,6 @@ mod format {
 
         Ok((intersections, all_available_formats))
     }
-
-
-    // Ask the user what container they want the downloaded file to be recoded to (ytdlp postprocessor) REQUIRES FFMPEG
-    fn convert_to_format(term: &Term, media_selected: &MediaSelection)
-                         -> Result<VideoQualityAndFormatPreferences, std::io::Error>
-    {
-        // Available formats for recoding
-        let format_options = match *media_selected {
-            // Only show audio-only formats
-            MediaSelection::AudioOnly => vec!["mp3", "m4a", "wav", "aac", "alac", "flac", "opus", "vorbis"],
-            // Only show formats which aren't audio-only
-            MediaSelection::VideoOnly => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aiff", "mka", "ogg"],
-            // Show all the available formats
-            MediaSelection::FullVideo => vec!["mp4", "mkv", "mov", "avi", "flv", "gif", "webm", "aac", "aiff",
-                                              "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
-        };
-
-        // Setting up the prompt
-        let user_selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Which container do you want the final file to be in?")
-            .default(0)
-            .items(&format_options)
-            .interact_on(term)?;
-
-        Ok(VideoQualityAndFormatPreferences::ConvertTo(format_options[user_selection].to_string()))
-    }
 }
 
 /// Returns an owned intersection Vec
@@ -239,12 +206,6 @@ fn get_index_preference(term: &Term) -> Result<bool, std::io::Error> {
         "No",
     ];
 
-    /*
-    "Do you a video's index in the playlist to be in its name?
-e.g. the video \"blob\" is the fourth in the playlist
-Option chosen:		Yes		No
-Resulting filename 	04_blob		blob"
-*/
 
     // Ask the user which format they want the downloaded files to be in
     let index_preference = Select::with_theme(&ColorfulTheme::default())
