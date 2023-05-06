@@ -66,6 +66,10 @@ impl<'a> YtPlaylistConfig<'a> {
                 path_and_scheme.push_str(self.output_path.as_str());
 
                 // Create a directory named after the playlist
+                // Use windows' slash
+                #[cfg(target_os="windows")]
+                path_and_scheme.push_str("\\%(playlist)s\\");
+                #[cfg(not(target_os="windows"))]
                 path_and_scheme.push_str("/%(playlist)s/");
 
                 if self.include_indexes {

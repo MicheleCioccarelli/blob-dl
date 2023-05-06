@@ -1,12 +1,9 @@
-// todo make this private
-pub mod youtube;
+mod youtube;
 
 use crate::analyzer;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
 use std::env;
-
-// TODO: Re-read how to make children modules for better privacy management and make youtube mods derive from a mod with all of their common utils
 
 /// [Rewrite this in the future] Calls the right wizard to generate the required command
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> Result<std::process::Command, std::io::Error> {

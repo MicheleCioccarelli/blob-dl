@@ -27,7 +27,7 @@ impl<'a> YtVideoConfig<'a> {
     }
     /// Builds a yt-dl command with the needed specifications
     pub(crate) fn build_command(&self) -> process::Command {
-        let mut command = process::Command::new("youtube-dl");
+        let mut command = process::Command::new("yt-dlp");
 
         // Setup output directory and naming scheme
         self.choose_output_path(&mut command);
@@ -40,7 +40,7 @@ impl<'a> YtVideoConfig<'a> {
         };
 
         // Quality and format selection
-        self.choose_format(&mut command, &id);
+        self.choose_format_for_command(&mut command, &id);
 
         // Add the playlist's url
         command.arg(self.url);
@@ -59,12 +59,16 @@ impl<'a> YtVideoConfig<'a> {
                 path_and_scheme.push_str(self.output_path.as_str());
 
                 // Add the video's title to the file name
-                path_and_scheme.push_str("(title)s.%(ext)s");
+                // Use windows' slash
+                #[cfg(target_os="windows")]
+                path_and_scheme.push_str("\\%(title)s.%(ext)s");
+                #[cfg(not(target_os="windows"))]
+                path_and_scheme.push_str("/%(title)s.%(ext)s");
                 path_and_scheme
             });
     }
 
-    fn choose_format(&self, command: &mut process::Command, id: &str) {
+    fn choose_format_for_command(&self, command: &mut process::Command, id: &str) {
         match self.media_selected {
             MediaSelection::FullVideo => {
                 match &self.chosen_format {

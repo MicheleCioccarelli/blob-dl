@@ -1,8 +1,6 @@
 use crate::analyzer;
 use crate::parser;
 use crate::assembling;
-use execute::Execute;
-use std::process;
 
 /// Calls the right wizard according to what the url refers to, then it runs the ytdl-command and handles errors
 pub fn dispatch(config: &parser::CliConfig) -> Result<(), std::io::Error> {
