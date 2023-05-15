@@ -18,6 +18,8 @@ const YT_FORMAT_PROMPT: &str = "Choose a file format for each video (only youtub
 const CONVERT_FORMAT_PROMPT: &str = "Choose a file format for each video (any format) [ffmpeg required]";
 
 // Temporary placement in the module system
+type BlobResult<T> = Result<T, BlobdlError>;
+
 /// ### The all-encompassing error type used in this project
 /// ## Implements From
 /// For the Errors std::io::Error and ParseIntError
@@ -34,7 +36,7 @@ enum BlobdlError {
     UnknownIssue,
     JsonSerializationError,
     IoError(std::io::Error),
-    IntParsingError(std::num::ParseIntError),
+    UnsupportedFeature,
 }
 
 impl std::fmt::Display for BlobdlError {
@@ -42,17 +44,10 @@ impl std::fmt::Display for BlobdlError {
         write!(f, "Hi :) I am the BlobdlError default message, I shouldn't show up, if you see me please report me to the github page")
     }
 }
-
 impl std::error::Error for BlobdlError {}
 
 impl From<std::io::Error> for BlobdlError {
     fn from(err: std::io::Error) -> Self {
         BlobdlError::IoError(err)
-    }
-}
-
-impl From<std::num::ParseIntError> for BlobdlError {
-    fn from(err: std::num::ParseIntError) -> Self {
-        BlobdlError::IntParsingError(err)
     }
 }
