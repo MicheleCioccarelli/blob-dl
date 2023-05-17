@@ -43,39 +43,42 @@ pub fn analyze_url(command_line_url: &str) -> BlobResult<DownloadOption> {
 
 /// Given a youtube url determines whether it refers to a video/playlist/something unsupported
 fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
-    // todo convert this to Err instead of Unwrapping an Option
-    if yt_url.query().unwrap().contains("&index=") {
-        let term = Term::buffered_stderr();
+    if let Some(query) = yt_url.query() {
+        // If the url's query exists, continue
+        if query.contains("&index=") {
+            // This video is part of a youtube playlist
+            let term = Term::buffered_stderr();
 
-        // The url refers to a video in a playlist, ask the user which one they want to download
-        let user_selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("The url refers to a video in a playlist, which do you want to download?")
-            .default(0)
-            .items(&["Only the video", "The whole playlist"])
-            .interact_on(&term)?;
+            // Ask the user whether they want to download the whole playlist or just the video
+            let user_selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("The url refers to a video in a playlist, which do you want to download?")
+                .default(0)
+                .items(&["Only the video", "The whole playlist"])
+                .interact_on(&term)?;
 
-        return match user_selection {
-            0 => {
-                // todo convert this to Err instead of Unwrapping an Option
-                let query = yt_url.query().unwrap();
-                // "&index="'s existence was checked in the previous if statement. 7 is the length of "&index="
-                let index = &query[query.find("&index=").unwrap() + 7..query.len()];
-                //let playlist_index: u32 = yt_url.query()?.chars().last().unwrap().parse().unwrap();
-                Ok(DownloadOption::YtVideo(index.parse().expect("This link has an unknown issue, please report it")))
-            }
-            _ => Ok(DownloadOption::YtPlaylist),
-        };
+            return match user_selection {
+                0 => {
+                    // "&index="'s existence was checked in the previous if statement
+                    let index = &query[query.find("&index=").unwrap() + "&index=".len()..query.len()];
+                    // todo take a look at this expect
+                    Ok(DownloadOption::YtVideo(index.parse().expect("This link has an unknown issue, please report it")))
+                }
+                _ => Ok(DownloadOption::YtPlaylist),
+            };
+        }
+        if yt_url.path().contains("playlist") {
+            return Ok(DownloadOption::YtPlaylist);
+        } else if yt_url.path().contains("watch") ||
+            yt_url.path().contains("/v/") ||
+            yt_url.path() == ""
+        {
+            return Ok(DownloadOption::YtVideo(0));
+        }
+
+        // The url doesn't refer to a youtube video/playlist (maybe a user, etc)
+        println!("Youtube url not recognized as a video/playlist");
+        Err(BlobdlError::UnsupportedFeature)
+    } else {
+        return Err(BlobdlError::QueryNotFound);
     }
-
-    if yt_url.path().contains("playlist") {
-        return Ok(DownloadOption::YtPlaylist);
-    } else if yt_url.path().contains("watch") ||
-        yt_url.path().contains("/v/") ||
-        yt_url.path() == ""
-    {
-        return Ok(DownloadOption::YtVideo(0));
-    }
-    // The url doesn't refer to a youtube video/playlist (maybe a user, etc)
-    println!("Youtube url not recognized as a video/playlist");
-    Err(BlobdlError::UnsupportedFeature)
 }

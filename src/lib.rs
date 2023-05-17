@@ -29,6 +29,7 @@ type BlobResult<T> = Result<T, BlobdlError>;
 /// Useless comments go brr
 #[derive(Debug)]
 enum BlobdlError {
+    QueryNotFound,
     UnknownUrl,
     UnsupportedWebsite,
     DomainNotFound,
