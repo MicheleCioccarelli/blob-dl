@@ -1,5 +1,6 @@
 pub mod yt_playlist;
 pub mod yt_video;
+use crate::{BlobdlError, BlobResult};
 
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
@@ -55,10 +56,9 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     output
 }
 
-
 // Ask the user what container they want the downloaded file to be recoded to (ytdlp postprocessor) REQUIRES FFMPEG
 fn convert_to_format(term: &Term, media_selected: &MediaSelection)
-                     -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+                     -> BlobResult<VideoQualityAndFormatPreferences>
 {
     // Available formats for recoding
     let format_options = match *media_selected {
@@ -82,11 +82,14 @@ fn convert_to_format(term: &Term, media_selected: &MediaSelection)
 }
 
 /// Serializes the information about the formats available for 1 video
-fn serialize_formats(json_dump: &str) -> serde_json::Result<VideoSpecs> {
+fn serialize_formats(json_dump: &str) -> BlobResult<VideoSpecs> {
     // todo videos which require 18 years to see make ugly errors pop up
-    serde_json::from_str(json_dump)
+    if let Ok(result) = serde_json::from_str(json_dump) {
+        Ok(result)
+    } else {
+        Err(BlobdlError::SerdeError)
+    }
 }
-
 
 // Common enums and structs
 /// Whether the user wants to download video files or audio-only
@@ -158,7 +161,7 @@ impl fmt::Display for VideoFormat {
             // This isn't a picture format so unwrap() is safe
             let filesize = match self.filesize {
                 Some(f) => f,
-                None => self.filesize_approx.expect("Problem with filesize fetching"),
+                None => self.filesize_approx.expect("Problem with filesize fetching, please try again!"),
             };
             // filesize is converted from bytes to MB
             let filesize_section = format!("| filesize: {:<.2}MB", filesize as f32 * 0.000001);

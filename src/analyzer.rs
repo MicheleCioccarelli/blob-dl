@@ -23,21 +23,21 @@ pub enum DownloadOption {
 ///
 pub fn analyze_url(command_line_url: &str) -> BlobResult<DownloadOption> {
     // .ok() converts from Result to Option
-    if let Ok(url) = Url::parse(command_line_url) {
-            if let Some(domain_name) = url.domain() {
-                // All youtube-related urls have "youtu" in them
-                if domain_name.contains("youtu") {
-                    return inspect_yt_url(url);
-                } else {
-                    // The provided url wasn't for youtube
-                    return Err(BlobdlError::UnsupportedWebsite);
-                }
+    return if let Ok(url) = Url::parse(command_line_url) {
+        if let Some(domain_name) = url.domain() {
+            // All youtube-related urls have "youtu" in them
+            if domain_name.contains("youtu") {
+                inspect_yt_url(url)
             } else {
-                // Url domain could not be found
-                return Err(BlobdlError::DomainNotFound);
+                // The provided url wasn't for youtube
+                Err(BlobdlError::UnsupportedWebsite)
             }
+        } else {
+            // Url domain could not be found
+            Err(BlobdlError::DomainNotFound)
+        }
     } else {
-        return Err(BlobdlError::UrlParsingError);
+        Err(BlobdlError::UrlParsingError)
     }
 }
 

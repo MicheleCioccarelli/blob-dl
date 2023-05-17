@@ -1,14 +1,17 @@
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
+
 use super::super::*;
 use crate::assembling;
 use crate::assembling::youtube::yt_video::config::YtVideoConfig;
+
+use crate::BlobResult;
 
 /// Returns a ConfigYtVideo object with all the necessary data
 /// to start downloading a youtube video
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> Result<YtVideoConfig, std::io::Error> {
+pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> BlobResult<YtVideoConfig> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
@@ -34,7 +37,7 @@ mod format {
     ///
     /// The options are filtered between video, audio-only and video-only
     pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
-                             -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+                             -> BlobResult<VideoQualityAndFormatPreferences>
     {
         // A list of all the format options that can be picked
         let mut format_options = vec![
@@ -62,7 +65,7 @@ mod format {
 
     // Presents the user with the formats youtube provides directly for download, without the need for ffmpeg
     fn get_format_from_yt(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
-                          -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+                          -> BlobResult<VideoQualityAndFormatPreferences>
     {
         // Serialize all available formats from the youtube API (through yt-dlp -F)
         let serialized_formats = {
@@ -70,16 +73,15 @@ mod format {
             let ytdl_formats = get_ytdlp_formats(url)?;
 
             // Serialize the JSON which contains the format information for the current video
-            serialize_formats(
-                std::str::from_utf8(&ytdl_formats.stdout[..])
-                    .expect(crate::JSON_PARSING_ERROR)
+            serialize_formats (
+                std::str::from_utf8(&ytdl_formats.stdout[..])?
                     // If `url` refers to a playlist the JSON has multiple roots, only parse one
                     .lines()
                     // If the requested video isn't the first in a playlist, only parse its information
                     .nth(playlist_id)
                     // Unwrap is safe because playlist_id is non-0 only when there are multiple lines in the json
                     .unwrap()
-            ).expect(crate::JSON_SERIALIZATION_ERROR)
+            )?
         };
 
         // Ids which the user can pick according to the current media selection

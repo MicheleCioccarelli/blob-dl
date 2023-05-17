@@ -1,6 +1,8 @@
 use clap::{Arg, Command, ArgMatches};
 
-pub fn parse_config() -> CliConfig {
+use crate::{BlobdlError, BlobResult};
+
+pub fn parse_config() -> BlobResult<CliConfig> {
     let matches = Command::new("blob-dl")
         .version("0.2")
         .author("cioccarellimi@gmail.com")
@@ -25,14 +27,14 @@ pub struct CliConfig {
 
 impl CliConfig {
     /// Constructs a CliConfig object based on Clap's output
-    pub fn from(matches: ArgMatches) -> CliConfig {
+    pub fn from(matches: ArgMatches) -> BlobResult<CliConfig> {
         let url = match matches.get_one::<String>("SOURCE") {
             Some(url) => url.clone(),
-            None => panic!("SOURCE is a required argument"),
+            None => return Err(BlobdlError::MissingArgument),
         };
-        CliConfig {
+        Ok(CliConfig {
             url,
-        }
+        })
     }
     pub fn url(&self) -> &String {
         &self.url

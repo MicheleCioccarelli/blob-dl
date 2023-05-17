@@ -35,7 +35,11 @@ enum BlobdlError {
     DomainNotFound,
     UrlParsingError,
     UnknownIssue,
+    MissingArgument,
     JsonSerializationError,
+    Utf8Error,
+    //tmp
+    SerdeError,
     IoError(std::io::Error),
     UnsupportedFeature,
 }
@@ -52,3 +56,10 @@ impl From<std::io::Error> for BlobdlError {
         BlobdlError::IoError(err)
     }
 }
+
+impl From<std::str::Utf8Error> for BlobdlError {
+    fn from(_: std::str::Utf8Error) -> Self {
+        BlobdlError::Utf8Error
+    }
+}
+

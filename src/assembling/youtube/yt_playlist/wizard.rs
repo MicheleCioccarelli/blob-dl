@@ -5,6 +5,8 @@ use super::super::*;
 use super::config;
 use crate::assembling;
 
+use crate::BlobResult;
+
 /// This is a wizard for downloading a youtube playlist
 ///
 /// It asks for:
@@ -14,7 +16,7 @@ use crate::assembling;
 /// - Index inclusion
 ///
 /// Returns a fully configured YtPlaylistConfig, build_command() can be called
-pub fn assemble_data(url: &String) -> Result<config::YtPlaylistConfig, std::io::Error> {
+pub(super) fn assemble_data(url: &String) -> BlobResult<config::YtPlaylistConfig> {
     println!("Playlist btw");
     let term = Term::buffered_stderr();
 
@@ -63,7 +65,7 @@ mod format {
     ///
     /// The chosen format will be applied to the entire playlist
     pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
-                             -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+        -> BlobResult<VideoQualityAndFormatPreferences>
     {
         // A list of all the format options that can be picked
         let mut format_options = vec![
@@ -90,7 +92,7 @@ mod format {
 
     // Show the user a list of formats common across the whole playlist, picked from those available directly from yt.
     fn get_format_from_yt(term: &Term, url: &str, media_selected: &MediaSelection)
-                          -> Result<VideoQualityAndFormatPreferences, std::io::Error>
+                          -> BlobResult<VideoQualityAndFormatPreferences>
     {
         // Get a list of all the formats available for the playlist
         let ytdl_formats = get_ytdlp_formats(url)?;
@@ -148,7 +150,7 @@ mod format {
     }
 
     // Finds the formats available for all videos in the playlist and the list of all the available formats
-    fn get_common_formats(json_formats: process::Output) -> Result<(Vec<String>, FormatsLibrary), std::io::Error> {
+    fn get_common_formats(json_formats: process::Output) -> BlobResult<(Vec<String>, FormatsLibrary)> {
         // A list of videos, which are Vec of formats
         let mut all_available_formats = FormatsLibrary::new();
 
@@ -158,8 +160,7 @@ mod format {
         let mut current_ids: Vec<String> = vec![];
 
         // Each line in ytdl_formats contains all the format information for 1 video
-        for (i, video_formats_json) in std::str::from_utf8(&json_formats.stdout)
-                .expect(crate::JSON_PARSING_ERROR)
+        for (i, video_formats_json) in std::str::from_utf8(&json_formats.stdout)?
                 .lines()
                 .enumerate() {
             let serialized_video = serialize_formats(video_formats_json)?;
@@ -198,7 +199,7 @@ fn intersection<'a, T: Eq + Clone>(vec1: &'a Vec<T>, vec2: &'a Vec<T>) -> Vec<T>
 }
 
 /// Whether the downloaded files should include their index in the playlist as a part of their name
-fn get_index_preference(term: &Term) -> Result<bool, std::io::Error> {
+fn get_index_preference(term: &Term) -> BlobResult<bool> {
     let download_formats = &[
         "Yes",
         "No",
