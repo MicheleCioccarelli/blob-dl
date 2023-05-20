@@ -84,10 +84,10 @@ fn convert_to_format(term: &Term, media_selected: &MediaSelection)
 /// Serializes the information about the formats available for 1 video
 fn serialize_formats(json_dump: &str) -> BlobResult<VideoSpecs> {
     // todo videos which require 18 years to see make ugly errors pop up
-    if let Ok(result) = serde_json::from_str(json_dump) {
-        Ok(result)
-    } else {
-        Err(BlobdlError::SerdeError)
+    let result = serde_json::from_str(json_dump);
+    match result {
+        Ok(cool) => Ok(cool),
+        Err(err) => Err(BlobdlError::SerdeError(err))
     }
 }
 

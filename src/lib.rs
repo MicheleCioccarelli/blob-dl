@@ -17,6 +17,20 @@ const YT_FORMAT_PROMPT: &str = "Choose a file format for each video (only youtub
 
 const CONVERT_FORMAT_PROMPT: &str = "Choose a file format for each video (any format) [ffmpeg required]";
 
+// Error messages
+
+const MISSING_URL_SECTION_ERR: &str = "The url that was provided didn't contain a query, try using a regular youtube url";
+const UNKNOWN_URL_ERR: &str = "Unknown url does not yet have a use";
+const UNSUPPORTED_WEBSITE_ERR: &str = "Currently blob-dl only supports downloading youtube videos or playlists";
+const UNKNOWN_ISSUE_ERR: &str = "Congrats! You ran into an unknown issue, please file a report on blob-dl's github page :)";
+// todo fix this message
+const MISSING_ARGUMENT_ERR: &str = "A url is required for blob-dl to function [[please rephrase this error]]";
+const JSON_SERIALIZATION_ERR: &str = "There was a problem serializing this video's format information";
+const UTF8_ERR: &str = "This video's format information contained non-UTF8 characters and broke the parser, best and worst quality should still work!";
+const SERDE_ERR: &str = "Serde ran into a problem when serializing this video's format information: ";
+const IO_ERR: &str = "There was an IO error: ";
+const UNSUPPORTED_FEATURE_ERR: &str = "Currently with blob-dl you can only download videos or playlists, not media such as series";
+
 // Temporary placement in the module system
 type BlobResult<T> = Result<T, BlobdlError>;
 
@@ -39,10 +53,46 @@ enum BlobdlError {
     JsonSerializationError,
     Utf8Error,
     //tmp
-    SerdeError,
+    SerdeError(serde_json::Error),
     IoError(std::io::Error),
     UnsupportedFeature,
 }
+
+impl BlobdlError {
+    // Output an error message according to the error at hand
+    pub fn report(&self) {
+        match self {
+            BlobdlError::QueryNotFound => println!("{}", MISSING_URL_SECTION_ERR),
+
+            // todo this error is unused
+            BlobdlError::UnknownUrl=> println!("{}", UNKNOWN_URL_ERR),
+
+            BlobdlError::UnsupportedWebsite=> println!("{}", UNKNOWN_URL_ERR),
+
+            BlobdlError::DomainNotFound=> println!("{}", MISSING_URL_SECTION_ERR),
+
+            // The link appears to be completely broken
+            BlobdlError::UrlParsingError=> println!("{}", MISSING_URL_SECTION_ERR),
+
+            BlobdlError::UnknownIssue=> println!("{}", UNKNOWN_ISSUE_ERR),
+
+            BlobdlError::MissingArgument=> println!("{}", MISSING_ARGUMENT_ERR),
+
+            BlobdlError::JsonSerializationError=> println!("{}", JSON_SERIALIZATION_ERR),
+
+            BlobdlError::Utf8Error=> println!("{}", UTF8_ERR),
+
+            BlobdlError::SerdeError(err)=> println!("{} {}", SERDE_ERR, err),
+
+            BlobdlError::IoError(err)=> println!("{} {}", IO_ERR, err),
+
+            BlobdlError::UnsupportedFeature=> println!("{}", UNSUPPORTED_FEATURE_ERR),
+        }
+    }
+}
+
+
+// Implementing conversions and boilerplate
 
 impl std::fmt::Display for BlobdlError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
