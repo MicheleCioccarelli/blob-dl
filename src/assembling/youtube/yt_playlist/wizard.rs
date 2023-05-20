@@ -16,7 +16,7 @@ use crate::BlobResult;
 /// - Index inclusion
 ///
 /// Returns a fully configured YtPlaylistConfig, build_command() can be called
-pub(super) fn assemble_data(url: &String) -> BlobResult<config::YtPlaylistConfig> {
+pub fn assemble_data(url: &String) -> BlobResult<config::YtPlaylistConfig> {
     println!("Playlist btw");
     let term = Term::buffered_stderr();
 

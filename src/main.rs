@@ -1,5 +1,4 @@
 use blob_dl::parser;
-use std::error::Error;
 use blob_dl::dispatcher::dispatch;
 
 fn main() {
