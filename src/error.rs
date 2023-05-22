@@ -1,7 +1,9 @@
-type BlobResult<T> = Result<T, BlobdlError>;
-
 // Import error messages
 use crate::error_message::*;
+
+use colored::Colorize;
+
+pub type BlobResult<T> = Result<T, BlobdlError>;
 
 /// ### The all-encompassing error type used in this project
 /// ## Implements From
@@ -30,6 +32,8 @@ pub enum BlobdlError {
 impl BlobdlError {
     // Output an error message according to the error at hand
     pub fn report(&self) {
+        println!("\n{}\n", crate::USAGE_MSG);
+        print!("{}: ", "error".bold().red());
         match self {
             BlobdlError::QueryNotFound => println!("{}", BROKEN_URL_ERR),
 
@@ -57,6 +61,7 @@ impl BlobdlError {
 
             BlobdlError::UnsupportedFeature=> println!("{}", UNSUPPORTED_FEATURE_ERR),
         }
+        println!("{}", crate::SEE_HELP_PAGE);
     }
 }
 

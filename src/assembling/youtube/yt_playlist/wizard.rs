@@ -5,7 +5,7 @@ use super::super::*;
 use super::config;
 use crate::assembling;
 
-use crate::BlobResult;
+use crate::error::BlobResult;
 
 /// This is a wizard for downloading a youtube playlist
 ///
@@ -17,7 +17,6 @@ use crate::BlobResult;
 ///
 /// Returns a fully configured YtPlaylistConfig, build_command() can be called
 pub fn assemble_data(url: &String) -> BlobResult<config::YtPlaylistConfig> {
-    println!("Playlist btw");
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
@@ -68,7 +67,7 @@ mod format {
         -> BlobResult<VideoQualityAndFormatPreferences>
     {
         // A list of all the format options that can be picked
-        let mut format_options = vec![
+        let format_options = vec![
             crate::BEST_QUALITY_PROMPT,
             crate::SMALLEST_QUALITY_PROMPT,
             crate::YT_FORMAT_PROMPT,

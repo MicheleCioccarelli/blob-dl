@@ -1,6 +1,6 @@
 use clap::{Arg, Command, ArgMatches};
 
-use crate::{BlobdlError, BlobResult};
+use crate::error::{BlobdlError, BlobResult};
 
 pub fn parse_config() -> BlobResult<CliConfig> {
     let matches = Command::new("blob-dl")

@@ -2,7 +2,7 @@ use crate::analyzer;
 use crate::parser;
 use crate::assembling;
 
-use crate::BlobResult;
+use crate::error::BlobResult;
 
 /// Calls the right wizard according to what the url refers to, then it runs the ytdl-command and handles errors
 pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
@@ -24,14 +24,18 @@ pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 
-/// Executes the full youtube-dl command and records errors, if the users wants to they can be
-/// re-downloaded
+/// Executes the yt-dlp command and analyzes its output.
+///
+/// It filters what to show to the user according to verbosity options
+///
+/// It records which links fail download and their reason: if trying again can fix the issue it tells the user
 fn run_and_observe(command: &mut Command) {
     // Run the command and capture its output
     let mut youtube_dl = command.stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .expect("Failed to start youtube-dl process");
+        .expect("Failed to start yt-dlp process");
+    // todo this expect
 
     let stdout = BufReader::new(youtube_dl.stdout.take().unwrap());
     let stderr = BufReader::new(youtube_dl.stderr.take().unwrap());
@@ -58,7 +62,7 @@ fn run_and_observe(command: &mut Command) {
 
     #[cfg(debug_assertions)]
     {
-        println!("Captured output from youtube-dl: ");
-        println!("{}", merged);
+        println!("Errors captured: ");
+        println!("{:?}", errors);
     }
 }

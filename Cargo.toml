@@ -8,6 +8,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.0.29", features = ["derive"] }
+colored = "2.0.0"
 dialoguer = "0.10.2"
 execute = "0.2.11"
 serde = { version = "1.0", features = ["derive"] }

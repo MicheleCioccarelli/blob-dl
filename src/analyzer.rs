@@ -2,7 +2,7 @@ use url::Url;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 
-use crate::{BlobdlError, BlobResult};
+use crate::error::{BlobdlError, BlobResult};
 
 /// All of the supported sources
 #[derive(Debug)]
@@ -66,19 +66,17 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
                 _ => Ok(DownloadOption::YtPlaylist),
             };
         }
-        if yt_url.path().contains("playlist") {
-            return Ok(DownloadOption::YtPlaylist);
-        } else if yt_url.path().contains("watch") ||
-            yt_url.path().contains("/v/") ||
-            yt_url.path() == ""
-        {
-            return Ok(DownloadOption::YtVideo(0));
-        }
-
-        // The url doesn't refer to a youtube video/playlist (maybe a user, etc)
-        println!("Youtube url not recognized as a video/playlist");
-        Err(BlobdlError::UnsupportedFeature)
-    } else {
-        return Err(BlobdlError::QueryNotFound);
     }
+    if yt_url.path().contains("playlist") {
+        return Ok(DownloadOption::YtPlaylist);
+    } else /*if yt_url.path().contains("watch") ||
+        yt_url.path().contains("/v/") ||
+        yt_url.path() == ""*/
+    {
+        return Ok(DownloadOption::YtVideo(0));
+    }
+
+    // The url doesn't refer to a youtube video/playlist (maybe a user, etc)
+    println!("Youtube url not recognized as a video/playlist");
+    Err(BlobdlError::UnsupportedFeature)
 }

@@ -5,7 +5,7 @@ use super::super::*;
 use crate::assembling;
 use crate::assembling::youtube::yt_video::config::YtVideoConfig;
 
-use crate::BlobResult;
+use crate::error::BlobResult;
 
 /// Returns a ConfigYtVideo object with all the necessary data
 /// to start downloading a youtube video
@@ -40,7 +40,7 @@ mod format {
                              -> BlobResult<VideoQualityAndFormatPreferences>
     {
         // A list of all the format options that can be picked
-        let mut format_options = vec![
+        let format_options = vec![
             crate::BEST_QUALITY_PROMPT,
             crate::SMALLEST_QUALITY_PROMPT,
             crate::YT_FORMAT_PROMPT,

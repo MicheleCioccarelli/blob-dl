@@ -1,6 +1,6 @@
 pub mod yt_playlist;
 pub mod yt_video;
-use crate::{BlobdlError, BlobResult};
+use crate::error::{BlobdlError, BlobResult};
 
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};

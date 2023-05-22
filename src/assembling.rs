@@ -1,7 +1,7 @@
 mod youtube;
 
 use crate::analyzer;
-use crate::BlobResult;
+use crate::error::BlobResult;
 
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;

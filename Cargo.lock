@@ -24,6 +24,7 @@ name = "blob-dl"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "colored",
  "dialoguer",
  "execute",
  "serde",
