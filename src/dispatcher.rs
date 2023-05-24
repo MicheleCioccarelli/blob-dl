@@ -35,34 +35,63 @@ fn run_and_observe(command: &mut Command) {
         .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to start yt-dlp process");
-    // todo this expect
+    // todo this expect ^
 
     let stdout = BufReader::new(youtube_dl.stdout.take().unwrap());
     let stderr = BufReader::new(youtube_dl.stderr.take().unwrap());
 
-    // Full output of youtube-dl (stdout + stderr)
-    let mut merged = String::new();
-    // All the line numbers where youtube-dl threw an error
-    let mut errors = vec![];
+    // All the lines containing error information
+    let mut errors: Vec<String> = vec![];
 
     // Print to the console what youtube-dl is doing and update merged
-    for (err_line_number, line) in stdout.lines().chain(stderr.lines()).enumerate() {
+    for line in stdout.lines().chain(stderr.lines()) {
         // todo handle this Result
         let line = line.unwrap();
 
-        merged.push_str(line.as_str());
-        merged.push('\n');
+        // Currently verbosity options are ignored
+        println!("{line}");
 
-        println!("{}", line);
-
-        if line.contains("ERROR") {
-            errors.push(err_line_number);
+        if line.contains("ERROR:") {
+            errors.push(line);
         }
     }
 
     #[cfg(debug_assertions)]
     {
         println!("Errors captured: ");
-        println!("{:?}", errors);
+        for line in errors {
+            println!("{:?}", extract_error_info(line.as_str()));
+        }
     }
+}
+
+#[derive(Debug)]
+struct YtdlpError {
+    video_id: String,
+    error_msg: String,
+}
+
+fn extract_error_info(error_line: &str) -> YtdlpError {
+    // yt-dlp error line format: ERROR: [...] video_id: reason
+    let mut section = error_line.split_whitespace();
+
+    // Skip ERROR:
+    section.next().unwrap();
+    // Skip [...]
+    section.next().unwrap();
+
+    let mut video_id = section.next().unwrap();
+    // Delete the trailing ':'
+    video_id = &video_id[..video_id.len() - 1];
+
+    // Concatenate together the error message and restore whitespace
+    let error_msg = {
+        let mut tmp = String::new();
+        for word in section {
+            tmp = tmp + " " + word;
+        }
+        tmp
+    };
+
+    YtdlpError {video_id: video_id.to_string(), error_msg}
 }
