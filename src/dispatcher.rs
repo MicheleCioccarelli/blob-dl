@@ -10,14 +10,14 @@ pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
     let download_option = analyzer::analyze_url(config.url());
 
     // Generate a command according to the user's wishes
-    let mut command =assembling::generate_command(config.url(), &download_option?)? ;
+    let mut command = assembling::generate_command(config.url(), &download_option?)? ;
 
     #[cfg(debug_assertions)]
     println!("[DEBUG ytdl command : {:?}]", command);
 
     // Run the command
-    // let output = command.execute_output().expect("Error executing the command");
     run_and_observe(&mut command);
+    
     Ok(())
 }
 
@@ -116,6 +116,7 @@ fn ask_for_redownload(errors: Vec<YtdlpError>) -> Vec<usize> {
         .interact_on(&term).unwrap();
     user_selection
 }
+
 
 #[derive(Debug)]
 struct YtdlpError {

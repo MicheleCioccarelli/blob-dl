@@ -5,11 +5,6 @@ use super::super::*;
 pub(crate) struct YtVideoConfig<'a> {
     // Ref to the url stored in CliConfig
     url: &'a String,
-    /* Deleted:
-     *    /// All formats this video can be downloaded in, fetched using `youtube-dl -F url`
-     *    available_formats: VideoSpecs,
-     * If strange problems arise put this back
-     */
     chosen_format: VideoQualityAndFormatPreferences,
     output_path: String,
     media_selected: MediaSelection,

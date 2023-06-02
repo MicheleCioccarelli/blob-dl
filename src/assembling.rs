@@ -16,6 +16,22 @@ pub(crate) fn generate_command(url: &String, download_option: &analyzer::Downloa
     }
 }
 
+/// Downloads stuff in the future :)
+fn re_download(video_id: &str) {
+
+}
+
+/// Contains the download options for all videos
+/// todo Make this replace YtPlaylistConfig and YtVideoConfig
+#[derive(Debug)]
+struct GenericConfig {
+    chosen_format: youtube::VideoQualityAndFormatPreferences,
+    output_path: String,
+    media_selected: youtube::MediaSelection,
+    include_indexes: bool,
+}
+
+
 /// Asks for an directory to store downloaded file(s) in
 ///
 /// The current directory can be selected or one can be typed in

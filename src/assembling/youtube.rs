@@ -1,5 +1,6 @@
 pub mod yt_playlist;
 pub mod yt_video;
+pub mod config;
 use crate::error::{BlobdlError, BlobResult};
 
 use dialoguer::console::Term;
