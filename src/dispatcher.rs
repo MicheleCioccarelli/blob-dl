@@ -23,6 +23,8 @@ pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
 
 use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
+use dialoguer::{theme::ColorfulTheme, MultiSelect};
+use dialoguer::console::Term;
 
 /// Executes the yt-dlp command and analyzes its output.
 ///
@@ -35,32 +37,83 @@ fn run_and_observe(command: &mut Command) {
         .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to start yt-dlp process");
-    // todo this expect ^
+    // fixme this expect ^
 
     let stdout = BufReader::new(youtube_dl.stdout.take().unwrap());
     let stderr = BufReader::new(youtube_dl.stderr.take().unwrap());
 
-    // All the lines containing error information
-    let mut errors: Vec<String> = vec![];
+    // All the errors produced by yt-dlp
+    let mut errors: Vec<YtdlpError> = vec![];
 
     // Print to the console what youtube-dl is doing and update merged
     for line in stdout.lines().chain(stderr.lines()) {
-        // todo handle this Result
+        // fixme handle this Result
         let line = line.unwrap();
 
+        // todo when outputting things color error lines red
         // Currently verbosity options are ignored
         println!("{line}");
 
         if line.contains("ERROR:") {
-            errors.push(line);
+            errors.push(extract_error_info(&line));
         }
     }
 
-    #[cfg(debug_assertions)]
-    {
-        println!("Errors captured: ");
-        for line in errors {
-            println!("{:?}", extract_error_info(line.as_str()));
+    // Present the errors to the user
+    if !errors.is_empty() {
+        println!("The following videos could not be downloaded, you can select which to retry [spacebar for selection]");
+        let term = Term::buffered_stderr();
+
+        // Copy error message strings
+        let mut multiselected = Vec::new();
+
+        multiselected.push(String::from("Select all"));
+
+        for error in errors {
+            multiselected.push(error.to_string())
+        }
+
+        let user_selection = MultiSelect::with_theme(&ColorfulTheme::default())
+            .with_prompt("Which file do you want to re-download [spacebar to select]?")
+            .items(&multiselected[..])
+            .interact_on(&term).unwrap();
+
+        let mut to_be_redownloaded = Vec::new();
+
+        if !multiselected.is_empty() {
+            //if multiselected[0] != "Select all" {
+                // Now the strings need to be turned back into YtdlpError because multiselected only contains strings
+                // roadmap: print out if reverse parsing works!!!!
+                for video in multiselected {
+                    let mut it = video.split_whitespace();
+                    println!("Should be \"yt-video\": {:?}", it);
+                    // Skip "yt-video"
+                    it.next().unwrap();
+                    println!("Should be \"id:\": {:?}", it);
+                    // skip "id:"
+                    it.next().unwrap();
+                    println!("Should be the actual id: {:?}", it);
+                    let video_id = it.next().unwrap();
+                    // skip "Reason:"
+                    it.next();
+                    let reason =
+                        {
+                            let mut error_msg = String::new();
+                            for word in it {
+                                error_msg += word;
+                                error_msg += " ";
+                            }
+                            error_msg
+                        };
+
+                    println!("Should be the reason: {}", reason);
+
+                    to_be_redownloaded.push(YtdlpError{video_id: video_id.to_string(), error_msg: reason })
+                }
+            //} else {
+                // The user wants to re-download every video
+                //todo!()
+            //}
         }
     }
 }
@@ -71,6 +124,43 @@ struct YtdlpError {
     error_msg: String,
 }
 
+impl YtdlpError {
+    // todo refactor
+    // Construct a YtdlpError object from the string created by this stuct's Display implementation
+    fn from_string(string: &str) -> YtdlpError {
+        let mut it = string.split_whitespace();
+        // skip "yt-video"
+        it.next().unwrap();
+        // skip "id:"
+        it.next().unwrap();
+        let video_id = it.next().unwrap();
+        // skip "Reason:"
+        it.next().unwrap();
+
+        let mut error_msg = String::new();
+        for word in it {
+            error_msg += word;
+            error_msg += " ";
+        }
+
+        YtdlpError {
+            video_id: String::from(video_id),
+            error_msg
+        }
+    }
+}
+
+impl std::fmt::Display for YtdlpError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut result = String::new();
+        result = format!("yt-video id: {}", self.video_id);
+        result = format!("{}\n   Reason: {}", result, self.error_msg);
+
+        write!(f, "{}", result)
+    }
+}
+
+/// Expects a line which actually contains an error
 fn extract_error_info(error_line: &str) -> YtdlpError {
     // yt-dlp error line format: ERROR: [...] video_id: reason
     let mut section = error_line.split_whitespace();

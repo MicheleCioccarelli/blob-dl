@@ -24,7 +24,7 @@ mod error_message {
 
     pub const UNKNOWN_ISSUE_ERR: &str = "Congrats! You ran into an unknown issue, please file a report on blob-dl's github page :)";
 
-    // todo fix this message
+    // fixme fix this message
     pub const MISSING_ARGUMENT_ERR: &str = "A url is required for blob-dl to function [[please rephrase this error]]";
 
     pub const JSON_SERIALIZATION_ERR: &str = "There was a problem serializing this video's format information";

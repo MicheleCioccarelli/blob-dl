@@ -37,7 +37,7 @@ impl BlobdlError {
         match self {
             BlobdlError::QueryNotFound => println!("{}", BROKEN_URL_ERR),
 
-            // todo this error is unused
+            // fixme this error is unused
             BlobdlError::UnknownUrl=> println!("{}", BROKEN_URL_ERR),
 
             BlobdlError::UnsupportedWebsite=> println!("{}", UNSUPPORTED_WEBSITE_ERR),
