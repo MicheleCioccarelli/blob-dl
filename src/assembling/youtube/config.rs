@@ -41,13 +41,12 @@ impl<'a> DownloadConfig<'a> {
         chosen_format: youtube::VideoQualityAndFormatPreferences,
         output_path: String,
         media_selected: youtube::MediaSelection,
-        playlist_index: usize)
+    )   
         -> DownloadConfig
     {
         DownloadConfig { url, chosen_format, output_path, media_selected,
-            include_indexes: false, download_target: analyzer::DownloadOption::YtVideo(playlist_index) }
+            include_indexes: false, download_target: analyzer::DownloadOption::YtVideo(0) }
     }
-
 }
 
 // Command generation

@@ -1,10 +1,8 @@
-// Refactor some of these in the future
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
-use super::super::*;
-use super::config;
-use crate::assembling;
 
+use super::super::*;
+use crate::assembling::youtube::*;
 use crate::error::BlobResult;
 
 /// This is a wizard for downloading a youtube playlist
@@ -16,19 +14,19 @@ use crate::error::BlobResult;
 /// - Index inclusion
 ///
 /// Returns a fully configured YtPlaylistConfig, build_command() can be called
-pub fn assemble_data(url: &String) -> BlobResult<config::YtPlaylistConfig> {
+pub fn assemble_data(url: &String) -> BlobResult<config::DownloadConfig> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
-    let media_selected = get_media_selection(&term)?;
+    let media_selected = youtube::get_media_selection(&term)?;
 
     let chosen_format = format::get_format(&term, url, &media_selected)?;
 
-    let output_path = assembling::get_output_path(&term)?;
+    let output_path = get_output_path(&term)?;
 
     let include_indexes = get_index_preference(&term)?;
 
-    Ok(config::YtPlaylistConfig::new(
+    Ok(config::DownloadConfig::new_playlist(
         url,
         output_path,
         include_indexes,
@@ -58,13 +56,14 @@ mod format {
         }
     }
 
+    use crate::assembling::youtube::VideoSpecs;
     use super::*;
 
     /// Asks the user to choose a download format and quality
     ///
     /// The chosen format will be applied to the entire playlist
     pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
-        -> BlobResult<VideoQualityAndFormatPreferences>
+                             -> BlobResult<VideoQualityAndFormatPreferences>
     {
         // A list of all the format options that can be picked
         let format_options = vec![
@@ -160,8 +159,8 @@ mod format {
 
         // Each line in ytdl_formats contains all the format information for 1 video
         for (i, video_formats_json) in std::str::from_utf8(&json_formats.stdout)?
-                .lines()
-                .enumerate() {
+            .lines()
+            .enumerate() {
             let serialized_video = serialize_formats(video_formats_json)?;
             // Add the current video's formats to the list of all formats
             all_available_formats.add_video(serialized_video);

@@ -10,9 +10,9 @@ use std::env;
 /// [Rewrite this in the future] Calls the right wizard to generate the required command
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> BlobResult<std::process::Command> {
     match download_option {
-        analyzer::DownloadOption::YtPlaylist => Ok(youtube::yt_playlist::wizard::assemble_data(url)?.build_command()),
+        analyzer::DownloadOption::YtPlaylist => Ok(youtube::yt_playlist::assemble_data(url)?.build_command()),
 
-        analyzer::DownloadOption::YtVideo(playlist_id) => Ok(youtube::yt_video::wizard::assemble_data(url, *playlist_id)?.build_command()),
+        analyzer::DownloadOption::YtVideo(playlist_id) => Ok(youtube::yt_video::assemble_data(url, *playlist_id)?.build_command()),
     }
 }
 

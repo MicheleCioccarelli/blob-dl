@@ -1,17 +1,15 @@
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 
-use super::super::*;
 use crate::assembling;
-use crate::assembling::youtube::yt_video::config::YtVideoConfig;
-
+use crate::assembling::youtube::*;
 use crate::error::BlobResult;
 
 /// Returns a ConfigYtVideo object with all the necessary data
 /// to start downloading a youtube video
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> BlobResult<YtVideoConfig> {
+pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> BlobResult<config::DownloadConfig> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
@@ -21,7 +19,7 @@ pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> BlobResult<YtVi
 
     let output_path = assembling::get_output_path(&term)?;
 
-    Ok(YtVideoConfig::new(
+    Ok(config::DownloadConfig::new_video(
         url,
         chosen_format,
         output_path,
