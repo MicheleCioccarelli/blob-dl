@@ -32,6 +32,36 @@ use dialoguer::console::Term;
 ///
 /// It records which links fail download and their reason: if trying again can fix the issue it tells the user
 fn run_and_observe(command: &mut Command) {
+    // Run the command and record any errors
+    if let Some(errors) = run_command(command) {
+        // Some videos could not be downloaded
+
+        // Ask the user which videos they want to try to re-download
+        let user_selection = ask_for_redownload(errors);
+
+        if !user_selection.is_empty() {
+            if user_selection[0] == 0 {
+                // The user wants to re-download all the videos
+            } else {
+                // Only re-download the selected videos
+                for item in user_selection {
+                    match item {
+                        0 => {},
+                        _ => todo!(),
+                    };
+                }
+            }
+        }
+    } else {
+        // The command ran without any errors!
+        todo!()
+    }
+}
+
+/// Runs the command and displays the output to the console.
+///
+/// If yt-dlp runs into any errors, they are returned in a vector of Ytdlp errors (parsed Strings)
+fn run_command(command: &mut Command) -> Option<Vec<YtdlpError>> {
     // Run the command and capture its output
     let mut youtube_dl = command.stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -57,65 +87,34 @@ fn run_and_observe(command: &mut Command) {
         if line.contains("ERROR:") {
             errors.push(extract_error_info(&line));
         }
+    };
+
+    if errors.is_empty() {
+        None
+    } else {
+        Some(errors)
+    }
+}
+
+/// Shows the user which videos could not be downloaded and returns which have to be re-downloaded based on what the user wants
+fn ask_for_redownload(errors: Vec<YtdlpError>) -> Vec<usize> {
+    println!("The following videos could not be downloaded, you can select which to retry [spacebar for selection]");
+    let term = Term::buffered_stderr();
+
+    // Convert errors to string form, so they can be displayed on the terminal
+    let mut multiselected = Vec::new();
+
+    multiselected.push(String::from("Select all"));
+
+    for error in errors {
+        multiselected.push(error.to_string())
     }
 
-    // Present the errors to the user
-    if !errors.is_empty() {
-        println!("The following videos could not be downloaded, you can select which to retry [spacebar for selection]");
-        let term = Term::buffered_stderr();
-
-        // Copy error message strings
-        let mut multiselected = Vec::new();
-
-        multiselected.push(String::from("Select all"));
-
-        for error in errors {
-            multiselected.push(error.to_string())
-        }
-
-        let user_selection = MultiSelect::with_theme(&ColorfulTheme::default())
-            .with_prompt("Which file do you want to re-download [spacebar to select]?")
-            .items(&multiselected[..])
-            .interact_on(&term).unwrap();
-
-        let mut to_be_redownloaded = Vec::new();
-
-        if !multiselected.is_empty() {
-            //if multiselected[0] != "Select all" {
-                // Now the strings need to be turned back into YtdlpError because multiselected only contains strings
-                // roadmap: print out if reverse parsing works!!!!
-                for video in multiselected {
-                    let mut it = video.split_whitespace();
-                    println!("Should be \"yt-video\": {:?}", it);
-                    // Skip "yt-video"
-                    it.next().unwrap();
-                    println!("Should be \"id:\": {:?}", it);
-                    // skip "id:"
-                    it.next().unwrap();
-                    println!("Should be the actual id: {:?}", it);
-                    let video_id = it.next().unwrap();
-                    // skip "Reason:"
-                    it.next();
-                    let reason =
-                        {
-                            let mut error_msg = String::new();
-                            for word in it {
-                                error_msg += word;
-                                error_msg += " ";
-                            }
-                            error_msg
-                        };
-
-                    println!("Should be the reason: {}", reason);
-
-                    to_be_redownloaded.push(YtdlpError{video_id: video_id.to_string(), error_msg: reason })
-                }
-            //} else {
-                // The user wants to re-download every video
-                //todo!()
-            //}
-        }
-    }
+    let user_selection = MultiSelect::with_theme(&ColorfulTheme::default())
+        .with_prompt("Which file do you want to re-download [spacebar to select]?")
+        .items(&multiselected[..])
+        .interact_on(&term).unwrap();
+    user_selection
 }
 
 #[derive(Debug)]
