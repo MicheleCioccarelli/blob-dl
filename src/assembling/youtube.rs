@@ -94,7 +94,7 @@ fn serialize_formats(json_dump: &str) -> BlobResult<VideoSpecs> {
 
 // Common enums and structs
 /// Whether the user wants to download video files or audio-only
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) enum MediaSelection {
     FullVideo,
     VideoOnly,
@@ -135,7 +135,7 @@ struct VideoSpecs {
     formats: Vec<VideoFormat>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// What quality and format the user wants a specific video to be downloaded in
 pub(crate) enum VideoQualityAndFormatPreferences {
     // Code of the selected format

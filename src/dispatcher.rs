@@ -16,7 +16,7 @@ pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
     println!("[DEBUG ytdl command : {:?}]", command);
 
     // Run the command
-    run_and_observe(&mut command);
+    run_and_observe(&mut command.0, &command.1);
 
     Ok(())
 }
@@ -25,31 +25,41 @@ use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use dialoguer::{theme::ColorfulTheme, MultiSelect};
 use dialoguer::console::Term;
+use crate::assembling::youtube::config;
 
 /// Executes the yt-dlp command and analyzes its output.
 ///
 /// It filters what to show to the user according to verbosity options
 ///
 /// It records which links fail download and their reason: if trying again can fix the issue it tells the user
-fn run_and_observe(command: &mut Command) {
+fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
     // Run the command and record any errors
     if let Some(errors) = run_command(command) {
         // Some videos could not be downloaded
 
         // Ask the user which videos they want to try to re-download
-        let user_selection = ask_for_redownload(errors);
+        let user_selection = ask_for_redownload(&errors);
 
         if !user_selection.is_empty() {
             if user_selection[0] == 0 {
                 // The user wants to re-download all the videos
-
+                for video_to_re_download in &errors {
+                    // Re-download every video while keeping the current command configuration (quality, naming preference, ...)
+                    config.download_new_video(video_to_re_download.video_id());
+                }
+            } else if user_selection[0] == 1 {
+                    // The user doesn't want to re-download anything
             } else {
                 // Only re-download the selected videos
-                for item in user_selection {
-                    match item {
-                        0 => {},
-                        _ => todo!(),
-                    };
+                for i in user_selection {
+                    // Skip 0 and 1 because they are hard-coded options (select all or nothing)
+                    if i == 0 || i == 1 {
+                        continue;
+                    }
+
+                    // There is a 1:1 correspondence between the number in user_selection and
+                    // the index of the video it refers to in errors todo test this extensively
+                    config.download_new_video(errors[i - 2].video_id.as_str());
                 }
             }
         }
@@ -98,14 +108,16 @@ fn run_command(command: &mut Command) -> Option<Vec<YtdlpError>> {
 }
 
 /// Shows the user which videos could not be downloaded and returns which have to be re-downloaded based on what the user wants
-fn ask_for_redownload(errors: Vec<YtdlpError>) -> Vec<usize> {
+fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
     println!("The following videos could not be downloaded, you can select which to retry [spacebar for selection]");
     let term = Term::buffered_stderr();
 
     // Convert errors to string form, so they can be displayed on the terminal
     let mut multiselected = Vec::new();
 
+    // todo these hard-coded strings
     multiselected.push(String::from("Select all"));
+    multiselected.push(String::from("Don't re-download anything"));
 
     for error in errors {
         multiselected.push(error.to_string())
@@ -148,6 +160,10 @@ impl YtdlpError {
             video_id: String::from(video_id),
             error_msg
         }
+    }
+
+    pub fn video_id(&self) -> &String {
+        &self.video_id
     }
 }
 

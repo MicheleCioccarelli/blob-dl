@@ -1,7 +1,6 @@
 use crate::assembling::youtube;
 use crate::analyzer;
 use std::process;
-use crate::analyzer::DownloadOption;
 
 /// Contains all the information needed to download a youtube playlist [WIP]
 #[derive(Debug, Clone)]
@@ -53,11 +52,13 @@ impl DownloadConfig {
 // Command generation
 impl DownloadConfig {
     /// Builds a command according to the current configuration, which is also returned
+    ///
+    /// This function is meant for the main video-downloading task
     pub(crate) fn build_command(&self) -> (process::Command, DownloadConfig) {
         (
             match self.download_target {
-                DownloadOption::YtVideo(_) => self.build_yt_video_command(),
-                DownloadOption::YtPlaylist => self.build_yt_playlist_command(),
+                analyzer::DownloadOption::YtVideo(_) => self.build_yt_video_command(),
+                analyzer::DownloadOption::YtPlaylist => self.build_yt_playlist_command(),
             },
 
             self.clone()
@@ -113,6 +114,32 @@ impl DownloadConfig {
 
         command
     }
+
+    /// Downloads a new video while keeping the current preferences.
+    ///
+    /// This function is meant to be used to re-download videos which failed because of issues like bad internet
+    pub fn download_new_video(&self, video_id: &str) -> process::Command {
+        let mut command = process::Command::new("yt-dlp");
+
+        // Setup output directory and naming scheme
+        self.choose_output_path(&mut command);
+
+        // Makes the id live long enough to be used as an arg for command.
+        // If it was fetched from the next match arm the temporary &str would not outlive command
+        let id = match &self.chosen_format {
+            youtube::VideoQualityAndFormatPreferences::UniqueFormat(id) => id.to_string(),
+            _ => String::new(),
+        };
+
+        // Quality and format selection
+        self.choose_format(&mut command, id.as_str());
+
+        // Add the video's id
+        command.arg(video_id);
+
+        command
+    }
+
     fn choose_output_path(&self, command: &mut process::Command) {
         command.arg("-o");
         command.arg(
@@ -121,7 +148,7 @@ impl DownloadConfig {
                 // Add the user's output path (empty string for current directory)
                 path_and_scheme.push_str(self.output_path.as_str());
 
-                if self.download_target == DownloadOption::YtPlaylist {
+                if self.download_target == analyzer::DownloadOption::YtPlaylist {
                     // Create a directory named after the playlist
                     #[cfg(target_os = "windows")]
                     path_and_scheme.push_str("\\%(playlist)s\\");
@@ -205,27 +232,4 @@ impl DownloadConfig {
             }
         };
     }
-}
-
-/// Downloads the video specified in config
-fn build_re_download_video_command(config: &DownloadConfig) -> process::Command {
-    let mut command = process::Command::new("yt-dlp");
-
-    // Setup output directory and naming scheme
-    config.choose_output_path(&mut command);
-
-    // Makes the id live long enough to be used as an arg for command.
-    // If it was fetched from the next match arm the temporary &str would not outlive command
-    let id = match &config.chosen_format {
-        youtube::VideoQualityAndFormatPreferences::UniqueFormat(id) => id.to_string(),
-        _ => String::new(),
-    };
-
-    // Quality and format selection
-    config.choose_format(&mut command, id.as_str());
-
-    // Add the video's url
-    command.arg(config.url.clone());
-
-    command
 }

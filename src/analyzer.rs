@@ -5,7 +5,7 @@ use dialoguer::{theme::ColorfulTheme, Select};
 use crate::error::{BlobdlError, BlobResult};
 
 /// All of the supported sources
-#[derive(Debug, PartialOrd, PartialEq)]
+#[derive(Debug, PartialOrd, PartialEq, Clone)]
 pub enum DownloadOption {
     /// If the url refers to a video in a playlist and the user only wants to download the video,
     ///

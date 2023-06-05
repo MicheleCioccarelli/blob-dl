@@ -2,6 +2,7 @@ pub mod youtube;
 
 use crate::analyzer;
 use crate::error::BlobResult;
+use crate::assembling::youtube::config;
 
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
@@ -10,10 +11,10 @@ use std::env;
 /// Asks the user for specific download type specs (output path, download format, ...) and builds
 /// a yt-dlp command according to them
 ///
-/// Returns the command along with a DownloadConfig object, which contains all the user-specified specs
+/// Returns the command along with a DownloadConfig object, which contains all the user-specified preferences
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> BlobResult<(std::process::Command, youtube::config::DownloadConfig)> {
     // fixme these nested matches
-    // Get preferences from the user, various errors may occour
+    // Get preferences from the user, various errors may occur
     let unchecked_config = match download_option {
         analyzer::DownloadOption::YtPlaylist                    => youtube::yt_playlist::assemble_data(url),
 
@@ -27,11 +28,6 @@ pub(crate) fn generate_command(url: &String, download_option: &analyzer::Downloa
         }
         Err(err) => Err(err)
     }
-}
-
-/// Downloads stuff in the future :)
-fn re_download(video_id: &str) {
-
 }
 
 /// Contains the download options for all videos
