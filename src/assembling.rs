@@ -1,4 +1,4 @@
-mod youtube;
+pub mod youtube;
 
 use crate::analyzer;
 use crate::error::BlobResult;
@@ -7,12 +7,25 @@ use dialoguer::{theme::ColorfulTheme, Input, Select};
 use dialoguer::console::Term;
 use std::env;
 
-/// [Rewrite this in the future] Calls the right wizard to generate the required command
-pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> BlobResult<std::process::Command> {
-    match download_option {
-        analyzer::DownloadOption::YtPlaylist => Ok(youtube::yt_playlist::assemble_data(url)?.build_command()),
+/// Asks the user for specific download type specs (output path, download format, ...) and builds
+/// a yt-dlp command according to them
+///
+/// Returns the command along with a DownloadConfig object, which contains all the user-specified specs
+pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> BlobResult<(std::process::Command, youtube::config::DownloadConfig)> {
+    // fixme these nested matches
+    // Get preferences from the user, various errors may occour
+    let unchecked_config = match download_option {
+        analyzer::DownloadOption::YtPlaylist                    => youtube::yt_playlist::assemble_data(url),
 
-        analyzer::DownloadOption::YtVideo(playlist_id) => Ok(youtube::yt_video::assemble_data(url, *playlist_id)?.build_command()),
+        analyzer::DownloadOption::YtVideo(playlist_id) => youtube::yt_video::assemble_data(url, *playlist_id),
+    };
+
+    match unchecked_config {
+        Ok(safe) => {
+            let (command, local_config) = safe.build_command();
+            Ok((command, local_config))
+        }
+        Err(err) => Err(err)
     }
 }
 

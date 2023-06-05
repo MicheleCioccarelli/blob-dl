@@ -17,7 +17,7 @@ pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
 
     // Run the command
     run_and_observe(&mut command);
-    
+
     Ok(())
 }
 
@@ -42,6 +42,7 @@ fn run_and_observe(command: &mut Command) {
         if !user_selection.is_empty() {
             if user_selection[0] == 0 {
                 // The user wants to re-download all the videos
+
             } else {
                 // Only re-download the selected videos
                 for item in user_selection {
