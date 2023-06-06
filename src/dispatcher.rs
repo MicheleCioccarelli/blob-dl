@@ -40,12 +40,15 @@ fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
         // Ask the user which videos they want to try to re-download
         let user_selection = ask_for_redownload(&errors);
 
+        // The list of commands that have to be re-run in case of errors
+        let mut to_be_downloaded = Vec::new();
+
         if !user_selection.is_empty() {
             if user_selection[0] == 0 {
                 // The user wants to re-download all the videos
                 for video_to_re_download in &errors {
                     // Re-download every video while keeping the current command configuration (quality, naming preference, ...)
-                    config.download_new_video(video_to_re_download.video_id());
+                    to_be_downloaded.push(config.build_command_for_video(video_to_re_download.video_id()));
                 }
             } else if user_selection[0] == 1 {
                     // The user doesn't want to re-download anything
@@ -59,9 +62,12 @@ fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
 
                     // There is a 1:1 correspondence between the number in user_selection and
                     // the index of the video it refers to in errors todo test this extensively
-                    config.download_new_video(errors[i - 2].video_id.as_str());
+                    to_be_downloaded.push(config.build_command_for_video(errors[i - 2].video_id.as_str()));
                 }
             }
+        }
+        for mut com in to_be_downloaded {
+            run_command(&mut com);
         }
     } else {
         // The command ran without any errors!

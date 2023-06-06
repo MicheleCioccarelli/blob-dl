@@ -118,7 +118,7 @@ impl DownloadConfig {
     /// Downloads a new video while keeping the current preferences.
     ///
     /// This function is meant to be used to re-download videos which failed because of issues like bad internet
-    pub fn download_new_video(&self, video_id: &str) -> process::Command {
+    pub fn build_command_for_video(&self, video_id: &str) -> process::Command {
         let mut command = process::Command::new("yt-dlp");
 
         // Setup output directory and naming scheme
