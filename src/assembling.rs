@@ -54,7 +54,7 @@ fn get_output_path(term: &Term) -> BlobResult<String> {
         .with_prompt("Where do you want the downloaded file(s) to be saved?")
         .default(0)
         .items(output_path_options)
-        .interact_on(&term)?;
+        .interact_on(term)?;
 
     match output_path {
         // Return the current directory

@@ -17,6 +17,11 @@ const SEE_HELP_PAGE: &str = "Type blob-dl --help for a list of all the available
 
 const USAGE_MSG: &str = "When the commands are complete make me a usage message plz :)";
 
+// Youtube's error messages
+const PRIVATE_VIDEO: &str = "Private video. Sign in if you've been granted access to this video";
+
+
+// blob-dl custom error messages
 mod error_message {
     pub const BROKEN_URL_ERR: &str = "The url provided wasn't recognized, try using a regular youtube url";
 

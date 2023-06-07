@@ -1,7 +1,8 @@
+use std::collections::HashMap;
+
 use crate::analyzer;
 use crate::parser;
 use crate::assembling;
-
 use crate::error::BlobResult;
 
 /// Calls the right wizard according to what the url refers to, then it runs the ytdl-command and handles errors
@@ -71,8 +72,18 @@ fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
         }
     } else {
         // The command ran without any errors!
-        todo!()
+        #[cfg(debug_assertions)]
+        println!("The command ran without any errors!! :)");
     }
+}
+
+/// A list of all the documented youtube error messages and whether they are recoverable.
+///
+/// If an error is recoverable, the user is presented with the choice of downloading it again
+fn init_error_msg_lut() -> HashMap<&'static str, bool> {
+    HashMap::from([
+        (crate::PRIVATE_VIDEO, false)
+    ])
 }
 
 /// Runs the command and displays the output to the console.
@@ -122,8 +133,8 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
     let mut multiselected = Vec::new();
 
     // todo these hard-coded strings
-    multiselected.push(String::from("Select all"));
-    multiselected.push(String::from("Don't re-download anything"));
+    multiselected.push(String::from("Select all\n"));
+    multiselected.push(String::from("Don't re-download anything\n"));
 
     for error in errors {
         multiselected.push(error.to_string())
@@ -176,8 +187,8 @@ impl YtdlpError {
 impl std::fmt::Display for YtdlpError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut result = String::new();
-        result = format!("yt-video id: {}", self.video_id);
-        result = format!("{}\n   Reason: {}", result, self.error_msg);
+        result = format!("{} {}", "yt-video id:", self.video_id);
+        result = format!("{}\n   {} {}\n", result, "Reason:", self.error_msg);
 
         write!(f, "{}", result)
     }
