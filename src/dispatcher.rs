@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use colored::Colorize;
+
 use crate::analyzer;
 use crate::parser;
 use crate::assembling;
@@ -82,7 +84,7 @@ fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
 /// If an error is recoverable, the user is presented with the choice of downloading it again
 fn init_error_msg_lut() -> HashMap<&'static str, bool> {
     HashMap::from([
-        (crate::PRIVATE_VIDEO, false),
+       // (crate::PRIVATE_VIDEO, false),
         (crate::NONEXISTENT_PLAYLIST, false),
         (crate::HOMEPAGE_REDIRECT, false),
         (crate::NETWORK_FAIL, true),
@@ -111,12 +113,13 @@ fn run_command(command: &mut Command) -> Option<Vec<YtdlpError>> {
         // fixme handle this Result
         let line = line.unwrap();
 
-        // todo when outputting things color error lines red
-        // Currently verbosity options are ignored
-        println!("{}", line);
-
         if line.contains("ERROR:") {
             errors.push(extract_error_info(&line));
+            // Color error messages red
+            println!("{}", line.bold().red());
+        } else {
+            // Currently verbosity options are ignored
+            println!("{}", line);
         }
     };
 
@@ -129,13 +132,13 @@ fn run_command(command: &mut Command) -> Option<Vec<YtdlpError>> {
 
 /// Shows the user which videos could not be downloaded and returns which have to be re-downloaded based on what the user wants
 fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
-    println!("The following videos could not be downloaded, you can select which to retry [spacebar for selection]");
     let term = Term::buffered_stderr();
 
     let lut = init_error_msg_lut();
 
     // Convert errors to string form, so they can be displayed on the terminal
     let mut user_options = Vec::new();
+    let mut unrecoverable_errors = Vec::new();
 
     // todo these hard-coded strings
     user_options.push(String::from(crate::SELECT_ALL));
@@ -149,6 +152,7 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
                 user_options.push(error.to_string())
             } else {
                 // Don't bother asking to re-download the error
+                unrecoverable_errors.push(error);
             }
         } else {
             // The error is undocumented, by default it is brought to the user
@@ -156,11 +160,25 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
         }
     }
 
-    let user_selection = MultiSelect::with_theme(&ColorfulTheme::default())
-        .with_prompt("Which file do you want to re-download [spacebar to select]?")
-        .items(&user_options[..])
-        .interact_on(&term).unwrap();
-    user_selection
+    if !unrecoverable_errors.is_empty() {
+        println!("{}", crate::UNRECOVERABLE_ERROR_PROMPT.bold().cyan());
+        for error in unrecoverable_errors {
+            println!("{}", error);
+        }
+    }
+
+    if user_options.len() > 2 {
+        // If user_options has only 2 elements there aren't any videos to re-download
+        let user_selection = MultiSelect::with_theme(&ColorfulTheme::default())
+            .with_prompt(crate::ERROR_RETRY_PROMPT)
+            .items(&user_options[..])
+            .defaults(&[true])
+            .interact_on(&term).unwrap();
+
+        println!("{}", crate::DEBUG_REPORT_PROMPT.magenta());
+        return user_selection
+    }
+    Vec::new()
 }
 
 

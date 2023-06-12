@@ -17,6 +17,11 @@ const SEE_HELP_PAGE: &str = "Type blob-dl --help for a list of all the available
 
 const USAGE_MSG: &str = "When the commands are complete make me a usage message plz :)";
 
+const ERROR_RETRY_PROMPT: &str = "The following videos could not be downloaded but retrying might help, choose which videos to re-download [spacebar to select]";
+
+const UNRECOVERABLE_ERROR_PROMPT: &str = "The following videos could not be downloaded due to unrecoverable errors";
+
+const DEBUG_REPORT_PROMPT: &str = "By default new errors are flagged as recoverable, if any unrecoverable errors are flagged incorrectly please report them to the github page :)";
 
 const SELECT_ALL: &str = "Select all\n";
 const SELECT_NOTHING: &str = "Don't re-download anything\n";
