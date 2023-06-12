@@ -17,9 +17,18 @@ const SEE_HELP_PAGE: &str = "Type blob-dl --help for a list of all the available
 
 const USAGE_MSG: &str = "When the commands are complete make me a usage message plz :)";
 
-// Youtube's error messages
-const PRIVATE_VIDEO: &str = "Private video. Sign in if you've been granted access to this video";
 
+const SELECT_ALL: &str = "Select all\n";
+const SELECT_NOTHING: &str = "Don't re-download anything\n";
+
+// Youtube's error messages
+const PRIVATE_VIDEO: &str = " Private video. Sign in if you've been granted access to this video";
+
+const NONEXISTENT_PLAYLIST: &str = " YouTube said: The playlist does not exist.";
+
+const HOMEPAGE_REDIRECT: &str = " The channel/playlist does not exist and the URL redirected to youtube.com home page";
+
+const NETWORK_FAIL: &str = " Unable to download API page: <urlopen error [Errno -3] Temporary failure in name resolution> (caused by URLError(gaierror(-3, 'Temporary failure in name resolution')))";
 
 // blob-dl custom error messages
 mod error_message {

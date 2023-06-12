@@ -82,7 +82,10 @@ fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
 /// If an error is recoverable, the user is presented with the choice of downloading it again
 fn init_error_msg_lut() -> HashMap<&'static str, bool> {
     HashMap::from([
-        (crate::PRIVATE_VIDEO, false)
+        (crate::PRIVATE_VIDEO, false),
+        (crate::NONEXISTENT_PLAYLIST, false),
+        (crate::HOMEPAGE_REDIRECT, false),
+        (crate::NETWORK_FAIL, true),
     ])
 }
 
@@ -110,7 +113,7 @@ fn run_command(command: &mut Command) -> Option<Vec<YtdlpError>> {
 
         // todo when outputting things color error lines red
         // Currently verbosity options are ignored
-        println!("{line}");
+        println!("{}", line);
 
         if line.contains("ERROR:") {
             errors.push(extract_error_info(&line));
@@ -129,20 +132,33 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
     println!("The following videos could not be downloaded, you can select which to retry [spacebar for selection]");
     let term = Term::buffered_stderr();
 
+    let lut = init_error_msg_lut();
+
     // Convert errors to string form, so they can be displayed on the terminal
-    let mut multiselected = Vec::new();
+    let mut user_options = Vec::new();
 
     // todo these hard-coded strings
-    multiselected.push(String::from("Select all\n"));
-    multiselected.push(String::from("Don't re-download anything\n"));
+    user_options.push(String::from(crate::SELECT_ALL));
+    user_options.push(String::from(crate::SELECT_NOTHING));
 
     for error in errors {
-        multiselected.push(error.to_string())
+        // If the current error message is documented
+        if let Some(error_is_recoverable) = lut.get(error.error_msg.as_str()) {
+            if *error_is_recoverable {
+                // It makes sense to try a re-download
+                user_options.push(error.to_string())
+            } else {
+                // Don't bother asking to re-download the error
+            }
+        } else {
+            // The error is undocumented, by default it is brought to the user
+            user_options.push(error.to_string())
+        }
     }
 
     let user_selection = MultiSelect::with_theme(&ColorfulTheme::default())
         .with_prompt("Which file do you want to re-download [spacebar to select]?")
-        .items(&multiselected[..])
+        .items(&user_options[..])
         .interact_on(&term).unwrap();
     user_selection
 }
