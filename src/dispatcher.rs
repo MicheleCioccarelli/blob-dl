@@ -79,15 +79,36 @@ fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
     }
 }
 
+/// Returns whether it makes sense to try downloading the video again
+fn is_recoverable(error: &YtdlpError, table: &HashMap<&'static str, bool>) -> bool {
+    if error.error_msg.contains(crate::VIDEO_UNAVAILABLE) {
+        return false;
+    }
+    if let Some(result) = table.get(error.error_msg.as_str()) {
+        return if *result == false {
+            false
+        } else {
+            true
+        }
+    } else {
+        // By default undocumented errors are flagged as recoverable
+        true
+    }
+}
+
 /// A list of all the documented youtube error messages and whether they are recoverable.
 ///
 /// If an error is recoverable, the user is presented with the choice of downloading it again
 fn init_error_msg_lut() -> HashMap<&'static str, bool> {
     HashMap::from([
-       // (crate::PRIVATE_VIDEO, false),
-        (crate::NONEXISTENT_PLAYLIST, false),
-        (crate::HOMEPAGE_REDIRECT, false),
-        (crate::NETWORK_FAIL, true),
+        (crate::NONEXISTENT_PLAYLIST,   false),
+        (crate::PRIVATE_VIDEO,          false),
+        (crate::HOMEPAGE_REDIRECT,      false),
+        (crate::VIOLENT_VIDEO,          false),
+        (crate::REMOVED_VIDEO,          false),
+        (crate::YTDLP_GAVE_UP,          false),
+        (crate::VIDEO_NOT_FOUND,        false),
+        (crate::NETWORK_FAIL,           true),
     ])
 }
 
@@ -145,25 +166,20 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
     user_options.push(String::from(crate::SELECT_NOTHING));
 
     for error in errors {
-        // If the current error message is documented
-        if let Some(error_is_recoverable) = lut.get(error.error_msg.as_str()) {
-            if *error_is_recoverable {
-                // It makes sense to try a re-download
-                user_options.push(error.to_string())
-            } else {
-                // Don't bother asking to re-download the error
-                unrecoverable_errors.push(error);
-            }
-        } else {
-            // The error is undocumented, by default it is brought to the user
+        // If the current error is recoverable
+        if is_recoverable(error, &lut) {
+            // It makes sense to try a re-download
             user_options.push(error.to_string())
+        } else {
+            // Don't bother asking to re-download the error
+            unrecoverable_errors.push(error);
         }
     }
 
     if !unrecoverable_errors.is_empty() {
         println!("{}", crate::UNRECOVERABLE_ERROR_PROMPT.bold().cyan());
         for error in unrecoverable_errors {
-            println!("{}", error);
+            println!("   {}", error);
         }
     }
 
@@ -172,7 +188,6 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
         let user_selection = MultiSelect::with_theme(&ColorfulTheme::default())
             .with_prompt(crate::ERROR_RETRY_PROMPT)
             .items(&user_options[..])
-            .defaults(&[true])
             .interact_on(&term).unwrap();
 
         println!("{}", crate::DEBUG_REPORT_PROMPT.magenta());

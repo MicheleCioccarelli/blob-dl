@@ -67,14 +67,15 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
             };
         }
     }
+    // fixme sto bordello
     if yt_url.path().contains("playlist") {
         return Ok(DownloadOption::YtPlaylist);
-    } else /*if yt_url.path().contains("watch") ||
-        yt_url.path().contains("/v/") ||
-        yt_url.path() == ""*/
-    {
-        return Ok(DownloadOption::YtVideo(0));
+    } else if let Some(res) = yt_url.query() {
+        if res.contains("list") {
+            return Ok(DownloadOption::YtPlaylist);
+        }
     }
+    return Ok(DownloadOption::YtVideo(0));
 
     // The url doesn't refer to a youtube video/playlist (maybe a user, etc)
     println!("Youtube url not recognized as a video/playlist");

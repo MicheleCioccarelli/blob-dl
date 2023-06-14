@@ -17,7 +17,7 @@ const SEE_HELP_PAGE: &str = "Type blob-dl --help for a list of all the available
 
 const USAGE_MSG: &str = "When the commands are complete make me a usage message plz :)";
 
-const ERROR_RETRY_PROMPT: &str = "The following videos could not be downloaded but retrying might help, choose which videos to re-download [spacebar to select]";
+const ERROR_RETRY_PROMPT: &str = "The following videos weren't downloaded but retrying might help, choose which videos to re-download [spacebar to select]";
 
 const UNRECOVERABLE_ERROR_PROMPT: &str = "The following videos could not be downloaded due to unrecoverable errors";
 
@@ -34,6 +34,17 @@ const NONEXISTENT_PLAYLIST: &str = " YouTube said: The playlist does not exist."
 const HOMEPAGE_REDIRECT: &str = " The channel/playlist does not exist and the URL redirected to youtube.com home page";
 
 const NETWORK_FAIL: &str = " Unable to download API page: <urlopen error [Errno -3] Temporary failure in name resolution> (caused by URLError(gaierror(-3, 'Temporary failure in name resolution')))";
+
+const VIOLENT_VIDEO: &str = " This video has been removed for violating YouTube's policy on violent or graphic content";
+
+const REMOVED_VIDEO: &str = " Video unavailable. This video has been removed by the uploader";
+
+const VIDEO_NOT_FOUND: &str = " not found, unable to continue";
+
+const YTDLP_GAVE_UP: &str = " error: HTTP Error 403: Forbidden. Giving up after 10 retries";
+
+// All copyright error messages begin with this
+const VIDEO_UNAVAILABLE: &str = " Video unavailable";
 
 // blob-dl custom error messages
 mod error_message {
