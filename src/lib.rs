@@ -6,6 +6,8 @@ mod run;
 mod error;
 
 // Hard-coded prompts
+pub const YTDLP_NOT_INSTALLED: &str = "blob-dl is a wrapper around yt-dlp and cannot function without it.\nPlease install yt-dlp from the official github page: https://github.com/yt-dlp/yt-dlp";
+
 const BEST_QUALITY_PROMPT: &str = "Best possible quality for each video [ffmpeg required]";
 
 const SMALLEST_QUALITY_PROMPT: &str = "Smallest file size for each video";

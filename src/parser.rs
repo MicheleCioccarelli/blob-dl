@@ -12,18 +12,18 @@ pub fn parse_config() -> BlobResult<CliConfig> {
             Arg::new("verbose")
                 .short('v')
                 .long("verbose")
-                .help("Show everything produced by yt-dlp")
+                .help("Show all the output produced by yt-dlp")
                 .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("quiet")
                 .short('q')
                 .long("quiet")
-                .help("Silences all output except for the final error summary")
+                .help("Silence all output except for the final error summary")
                 .action(ArgAction::SetTrue),
         )
         .arg(Arg::new("URL")
-            .help("Url to the youtube video/playlist that you want to download")
+            .help("Link to the youtube video/playlist that you want to download")
         )
         .get_matches();
 
