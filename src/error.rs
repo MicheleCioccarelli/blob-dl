@@ -67,7 +67,6 @@ impl BlobdlError {
 
 
 // Implementing conversions and boilerplate
-
 impl std::fmt::Display for BlobdlError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Hi :) I am the BlobdlError default message, I shouldn't show up, if you see me please report me to the github page")
@@ -84,5 +83,62 @@ impl From<std::io::Error> for BlobdlError {
 impl From<std::str::Utf8Error> for BlobdlError {
     fn from(_: std::str::Utf8Error) -> Self {
         BlobdlError::Utf8Error
+    }
+}
+
+// Used in run.rs
+/// Stores the information found in yt-dlp's error-lines output
+#[derive(Debug)]
+pub(crate) struct YtdlpError {
+    //todo make these fields private
+    pub video_id: String,
+    pub error_msg: String,
+}
+
+impl YtdlpError {
+    pub fn video_id(&self) -> &String {
+        &self.video_id
+    }
+
+    pub fn error_msg(&self) -> &String {
+        &self.error_msg
+    }
+}
+
+impl std::fmt::Display for YtdlpError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut result = String::new();
+        result = format!("{} {}", "yt-video id:", self.video_id);
+        result = format!("{}\n   {} {}\n", result, "Reason:", self.error_msg);
+
+        write!(f, "{}", result)
+    }
+}
+
+impl YtdlpError {
+    /// Parses a YtdlpError object from a ytdlp line which contains an error
+    pub fn from_error_output(error_line: &str) -> YtdlpError {
+        // yt-dlp error line format: ERROR: [...] video_id: reason
+        let mut section = error_line.split_whitespace();
+
+        // Skip ERROR:
+        section.next().unwrap();
+        // Skip [...]
+        section.next().unwrap();
+
+        let mut video_id = section.next().unwrap();
+        // Delete the trailing ':'
+        video_id = &video_id[..video_id.len() - 1];
+
+        // Concatenate together the error message and restore whitespace
+        let error_msg = {
+            let mut tmp = String::new();
+            for word in section {
+                tmp = tmp + " " + word;
+            }
+            tmp
+        };
+
+        YtdlpError { video_id: video_id.to_string(), error_msg }
     }
 }

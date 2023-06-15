@@ -2,6 +2,7 @@ pub mod parser;
 pub mod assembling;
 pub mod analyzer;
 pub mod dispatcher;
+mod run;
 mod error;
 
 // Hard-coded prompts
