@@ -16,7 +16,7 @@ pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
     println!("[DEBUG ytdl command : {:?}]", command);
 
     // Run the command
-    run::run_and_observe(&mut command.0, &command.1);
+    run::run_and_observe(&mut command.0, &command.1, config.verbosity());
 
     Ok(())
 }

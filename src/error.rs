@@ -90,9 +90,8 @@ impl From<std::str::Utf8Error> for BlobdlError {
 /// Stores the information found in yt-dlp's error-lines output
 #[derive(Debug)]
 pub(crate) struct YtdlpError {
-    //todo make these fields private
-    pub video_id: String,
-    pub error_msg: String,
+    video_id: String,
+    error_msg: String,
 }
 
 impl YtdlpError {

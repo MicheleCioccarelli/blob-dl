@@ -5,6 +5,7 @@ use dialoguer::console::Term;
 use std::collections::HashMap;
 use colored::Colorize;
 
+use crate::parser;
 use crate::error::YtdlpError;
 use crate::assembling::youtube::config;
 
@@ -13,9 +14,9 @@ use crate::assembling::youtube::config;
 /// It filters what to show to the user according to verbosity options
 ///
 /// It records which videos fail to download and the reason: if trying again can fix the issue the user can choose to retry
-pub fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
+pub fn run_and_observe(command: &mut Command, download_config: &config::DownloadConfig, verbosity: &parser::Verbosity) {
     // Run the command and record any errors
-    if let Some(errors) = run_command(command) {
+    if let Some(errors) = run_command(command, verbosity) {
         // Some videos could not be downloaded
 
         // Ask the user which videos they want to try to re-download
@@ -29,7 +30,7 @@ pub fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
                 // The user wants to re-download all the videos
                 for video_to_re_download in &errors {
                     // Re-download every video while keeping the current command configuration (quality, naming preference, ...)
-                    to_be_downloaded.push(config.build_command_for_video(video_to_re_download.video_id()));
+                    to_be_downloaded.push(download_config.build_command_for_video(video_to_re_download.video_id()));
                 }
             } else if user_selection[0] == 1 {
                 // The user doesn't want to re-download anything
@@ -43,12 +44,12 @@ pub fn run_and_observe(command: &mut Command, config: &config::DownloadConfig) {
 
                     // There is a 1:1 correspondence between the number in user_selection and
                     // the index of the video it refers to in errors
-                    to_be_downloaded.push(config.build_command_for_video(errors[i - 2].video_id().as_str()));
+                    to_be_downloaded.push(download_config.build_command_for_video(errors[i - 2].video_id().as_str()));
                 }
             }
         }
         for mut com in to_be_downloaded {
-            run_command(&mut com);
+            run_command(&mut com, verbosity);
         }
     } else {
         // The command ran without any errors!
@@ -93,7 +94,7 @@ fn init_error_msg_lut() -> HashMap<&'static str, bool> {
 /// Runs the command and displays the output to the console.
 ///
 /// If yt-dlp runs into any errors, they are returned in a vector of Ytdlp errors (parsed Strings)
-fn run_command(command: &mut Command) -> Option<Vec<YtdlpError>> {
+fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<Vec<YtdlpError>> {
     // Run the command and capture its output
     let mut youtube_dl = command.stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -107,20 +108,50 @@ fn run_command(command: &mut Command) -> Option<Vec<YtdlpError>> {
     // All the errors produced by yt-dlp
     let mut errors: Vec<YtdlpError> = vec![];
 
-    // Print to the console what youtube-dl is doing and update merged
-    for line in stdout.lines().chain(stderr.lines()) {
-        // fixme handle this Result
-        let line = line.unwrap();
+    match verbosity {
+        parser::Verbosity::Quiet   => {
+            // This has to be run or the command does nothing
+            for line in stdout.lines().chain(stderr.lines()) {
+                let line = line.unwrap();
 
-        if line.contains("ERROR:") {
-            errors.push(YtdlpError::from_error_output(&line));
-            // Color error messages red
-            println!("{}", line.bold().red());
-        } else {
-            // Currently verbosity options are ignored
-            println!("{}", line);
+                // Keep track of errors without displaying anything
+                if line.contains("ERROR:") {
+                    errors.push(YtdlpError::from_error_output(&line));
+                }
+            }
+        },
+
+        parser::Verbosity::Default => {
+            for line in stdout.lines().chain(stderr.lines()) {
+                let line = line.unwrap();
+
+                // Only show download/error lines
+                if line.contains("[download]") {
+                    println!("{}", line);
+                } else if line.contains("ERROR:") {
+                    errors.push(YtdlpError::from_error_output(&line));
+                    // Color error messages red
+                    println!("{}", line.bold().red());
+                }
+            }
+        },
+
+        parser::Verbosity::Verbose => {
+            // Print to the console everything that yt-dlp is doing
+            for line in stdout.lines().chain(stderr.lines()) {
+                // fixme handle this Result
+                let line = line.unwrap();
+
+                if line.contains("ERROR:") {
+                    errors.push(YtdlpError::from_error_output(&line));
+                    // Color error messages red
+                    println!("{}", line.bold().red());
+                } else {
+                    println!("{}", line);
+                }
+            }
         }
-    };
+    }
 
     if errors.is_empty() {
         None
