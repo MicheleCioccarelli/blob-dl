@@ -1,5 +1,6 @@
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
+use which::which;
 
 use super::super::*;
 use crate::assembling::youtube::*;
@@ -65,26 +66,48 @@ mod format {
     pub(super) fn get_format(term: &Term, url: &str, media_selected: &MediaSelection)
                              -> BlobResult<VideoQualityAndFormatPreferences>
     {
+
         // A list of all the format options that can be picked
-        let format_options = vec![
-            crate::BEST_QUALITY_PROMPT,
-            crate::SMALLEST_QUALITY_PROMPT,
-            crate::YT_FORMAT_PROMPT,
-            crate::CONVERT_FORMAT_PROMPT,
-        ];
+        let mut format_options: Vec<&str> = vec![];
+        format_options.push(crate::BEST_QUALITY_PROMPT_PLAYLIST);
+        format_options.push(crate::SMALLEST_QUALITY_PROMPT_PLAYLIST);
 
-        // Set up a prompt for the user
-        let user_selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Which quality do you want to apply to all videos?")
-            .default(0)
-            .items(&format_options)
-            .interact_on(term)?;
+        if which("ffmpeg").is_ok() {
+            // If ffmpeg is installed in the system
+            match media_selected {
+                MediaSelection::AudioOnly => format_options.push(crate::CONVERT_FORMAT_PROMPT_AUDIO),
+                _ => format_options.push(crate::CONVERT_FORMAT_PROMPT_VIDEO_PLAYLIST)
+            }
 
-        match user_selection {
-            0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
-            1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
-            2 => get_format_from_yt(term, url, media_selected),
-            _ => convert_to_format(term, media_selected),
+            format_options.push(crate::YT_FORMAT_PROMPT_PLAYLIST);
+
+            // Set up a prompt for the user
+            let user_selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Which quality or format do you want to apply to all videos?")
+                .default(0)
+                .items(&format_options)
+                .interact_on(term)?;
+            match user_selection {
+                0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
+                1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
+                2 => convert_to_format(term, media_selected),
+                _ => get_format_from_yt(term, url, media_selected),
+            }
+        } else {
+            // ffmpeg isn't installed, so ffmpeg-exclusive features are unavailable (video remuxing)
+            format_options.push(crate::YT_FORMAT_PROMPT_PLAYLIST);
+
+            // Set up a prompt for the user
+            let user_selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Which quality or format do you want to apply to all videos?")
+                .default(0)
+                .items(&format_options)
+                .interact_on(term)?;
+            match user_selection {
+                0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
+                1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
+                _ => get_format_from_yt(term, url, media_selected),
+            }
         }
     }
 
@@ -205,14 +228,13 @@ fn get_index_preference(term: &Term) -> BlobResult<bool> {
 
     // Ask the user which format they want the downloaded files to be in
     let index_preference = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Do you want the video's index (from the playlist) to be prefixed in its filename?")
+        .with_prompt("Do you want the video's index (in the playlist) to be prefixed to its filename?")
         .default(0)
         .items(download_formats)
         .interact_on(term)?;
 
     match index_preference {
         0 => Ok(true),
-        1 => Ok(false),
-        _ => panic!("The only options are 0 and 1")
+        _ => Ok(false),
     }
 }

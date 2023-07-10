@@ -19,7 +19,7 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
 
     // Ask the user which format they want the downloaded files to be in
     let media_selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Do you want to download video file(s) or audio-only?")
+        .with_prompt("What kind of file(s) do you want to download?")
         .default(0)
         .items(download_formats)
         .interact_on(term)?;

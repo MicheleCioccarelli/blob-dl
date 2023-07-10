@@ -1,5 +1,6 @@
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
+use which::which;
 
 use crate::assembling;
 use crate::assembling::youtube::*;
@@ -38,26 +39,43 @@ mod format {
                              -> BlobResult<VideoQualityAndFormatPreferences>
     {
         // A list of all the format options that can be picked
-        let format_options = vec![
-            crate::BEST_QUALITY_PROMPT,
-            crate::SMALLEST_QUALITY_PROMPT,
-            crate::YT_FORMAT_PROMPT,
-            crate::CONVERT_FORMAT_PROMPT,
-        ];
+        let mut format_options: Vec<&str> = vec![];
+        format_options.push(crate::BEST_QUALITY_PROMPT_SINGLE_VIDEO);
+        format_options.push(crate::SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO);
 
-        // Set up a prompt for the user
-        let user_selection = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Which format do you want to apply to the video?")
-            .default(0)
-            .items(&format_options)
-            .interact_on(term)?;
+        if which("ffmpeg").is_ok() {
+            // If ffmpeg is installed in the system
+            format_options.push(crate::CONVERT_FORMAT_PROMPT_VIDEO_SINGLE_VIDEO);
+            format_options.push(crate::YT_FORMAT_PROMPT_SINGLE_VIDEO);
 
-        // See individual function documentations for more context
-        match user_selection {
-            0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
-            1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
-            2 => get_format_from_yt(term, url, media_selected, playlist_id),
-            _ => convert_to_format(term, media_selected),
+            // Set up a prompt for the user
+            let user_selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Which quality or format do you want to apply to the video?")
+                .default(0)
+                .items(&format_options)
+                .interact_on(term)?;
+            match user_selection {
+                0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
+                1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
+                2 => convert_to_format(term, media_selected),
+                _ => get_format_from_yt(term, url, media_selected, playlist_id),
+            }
+        } else {
+            format_options.push(crate::YT_FORMAT_PROMPT_SINGLE_VIDEO);
+
+            // Set up a prompt for the user
+            let user_selection = Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Which quality or format do you want to apply to the video?")
+                .default(0)
+                .items(&format_options)
+                .interact_on(term)?;
+
+            // See individual function documentations for more context
+            match user_selection {
+                0 => Ok(VideoQualityAndFormatPreferences::BestQuality),
+                1 => Ok(VideoQualityAndFormatPreferences::SmallestSize),
+                _ => get_format_from_yt(term, url, media_selected, playlist_id),
+            }
         }
     }
 

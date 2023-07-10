@@ -8,13 +8,23 @@ mod error;
 // Hard-coded prompts
 pub const YTDLP_NOT_INSTALLED: &str = "blob-dl is a wrapper around yt-dlp and cannot function without it.\nPlease install yt-dlp from the official github page: https://github.com/yt-dlp/yt-dlp";
 
-const BEST_QUALITY_PROMPT: &str = "Best possible quality for each video [ffmpeg required]";
+const BEST_QUALITY_PROMPT_PLAYLIST: &str = "Best possible quality for each video";
 
-const SMALLEST_QUALITY_PROMPT: &str = "Smallest file size for each video";
+const BEST_QUALITY_PROMPT_SINGLE_VIDEO: &str = "Best possible quality";
 
-const YT_FORMAT_PROMPT: &str = "Choose a file format for each video (only youtube-supported formats for this video) [no ffmpeg]";
+const SMALLEST_QUALITY_PROMPT_PLAYLIST: &str = "Smallest file size for each video";
 
-const CONVERT_FORMAT_PROMPT: &str = "Choose a file format for each video (any format) [ffmpeg required]";
+const SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO: &str = "Smallest file size";
+
+const YT_FORMAT_PROMPT_PLAYLIST: &str = "Choose a file format to apply to every video (only formats available for all videos are shown)";
+
+const YT_FORMAT_PROMPT_SINGLE_VIDEO: &str = "Choose a file format to apply to the video";
+
+const CONVERT_FORMAT_PROMPT_VIDEO_PLAYLIST: &str = "Choose a format to recode all the videos to";
+
+const CONVERT_FORMAT_PROMPT_VIDEO_SINGLE_VIDEO: &str = "Choose a format to recode the video to";
+
+const CONVERT_FORMAT_PROMPT_AUDIO: &str = "Choose an audio format to convert the audios to";
 
 const SEE_HELP_PAGE: &str = "Type blob-dl --help for a list of all the available options";
 
