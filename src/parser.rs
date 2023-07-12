@@ -4,10 +4,10 @@ use crate::error::{BlobdlError, BlobResult};
 
 pub fn parse_config() -> BlobResult<CliConfig> {
     let matches = Command::new("blob-dl")
-        .version("1.0 tested with yt-dlp 2023.03.04")
+        .version("2023.07.12")
         .author("cioccarellimi@gmail.com")
-        .about("A very convenient wrapper")
-        .long_about("Long about")
+        .about("A cli utility to make downloading youtube videos in various formats easy")
+        .long_about("A cli utility to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!")
         .arg(
             Arg::new("verbose")
                 .short('v')

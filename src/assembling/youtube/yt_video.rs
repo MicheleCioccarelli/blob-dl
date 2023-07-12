@@ -5,6 +5,7 @@ use which::which;
 use crate::assembling;
 use crate::assembling::youtube::*;
 use crate::error::BlobResult;
+use crate::ui_prompts::*;
 
 /// Returns a ConfigYtVideo object with all the necessary data
 /// to start downloading a youtube video
@@ -40,13 +41,13 @@ mod format {
     {
         // A list of all the format options that can be picked
         let mut format_options: Vec<&str> = vec![];
-        format_options.push(crate::BEST_QUALITY_PROMPT_SINGLE_VIDEO);
-        format_options.push(crate::SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO);
+        format_options.push(BEST_QUALITY_PROMPT_SINGLE_VIDEO);
+        format_options.push(SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO);
 
         if which("ffmpeg").is_ok() {
             // If ffmpeg is installed in the system
-            format_options.push(crate::CONVERT_FORMAT_PROMPT_VIDEO_SINGLE_VIDEO);
-            format_options.push(crate::YT_FORMAT_PROMPT_SINGLE_VIDEO);
+            format_options.push(CONVERT_FORMAT_PROMPT_VIDEO_SINGLE_VIDEO);
+            format_options.push(YT_FORMAT_PROMPT_SINGLE_VIDEO);
 
             // Set up a prompt for the user
             let user_selection = Select::with_theme(&ColorfulTheme::default())
@@ -61,7 +62,7 @@ mod format {
                 _ => get_format_from_yt(term, url, media_selected, playlist_id),
             }
         } else {
-            format_options.push(crate::YT_FORMAT_PROMPT_SINGLE_VIDEO);
+            format_options.push(YT_FORMAT_PROMPT_SINGLE_VIDEO);
 
             // Set up a prompt for the user
             let user_selection = Select::with_theme(&ColorfulTheme::default())

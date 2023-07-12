@@ -1,5 +1,6 @@
 // Import error messages
-use crate::error_message::*;
+use crate::blobdl_error_message::*;
+use crate::ui_prompts::*;
 
 use colored::Colorize;
 
@@ -32,7 +33,7 @@ pub enum BlobdlError {
 impl BlobdlError {
     // Output an error message according to the error at hand
     pub fn report(&self) {
-        println!("\n{}\n", crate::USAGE_MSG);
+        println!("\n{}\n", USAGE_MSG);
         print!("{}: ", "error".bold().red());
         match self {
             BlobdlError::QueryNotFound => println!("{}", BROKEN_URL_ERR),
@@ -61,7 +62,7 @@ impl BlobdlError {
 
             BlobdlError::UnsupportedFeature=> println!("{}", UNSUPPORTED_FEATURE_ERR),
         }
-        println!("{}", crate::SEE_HELP_PAGE);
+        println!("{}", SEE_HELP_PAGE);
     }
 }
 

@@ -5,70 +5,72 @@ pub mod dispatcher;
 mod run;
 mod error;
 
-// Hard-coded prompts
-pub const YTDLP_NOT_INSTALLED: &str = "blob-dl is a wrapper around yt-dlp and cannot function without it.\nPlease install yt-dlp from the official github page: https://github.com/yt-dlp/yt-dlp";
+// Things blob-dl regularly tells the user
+pub mod ui_prompts {
+    pub const YTDLP_NOT_INSTALLED: &str = "blob-dl is a wrapper around yt-dlp and cannot function without it.\nPlease install yt-dlp from the official github page: https://github.com/yt-dlp/yt-dlp";
 
-const BEST_QUALITY_PROMPT_PLAYLIST: &str = "Best possible quality for each video";
+    pub const BEST_QUALITY_PROMPT_PLAYLIST: &str = "Best possible quality for each video";
 
-const BEST_QUALITY_PROMPT_SINGLE_VIDEO: &str = "Best possible quality";
+    pub const BEST_QUALITY_PROMPT_SINGLE_VIDEO: &str = "Best possible quality";
 
-const SMALLEST_QUALITY_PROMPT_PLAYLIST: &str = "Smallest file size for each video";
+    pub const SMALLEST_QUALITY_PROMPT_PLAYLIST: &str = "Smallest file size for each video";
 
-const SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO: &str = "Smallest file size";
+    pub const SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO: &str = "Smallest file size";
 
-const YT_FORMAT_PROMPT_PLAYLIST: &str = "Choose a file format to apply to every video (only formats available for all videos are shown)";
+    pub const YT_FORMAT_PROMPT_PLAYLIST: &str = "Choose a file format to apply to every video (only formats available for all videos are shown)";
 
-const YT_FORMAT_PROMPT_SINGLE_VIDEO: &str = "Choose a file format to apply to the video";
+    pub const YT_FORMAT_PROMPT_SINGLE_VIDEO: &str = "Choose a file format to apply to the video";
 
-const CONVERT_FORMAT_PROMPT_VIDEO_PLAYLIST: &str = "Choose a format to recode all the videos to";
+    pub const CONVERT_FORMAT_PROMPT_VIDEO_PLAYLIST: &str = "Choose a format to recode all the videos to";
 
-const CONVERT_FORMAT_PROMPT_VIDEO_SINGLE_VIDEO: &str = "Choose a format to recode the video to";
+    pub const CONVERT_FORMAT_PROMPT_VIDEO_SINGLE_VIDEO: &str = "Choose a format to recode the video to";
 
-const CONVERT_FORMAT_PROMPT_AUDIO: &str = "Choose an audio format to convert the audios to";
+    pub const CONVERT_FORMAT_PROMPT_AUDIO: &str = "Choose an audio format to convert the audios to";
 
-const SEE_HELP_PAGE: &str = "Type blob-dl --help for a list of all the available options";
+    pub const SEE_HELP_PAGE: &str = "Type blob-dl --help for a list of all the available options";
 
-const USAGE_MSG: &str = "When the commands are complete make me a usage message plz :)";
+    pub const USAGE_MSG: &str = "Usage: blob-dl [OPTIONS] [URL]";
 
-const ERROR_RETRY_PROMPT: &str = "The following videos weren't downloaded but retrying might help, choose which videos to re-download [spacebar to select]";
+    pub const ERROR_RETRY_PROMPT: &str = "The following videos weren't downloaded but retrying might help, choose which videos to re-download [spacebar to select]";
 
-const UNRECOVERABLE_ERROR_PROMPT: &str = "The following videos could not be downloaded due to unrecoverable errors";
+    pub const UNRECOVERABLE_ERROR_PROMPT: &str = "The following videos could not be downloaded due to unrecoverable errors";
 
-const DEBUG_REPORT_PROMPT: &str = "By default new errors are flagged as recoverable, if any unrecoverable errors are flagged incorrectly please report them to the github page :)";
+    pub const DEBUG_REPORT_PROMPT: &str = "By default new errors are flagged as recoverable, if any unrecoverable errors are flagged incorrectly please report them to the github page :)";
 
-const SELECT_ALL: &str = "Select all\n";
-const SELECT_NOTHING: &str = "Don't re-download anything\n";
+    pub const SELECT_ALL: &str = "Select all\n";
+    pub const SELECT_NOTHING: &str = "Don't re-download anything\n";
+}
 
 // Youtube's error messages
-const PRIVATE_VIDEO: &str = " Private video. Sign in if you've been granted access to this video";
+mod youtube_error_message {
+    pub const PRIVATE_VIDEO: &str = " Private video. Sign in if you've been granted access to this video";
 
-const NONEXISTENT_PLAYLIST: &str = " YouTube said: The playlist does not exist.";
+    pub const NONEXISTENT_PLAYLIST: &str = " YouTube said: The playlist does not exist.";
 
-const HOMEPAGE_REDIRECT: &str = " The channel/playlist does not exist and the URL redirected to youtube.com home page";
+    pub const HOMEPAGE_REDIRECT: &str = " The channel/playlist does not exist and the URL redirected to youtube.com home page";
 
-const NETWORK_FAIL: &str = " Unable to download API page: <urlopen error [Errno -3] Temporary failure in name resolution> (caused by URLError(gaierror(-3, 'Temporary failure in name resolution')))";
+    pub const NETWORK_FAIL: &str = " Unable to download API page: <urlopen error [Errno -3] Temporary failure in name resolution> (caused by URLError(gaierror(-3, 'Temporary failure in name resolution')))";
 
-const VIOLENT_VIDEO: &str = " This video has been removed for violating YouTube's policy on violent or graphic content";
+    pub const VIOLENT_VIDEO: &str = " This video has been removed for violating YouTube's policy on violent or graphic content";
 
-const REMOVED_VIDEO: &str = " Video unavailable. This video has been removed by the uploader";
+    pub const REMOVED_VIDEO: &str = " Video unavailable. This video has been removed by the uploader";
 
-const VIDEO_NOT_FOUND: &str = " not found, unable to continue";
+    pub const VIDEO_NOT_FOUND: &str = " not found, unable to continue";
 
-const YTDLP_GAVE_UP: &str = " error: HTTP Error 403: Forbidden. Giving up after 10 retries";
+    pub const YTDLP_GAVE_UP: &str = " error: HTTP Error 403: Forbidden. Giving up after 10 retries";
 
-// All copyright error messages begin with this
-const VIDEO_UNAVAILABLE: &str = " Video unavailable";
-
+    // All copyright error messages begin with this
+    pub const VIDEO_UNAVAILABLE: &str = " Video unavailable";
+}
 // blob-dl custom error messages
-mod error_message {
+mod blobdl_error_message {
     pub const BROKEN_URL_ERR: &str = "The url provided wasn't recognized, try using a regular youtube url";
 
     pub const UNSUPPORTED_WEBSITE_ERR: &str = "Currently blob-dl only supports downloading youtube videos or playlists";
 
     pub const UNKNOWN_ISSUE_ERR: &str = "Congrats! You ran into an unknown issue, please file a report on blob-dl's github page :)";
 
-    // fixme fix this message
-    pub const MISSING_ARGUMENT_ERR: &str = "A url is required for blob-dl to function [[please rephrase this error]]";
+    pub const MISSING_ARGUMENT_ERR: &str = "You must provide 1 URL";
 
     pub const JSON_SERIALIZATION_ERR: &str = "There was a problem serializing this video's format information";
 

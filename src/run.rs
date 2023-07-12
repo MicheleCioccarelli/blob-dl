@@ -5,6 +5,8 @@ use dialoguer::console::Term;
 use std::collections::HashMap;
 use colored::Colorize;
 
+use crate::youtube_error_message::*;
+use crate::ui_prompts::*;
 use crate::parser;
 use crate::error::YtdlpError;
 use crate::assembling::youtube::config;
@@ -60,7 +62,7 @@ pub fn run_and_observe(command: &mut Command, download_config: &config::Download
 
 /// Returns whether it makes sense to try downloading the video again
 fn is_recoverable(error: &YtdlpError, table: &HashMap<&'static str, bool>) -> bool {
-    if error.error_msg().contains(crate::VIDEO_UNAVAILABLE) {
+    if error.error_msg().contains(VIDEO_UNAVAILABLE) {
         return false;
     }
     if let Some(result) = table.get(error.error_msg().as_str()) {
@@ -80,14 +82,14 @@ fn is_recoverable(error: &YtdlpError, table: &HashMap<&'static str, bool>) -> bo
 /// A list of all the documented youtube error messages and whether they are recoverable.
 fn init_error_msg_lut() -> HashMap<&'static str, bool> {
     HashMap::from([
-        (crate::PRIVATE_VIDEO,          false),
-        (crate::NONEXISTENT_PLAYLIST,   false),
-        (crate::HOMEPAGE_REDIRECT,      false),
-        (crate::VIOLENT_VIDEO,          false),
-        (crate::REMOVED_VIDEO,          false),
-        (crate::YTDLP_GAVE_UP,          false),
-        (crate::VIDEO_NOT_FOUND,        false),
-        (crate::NETWORK_FAIL,           true),
+        (PRIVATE_VIDEO,          false),
+        (NONEXISTENT_PLAYLIST,   false),
+        (HOMEPAGE_REDIRECT,      false),
+        (VIOLENT_VIDEO,          false),
+        (REMOVED_VIDEO,          false),
+        (YTDLP_GAVE_UP,          false),
+        (VIDEO_NOT_FOUND,        false),
+        (NETWORK_FAIL,           true),
     ])
 }
 
@@ -175,8 +177,8 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
     let mut unrecoverable_errors = Vec::new();
 
     // Default options
-    user_options.push(String::from(crate::SELECT_ALL));
-    user_options.push(String::from(crate::SELECT_NOTHING));
+    user_options.push(String::from(SELECT_ALL));
+    user_options.push(String::from(SELECT_NOTHING));
 
     for error in errors {
         if is_recoverable(error, &lut) {
@@ -189,7 +191,7 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
     }
 
     if !unrecoverable_errors.is_empty() {
-        println!("{}", crate::UNRECOVERABLE_ERROR_PROMPT.bold().cyan());
+        println!("{}", UNRECOVERABLE_ERROR_PROMPT.bold().cyan());
         for error in unrecoverable_errors {
             println!("   {}", error);
         }
@@ -198,11 +200,11 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
     if user_options.len() > 2 {
         // If user_options has only 2 elements there aren't any videos to re-download
         let user_selection = MultiSelect::with_theme(&ColorfulTheme::default())
-            .with_prompt(crate::ERROR_RETRY_PROMPT)
+            .with_prompt(ERROR_RETRY_PROMPT)
             .items(&user_options[..])
             .interact_on(&term).unwrap();
 
-        println!("{}", crate::DEBUG_REPORT_PROMPT.magenta());
+        println!("{}", DEBUG_REPORT_PROMPT.magenta());
         return user_selection
     }
 

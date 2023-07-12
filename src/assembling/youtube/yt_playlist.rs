@@ -5,6 +5,7 @@ use which::which;
 use super::super::*;
 use crate::assembling::youtube::*;
 use crate::error::BlobResult;
+use crate::ui_prompts::*;
 
 /// This is a wizard for downloading a youtube playlist
 ///
@@ -69,17 +70,17 @@ mod format {
 
         // A list of all the format options that can be picked
         let mut format_options: Vec<&str> = vec![];
-        format_options.push(crate::BEST_QUALITY_PROMPT_PLAYLIST);
-        format_options.push(crate::SMALLEST_QUALITY_PROMPT_PLAYLIST);
+        format_options.push(BEST_QUALITY_PROMPT_PLAYLIST);
+        format_options.push(SMALLEST_QUALITY_PROMPT_PLAYLIST);
 
         if which("ffmpeg").is_ok() {
             // If ffmpeg is installed in the system
             match media_selected {
-                MediaSelection::AudioOnly => format_options.push(crate::CONVERT_FORMAT_PROMPT_AUDIO),
-                _ => format_options.push(crate::CONVERT_FORMAT_PROMPT_VIDEO_PLAYLIST)
+                MediaSelection::AudioOnly => format_options.push(CONVERT_FORMAT_PROMPT_AUDIO),
+                _ => format_options.push(CONVERT_FORMAT_PROMPT_VIDEO_PLAYLIST)
             }
 
-            format_options.push(crate::YT_FORMAT_PROMPT_PLAYLIST);
+            format_options.push(YT_FORMAT_PROMPT_PLAYLIST);
 
             // Set up a prompt for the user
             let user_selection = Select::with_theme(&ColorfulTheme::default())
@@ -95,7 +96,7 @@ mod format {
             }
         } else {
             // ffmpeg isn't installed, so ffmpeg-exclusive features are unavailable (video remuxing)
-            format_options.push(crate::YT_FORMAT_PROMPT_PLAYLIST);
+            format_options.push(YT_FORMAT_PROMPT_PLAYLIST);
 
             // Set up a prompt for the user
             let user_selection = Select::with_theme(&ColorfulTheme::default())
