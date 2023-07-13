@@ -91,6 +91,7 @@ fn init_error_msg_lut() -> HashMap<&'static str, bool> {
         (VIDEO_NOT_FOUND,        false),
         (NETWORK_FAIL,           true),
         (NO_API_PAGE,            false),
+        (ENCODER_STREAM_ERROR,   false),
     ])
 }
 
@@ -103,7 +104,6 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
         .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to start yt-dlp process");
-    // fixme this expect ^
 
     let stdout = BufReader::new(youtube_dl.stdout.take().unwrap());
     let stderr = BufReader::new(youtube_dl.stderr.take().unwrap());
@@ -142,7 +142,6 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
         parser::Verbosity::Verbose => {
             // Print to the console everything that yt-dlp is doing
             for line in stdout.lines().chain(stderr.lines()) {
-                // fixme handle this Result
                 let line = line.unwrap();
 
                 if line.contains("ERROR:") {

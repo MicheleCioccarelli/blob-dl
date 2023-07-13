@@ -7,6 +7,10 @@ mod error;
 
 // Things blob-dl regularly tells the user
 pub mod ui_prompts {
+    pub const LONG_ABOUT: &str = "A cli utility to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!";
+
+    pub const SHORT_ABOUT: &str = "A cli utility to make downloading youtube videos in various formats easy\nSee --help for some fixes to common beginner problems";
+
     pub const YTDLP_NOT_INSTALLED: &str = "blob-dl is a wrapper around yt-dlp and cannot function without it.\nPlease install yt-dlp from the official github page: https://github.com/yt-dlp/yt-dlp";
 
     pub const BEST_QUALITY_PROMPT_PLAYLIST: &str = "Best possible quality for each video";
@@ -17,9 +21,9 @@ pub mod ui_prompts {
 
     pub const SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO: &str = "Smallest file size";
 
-    pub const YT_FORMAT_PROMPT_PLAYLIST: &str = "Choose a file format to apply to every video (only formats available for all videos are shown)";
+    pub const YT_FORMAT_PROMPT_PLAYLIST: &str = "Choose a format to download to every video in (only formats available for all videos are shown)";
 
-    pub const YT_FORMAT_PROMPT_SINGLE_VIDEO: &str = "Choose a file format to apply to the video";
+    pub const YT_FORMAT_PROMPT_SINGLE_VIDEO: &str = "Choose a format to download the video in";
 
     pub const CONVERT_FORMAT_PROMPT_VIDEO_PLAYLIST: &str = "Choose a format to recode all the videos to";
 
@@ -61,6 +65,8 @@ mod youtube_error_message {
 
     pub const NO_API_PAGE: &str = " Unable to download API page: HTTP Error 404: Not Found (caused by <HTTPError 404: 'Not Found'>); please report this issue on https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using yt-dlp -U";
 
+    pub const ENCODER_STREAM_ERROR: &str = " Postprocessing: Error selecting an encoder for stream 0:1";
+
     // All copyright error messages begin with this
     pub const VIDEO_UNAVAILABLE: &str = " Video unavailable";
 }
@@ -82,5 +88,7 @@ mod blobdl_error_message {
 
     pub const IO_ERR: &str = "There was an IO error: ";
 
-    pub const UNSUPPORTED_FEATURE_ERR: &str = "Currently with blob-dl you can only download videos or playlists, not media such as series";
+    pub const URL_QUERY_COULD_NOT_BE_PARSED: &str = "This url's query could not be parsed, try using a regular youtube url";
+
+    pub const URL_INDEX_PARSING_ERR: &str = "The video's index in the playlist couldn't be parsed, please report this issue to the github page";
 }

@@ -60,24 +60,23 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
                 0 => {
                     // "&index="'s existence was checked in the previous if statement
                     let index = &query[query.find("&index=").unwrap() + "&index=".len()..query.len()];
-                    // todo take a look at this expect
-                    Ok(DownloadOption::YtVideo(index.parse().expect("This link has an unknown issue, please report it")))
+
+                    if let Ok(parsed) = index.parse() {
+                        Ok(DownloadOption::YtVideo(parsed))
+                    } else {
+                        Err(BlobdlError::UrlIndexParsingError)
+                    }
                 }
                 _ => Ok(DownloadOption::YtPlaylist),
             };
         }
-    }
-    // fixme sto bordello
-    if yt_url.path().contains("playlist") {
-        return Ok(DownloadOption::YtPlaylist);
-    } else if let Some(res) = yt_url.query() {
-        if res.contains("list") {
+        if yt_url.path().contains("playlist") || query.contains("list"){
             return Ok(DownloadOption::YtPlaylist);
         }
-    }
-    return Ok(DownloadOption::YtVideo(0));
 
-    // The url doesn't refer to a youtube video/playlist (maybe a user, etc)
-    println!("Youtube url not recognized as a video/playlist");
-    Err(BlobdlError::UnsupportedFeature)
+        // This url is probably referring to a video or a short
+        return Ok(DownloadOption::YtVideo(0));
+    }
+
+    Err(BlobdlError::QueryCouldNotBeParsed)
 }

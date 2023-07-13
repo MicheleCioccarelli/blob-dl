@@ -1,3 +1,4 @@
+use std::io::Write;
 // Import error messages
 use crate::blobdl_error_message::*;
 use crate::ui_prompts::*;
@@ -24,45 +25,49 @@ pub enum BlobdlError {
     MissingArgument,
     JsonSerializationError,
     Utf8Error,
-    //tmp
+    UrlIndexParsingError,
     SerdeError(serde_json::Error),
     IoError(std::io::Error),
-    UnsupportedFeature,
+    QueryCouldNotBeParsed,
 }
 
 impl BlobdlError {
     // Output an error message according to the error at hand
     pub fn report(&self) {
-        println!("\n{}\n", USAGE_MSG);
-        print!("{}:", "error".bold().red());
+        eprintln!("\n{}\n", USAGE_MSG);
+        print!("{}: ", "ERROR".red());
+
+        let _ = std::io::stdout().flush();
+
         match self {
-            BlobdlError::QueryNotFound => println!("{}", BROKEN_URL_ERR),
+            BlobdlError::QueryNotFound => eprintln!("{}", BROKEN_URL_ERR),
 
-            // fixme this error is unused
-            BlobdlError::UnknownUrl=> println!("{}", BROKEN_URL_ERR),
+            BlobdlError::UnknownUrl=> eprintln!("{}", BROKEN_URL_ERR),
 
-            BlobdlError::UnsupportedWebsite=> println!("{}", UNSUPPORTED_WEBSITE_ERR),
+            BlobdlError::UnsupportedWebsite=> eprintln!("{}", UNSUPPORTED_WEBSITE_ERR),
 
-            BlobdlError::DomainNotFound=> println!("{}", BROKEN_URL_ERR),
+            BlobdlError::DomainNotFound=> eprintln!("{}", BROKEN_URL_ERR),
 
             // The link appears to be completely broken
-            BlobdlError::UrlParsingError=> println!("{}", BROKEN_URL_ERR),
+            BlobdlError::UrlParsingError=> eprintln!("{}", BROKEN_URL_ERR),
 
-            BlobdlError::UnknownIssue=> println!("{}", UNKNOWN_ISSUE_ERR),
+            BlobdlError::UnknownIssue=> eprintln!("{}", UNKNOWN_ISSUE_ERR),
 
-            BlobdlError::MissingArgument=> println!("{}", MISSING_ARGUMENT_ERR),
+            BlobdlError::MissingArgument=> eprintln!("{}", MISSING_ARGUMENT_ERR),
 
-            BlobdlError::JsonSerializationError=> println!("{}", JSON_SERIALIZATION_ERR),
+            BlobdlError::JsonSerializationError=> eprintln!("{}", JSON_SERIALIZATION_ERR),
 
-            BlobdlError::Utf8Error=> println!("{}", UTF8_ERR),
+            BlobdlError::Utf8Error=> eprintln!("{}", UTF8_ERR),
 
-            BlobdlError::SerdeError(err)=> println!("{} {}", SERDE_ERR, err),
+            BlobdlError::SerdeError(err)=> eprintln!("{} {}", SERDE_ERR, err),
 
-            BlobdlError::IoError(err)=> println!("{} {}", IO_ERR, err),
+            BlobdlError::IoError(err)=> eprintln!("{} {}", IO_ERR, err),
 
-            BlobdlError::UnsupportedFeature=> println!("{}", UNSUPPORTED_FEATURE_ERR),
+            BlobdlError::QueryCouldNotBeParsed => eprintln!("{}", URL_QUERY_COULD_NOT_BE_PARSED),
+
+            BlobdlError::UrlIndexParsingError => eprintln!("{}", URL_INDEX_PARSING_ERR),
         }
-        println!("{}", SEE_HELP_PAGE);
+        eprintln!("{}", SEE_HELP_PAGE);
     }
 }
 

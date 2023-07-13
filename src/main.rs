@@ -23,6 +23,6 @@ fn main() {
         }
     } else {
         // ytdlp is not installed!
-        println!("{}", blob_dl::ui_prompts::YTDLP_NOT_INSTALLED);
+        eprintln!("{}", blob_dl::ui_prompts::YTDLP_NOT_INSTALLED);
     }
 }

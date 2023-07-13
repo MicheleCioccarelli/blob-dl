@@ -1,13 +1,14 @@
 use clap::{Arg, Command, ArgMatches, ArgAction};
 
+use crate::ui_prompts::*;
 use crate::error::{BlobdlError, BlobResult};
 
 pub fn parse_config() -> BlobResult<CliConfig> {
     let matches = Command::new("blob-dl")
-        .version("2023.07.12")
+        .version("2023.07.13")
         .author("cioccarellimi@gmail.com")
-        .about("A cli utility to make downloading youtube videos in various formats easy")
-        .long_about("A cli utility to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!")
+        .about(SHORT_ABOUT)
+        .long_about(LONG_ABOUT)
         .arg(
             Arg::new("verbose")
                 .short('v')

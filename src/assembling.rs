@@ -13,7 +13,6 @@ use std::env;
 ///
 /// Returns the command along with a DownloadConfig object, which contains all the user-specified preferences
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> BlobResult<(std::process::Command, youtube::config::DownloadConfig)> {
-    // fixme these nested matches
     // Get preferences from the user, various errors may occur
     let unchecked_config = match download_option {
         analyzer::DownloadOption::YtPlaylist => youtube::yt_playlist::assemble_data(url),
@@ -31,7 +30,6 @@ pub(crate) fn generate_command(url: &String, download_option: &analyzer::Downloa
 }
 
 /// Contains the download options for all videos
-/// todo Make this replace YtPlaylistConfig and YtVideoConfig
 #[derive(Debug)]
 struct GenericConfig {
     chosen_format: youtube::VideoQualityAndFormatPreferences,

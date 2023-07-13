@@ -6,7 +6,6 @@ use crate::run;
 
 /// Calls the right wizard according to what the url refers to, then it runs the ytdl-command and handles errors
 pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
-    // todo test analyzer::analyze_url()
     let download_option = analyzer::analyze_url(config.url());
 
     // Generate a command according to the user's wishes
