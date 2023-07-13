@@ -105,34 +105,16 @@ mod format {
         let mut correct_ids = vec![];
         // Every format which conforms to media_selected will be pushed here
         let mut format_options = vec![];
-
+        
         // Choose which formats to show to the user
         for format in serialized_formats.formats() {
-            // Skip image formats
-            if format.vcodec == "none" && format.acodec == "none" {
-                continue;
+            // If format and media_selected are compatible
+            if check_format(format, media_selected) {
+                // Add to the list of available formats the current one formatted in a nice way
+                format_options.push(format.to_string());
+                // Update the list of ids which match what the user wants
+                correct_ids.push(format.format_id.clone());
             }
-            // Skip audio-only files if the user wants full video
-            if *media_selected == MediaSelection::FullVideo && format.resolution == "audio only" {
-                continue;
-            }
-            // Skip video files if the user wants audio-only
-            if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio only" {
-                continue;
-            }
-            // Skip video-only files if the user doesn't want video-only
-            if *media_selected == MediaSelection::FullVideo && format.acodec == "none" {
-                continue;
-            }
-            // Skip normal video if the user wants video-only
-            if *media_selected == MediaSelection::VideoOnly && format.acodec != "none" {
-                continue;
-            }
-
-            // Add to the list of available formats the current one formatted in a nice way
-            format_options.push(format.to_string());
-            // Update the list of ids which match what the user wants
-            correct_ids.push(format.format_id.clone());
         }
 
         // Set up a prompt for the user

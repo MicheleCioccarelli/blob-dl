@@ -34,7 +34,7 @@ impl BlobdlError {
     // Output an error message according to the error at hand
     pub fn report(&self) {
         println!("\n{}\n", USAGE_MSG);
-        print!("{}: ", "error".bold().red());
+        print!("{}:", "error".bold().red());
         match self {
             BlobdlError::QueryNotFound => println!("{}", BROKEN_URL_ERR),
 

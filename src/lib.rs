@@ -35,7 +35,7 @@ pub mod ui_prompts {
 
     pub const UNRECOVERABLE_ERROR_PROMPT: &str = "The following videos could not be downloaded due to unrecoverable errors";
 
-    pub const DEBUG_REPORT_PROMPT: &str = "By default new errors are flagged as recoverable, if any unrecoverable errors are flagged incorrectly please report them to the github page :)";
+    pub const DEBUG_REPORT_PROMPT: &str = "By default new errors are flagged as recoverable, if any unrecoverable errors are flagged incorrectly please report them to the github page";
 
     pub const SELECT_ALL: &str = "Select all\n";
     pub const SELECT_NOTHING: &str = "Don't re-download anything\n";
@@ -59,6 +59,8 @@ mod youtube_error_message {
 
     pub const YTDLP_GAVE_UP: &str = " error: HTTP Error 403: Forbidden. Giving up after 10 retries";
 
+    pub const NO_API_PAGE: &str = " Unable to download API page: HTTP Error 404: Not Found (caused by <HTTPError 404: 'Not Found'>); please report this issue on https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using yt-dlp -U";
+
     // All copyright error messages begin with this
     pub const VIDEO_UNAVAILABLE: &str = " Video unavailable";
 }
@@ -66,7 +68,7 @@ mod youtube_error_message {
 mod blobdl_error_message {
     pub const BROKEN_URL_ERR: &str = "The url provided wasn't recognized, try using a regular youtube url";
 
-    pub const UNSUPPORTED_WEBSITE_ERR: &str = "Currently blob-dl only supports downloading youtube videos or playlists";
+    pub const UNSUPPORTED_WEBSITE_ERR: &str = "Currently blob-dl only supports downloading youtube videos or playlists, not content from other websites";
 
     pub const UNKNOWN_ISSUE_ERR: &str = "Congrats! You ran into an unknown issue, please file a report on blob-dl's github page :)";
 

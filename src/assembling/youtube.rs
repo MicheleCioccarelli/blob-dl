@@ -49,7 +49,7 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     // Continue even if you get errors
     command.arg("-i");
     command.arg(url);
-    // Redirect the output to a variable instead of the screen
+    // Redirect the output to a variable instead of to the screen
     command.stdout(process::Stdio::piped());
     let output = command.execute_output();
     sp.stop();
@@ -92,6 +92,35 @@ fn serialize_formats(json_dump: &str) -> BlobResult<VideoSpecs> {
     }
 }
 
+/// Checks if format has conflicts with media_selected (like a video only format and an audio-only media_selection
+///
+/// Returns true format and media_selected are compatible
+fn check_format(format: &VideoFormat, media_selected: &MediaSelection) -> bool {
+    // Skip image and weird formats (examples of strange formats ids: 233, 234, sb2, sb1, sb0)
+    if format.filesize.is_none() {
+        return false;
+    }
+    // Skip audio-only files if the user wants full video
+    if *media_selected == MediaSelection::FullVideo && format.resolution == "audio only" {
+        return false;
+    }
+    // Skip video files if the user wants audio-only
+    if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio only" {
+        return false;
+    }
+    if let Some(acodec) = &format.acodec {
+        // Skip video-only files if the user doesn't want video-only
+        if *media_selected == MediaSelection::FullVideo && acodec == "none" {
+            return false;
+        }
+        //Skip normal video if the user wants video-only
+        if *media_selected == MediaSelection::VideoOnly && acodec != "none" {
+            return false;
+        }
+    }
+    true
+}
+
 // Common enums and structs
 /// Whether the user wants to download video files or audio-only
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -117,10 +146,10 @@ struct VideoFormat {
     filesize: Option<u64>,
     // Video codec, can be "none"
     vcodec: String,
-    // Audio codec, can be "none"
-    acodec: String,
+    // Audio codec, can be "none" or straight up not exist (like in mp4 audio-only formats)
+    acodec: Option<String>,
     // Things like 144p, ultralow, low
-    format_note: String,
+    //format_note: Option<String>, currently unused!
     // Codec container
     container: Option<String>,
     // Total average bitrate
@@ -160,10 +189,8 @@ impl fmt::Display for VideoFormat {
             }
 
             // This isn't a picture format so unwrap() is safe
-            let filesize = match self.filesize {
-                Some(f) => f,
-                None => self.filesize_approx.expect("Problem with filesize fetching, please try again!"),
-            };
+            let filesize = self.filesize.unwrap_or(0);
+
             // filesize is converted from bytes to MB
             let filesize_section = format!("| filesize: {:<.2}MB", filesize as f32 * 0.000001);
             result = format!("{}{:<24}", result, filesize_section);
@@ -178,8 +205,11 @@ impl fmt::Display for VideoFormat {
             if self.vcodec != "none" {
                 result = format!("{}| vcodec: {:<13} ", result, self.vcodec);
             }
-            if self.acodec != "none" {
-                result = format!("{}| acodec: {:<13} ", result, self.acodec);
+
+            if let Some(acodec) = &self.acodec {
+                if acodec != "none" {
+                    result = format!("{}| acodec: {:<13} ", result, acodec);
+                }
             }
 
             #[cfg(debug_assertions)]

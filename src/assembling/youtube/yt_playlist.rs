@@ -132,28 +132,8 @@ mod format {
             // Since we are looking for ids common to all videos just checking the first one is fine
             if let Some(first_video_formats) = all_available_formats.videos().first() {
                 for format in first_video_formats.formats() {
-                    // Skip image formats
-                    if format.vcodec == "none" && format.acodec == "none" {
-                        continue;
-                    }
-                    // Skip audio-only files if the user wants full video
-                    if *media_selected == MediaSelection::FullVideo && format.resolution == "audio only" {
-                        continue;
-                    }
-                    // Skip video files if the user wants audio-only
-                    if *media_selected == MediaSelection::AudioOnly && format.resolution != "audio only" {
-                        continue;
-                    }
-                    // Skip video-only files if the user doesn't want video-only
-                    if *media_selected == MediaSelection::FullVideo && format.acodec == "none" {
-                        continue;
-                    }
-                    //Skip normal video if the user wants video-only
-                    if *media_selected == MediaSelection::VideoOnly && format.acodec != "none" {
-                        continue;
-                    }
-
-                    if format.format_id == *id {
+                    // If format and media_selected are compatible and this is the correct id
+                    if check_format(format, media_selected) && format.format_id == *id {
                         // Add to the list of available formats the current one formatted in a nice way
                         ui_format_options.push(format.to_string());
                         correct_ids.push(id);

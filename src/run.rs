@@ -90,6 +90,7 @@ fn init_error_msg_lut() -> HashMap<&'static str, bool> {
         (YTDLP_GAVE_UP,          false),
         (VIDEO_NOT_FOUND,        false),
         (NETWORK_FAIL,           true),
+        (NO_API_PAGE,            false),
     ])
 }
 
@@ -133,7 +134,7 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
                 } else if line.contains("ERROR:") {
                     errors.push(YtdlpError::from_error_output(&line));
                     // Color error messages red
-                    println!("{}", line.bold().red());
+                    println!("{}", line.red());
                 }
             }
         },
@@ -147,7 +148,7 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
                 if line.contains("ERROR:") {
                     errors.push(YtdlpError::from_error_output(&line));
                     // Color error messages red
-                    println!("{}", line.bold().red());
+                    println!("{}", line.red());
                 } else {
                     println!("{}", line);
                 }
@@ -204,7 +205,7 @@ fn ask_for_redownload(errors: &Vec<YtdlpError>) -> Vec<usize> {
             .items(&user_options[..])
             .interact_on(&term).unwrap();
 
-        println!("{}", DEBUG_REPORT_PROMPT.magenta());
+        println!("{}", DEBUG_REPORT_PROMPT);
         return user_selection
     }
 
