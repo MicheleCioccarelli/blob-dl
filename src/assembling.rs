@@ -15,15 +15,20 @@ use std::env;
 pub(crate) fn generate_command(url: &String, download_option: &analyzer::DownloadOption) -> BlobResult<(std::process::Command, youtube::config::DownloadConfig)> {
     // fixme these nested matches
     // Get preferences from the user, various errors may occur
+    let mut playlist_id: usize = 0;
     let unchecked_config = match download_option {
         analyzer::DownloadOption::YtPlaylist                    => youtube::yt_playlist::assemble_data(url),
 
-        analyzer::DownloadOption::YtVideo(playlist_id) => youtube::yt_video::assemble_data(url, *playlist_id),
+        analyzer::DownloadOption::YtVideo(id) =>
+            {
+                playlist_id = *id;
+                youtube::yt_video::assemble_data(url, *id)
+            },
     };
 
     match unchecked_config {
         Ok(safe) => {
-            let (command, local_config) = safe.build_command();
+            let (command, local_config) = safe.build_command(playlist_id);
             Ok((command, local_config))
         }
         Err(err) => Err(err)

@@ -18,7 +18,7 @@ pub struct DownloadConfig {
     media_selected: youtube::MediaSelection,
 
     /// Whether the link refers to a playlist or a single video
-    download_target: analyzer::DownloadOption,
+    pub download_target: analyzer::DownloadOption,
 }
 
 // Constructors
@@ -54,10 +54,12 @@ impl DownloadConfig {
     /// Builds a command according to the current configuration, which is also returned
     ///
     /// This function is meant for the main video-downloading task
-    pub(crate) fn build_command(&self) -> (process::Command, DownloadConfig) {
+    ///
+    /// If the video is a part of a playlist, playlist_index is its' index
+    pub(crate) fn build_command(&self, playlist_index: usize) -> (process::Command, DownloadConfig) {
         (
             match self.download_target {
-                analyzer::DownloadOption::YtVideo(_) => self.build_yt_video_command(),
+                analyzer::DownloadOption::YtVideo(_) => self.build_yt_video_command(playlist_index),
                 analyzer::DownloadOption::YtPlaylist => self.build_yt_playlist_command(),
             },
 
@@ -93,7 +95,8 @@ impl DownloadConfig {
         command
     }
 
-    fn build_yt_video_command(&self) -> process::Command {
+    /// playlist_index is the video's index in the playlist, if it is not in a playlist the index is 0
+    fn build_yt_video_command(&self, playlist_index: usize) -> process::Command {
         let mut command = process::Command::new("yt-dlp");
 
         // Setup output directory and naming scheme
@@ -108,6 +111,10 @@ impl DownloadConfig {
 
         // Quality and format selection
         self.choose_format(&mut command, &id);
+
+        if playlist_index != 0 {
+            command.arg("--playlist-items").arg(playlist_index.to_string());
+        }
 
         // Add the playlist's url
         command.arg(self.url.clone());

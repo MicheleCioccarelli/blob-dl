@@ -11,7 +11,7 @@ use crate::ui_prompts::*;
 /// to start downloading a youtube video
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &String, playlist_id: usize) -> BlobResult<config::DownloadConfig> {
+pub(crate) fn assemble_data(url: &str, playlist_id: usize) -> BlobResult<config::DownloadConfig> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
@@ -105,7 +105,7 @@ mod format {
         let mut correct_ids = vec![];
         // Every format which conforms to media_selected will be pushed here
         let mut format_options = vec![];
-        
+
         // Choose which formats to show to the user
         for format in serialized_formats.formats() {
             // If format and media_selected are compatible
@@ -125,6 +125,6 @@ mod format {
             .interact_on(term)?;
 
         // Return the format corresponding to what the user selected, the choices are limited so there shouldn't be out-of-bounds problems
-        Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection - 2].clone()))
+        Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection].clone()))
     }
 }
