@@ -4,36 +4,26 @@ use dialoguer::{theme::ColorfulTheme, Select};
 
 use crate::error::{BlobdlError, BlobResult};
 
-/// All of the supported sources
 #[derive(Debug, PartialOrd, PartialEq, Clone)]
 pub enum DownloadOption {
-    /// If the url refers to a video in a playlist and the user only wants to download the video,
-    ///
-    /// YtVideo's value is the video's index in the playlist
+    /// If the url refers to a video in a playlist and the user only wants to download the single video, YtVideo's value is the video's index in the playlist
     YtVideo(usize),
     YtPlaylist,
 }
 
 /// Analyzes the url provided by the user and deduces whether it
-/// refers to a spotify song/url or a youtube video/url
-///
-/// Returns Some(DownloadOption) if it recognized the url
-///
-/// Returns None if the url isn't supported by blob-dl
-///
+/// refers to a youtube video or playlist
 pub fn analyze_url(command_line_url: &str) -> BlobResult<DownloadOption> {
-    // .ok() converts from Result to Option
     return if let Ok(url) = Url::parse(command_line_url) {
         if let Some(domain_name) = url.domain() {
             // All youtube-related urls have "youtu" in them
             if domain_name.contains("youtu") {
                 inspect_yt_url(url)
             } else {
-                // The provided url wasn't for youtube
+                // The url isn't from youtube
                 Err(BlobdlError::UnsupportedWebsite)
             }
         } else {
-            // Url domain could not be found
             Err(BlobdlError::DomainNotFound)
         }
     } else {
@@ -41,10 +31,9 @@ pub fn analyze_url(command_line_url: &str) -> BlobResult<DownloadOption> {
     }
 }
 
-/// Given a youtube url determines whether it refers to a video/playlist/something unsupported
+/// Given a youtube url determines whether it refers to a video/playlist
 fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
     if let Some(query) = yt_url.query() {
-        // If the url's query exists, continue
         if query.contains("&index=") {
             // This video is part of a youtube playlist
             let term = Term::buffered_stderr();
@@ -58,7 +47,7 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
 
             return match user_selection {
                 0 => {
-                    // "&index="'s existence was checked in the previous if statement
+                    // "&index="'s existence was checked in the previous if statement, so unwrap() is safe
                     let index = &query[query.find("&index=").unwrap() + "&index=".len()..query.len()];
 
                     if let Ok(parsed) = index.parse() {
@@ -67,6 +56,7 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
                         Err(BlobdlError::UrlIndexParsingError)
                     }
                 }
+
                 _ => Ok(DownloadOption::YtPlaylist),
             };
         }

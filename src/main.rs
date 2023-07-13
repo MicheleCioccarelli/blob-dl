@@ -5,15 +5,14 @@ use which::which;
 fn main() {
     // tested with yt-dlp 2023.03.04
     if which("yt-dlp").is_ok() {
-        // Processed command line arguments (for now just the playlist url) live here
+        // Processed command line arguments live here
         let config = parser::parse_config();
 
-        // If there was an error parsing the command-line arguments, handle it
         match config {
             Ok(config) => {
-                // Ask for more input, Generate a command, Execute yt-dlp
+                // Ask for more input > Generate a command > Execute yt-dlp
                 if let Err(err) = dispatch(&config) {
-                    // If there is an error, handle it
+                    // Tell the user about the error
                     err.report();
                 }
             }

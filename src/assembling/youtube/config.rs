@@ -2,26 +2,22 @@ use crate::assembling::youtube;
 use crate::analyzer;
 use std::process;
 
-/// Contains all the information needed to download a youtube playlist [WIP]
+/// Contains all the information needed to download a youtube video or playlist
 #[derive(Debug, Clone)]
 pub struct DownloadConfig {
-    /// Ref to the url stored in CliConfig
     url: String,
 
     output_path: String,
     /// Whether to include a file's index (in the playlist it is downloaded from) in its name
     include_indexes: bool,
     /// The quality and format the user wants the downloaded files to be in
-    /// Maybe put these extra flags in their own struct in the future
     chosen_format: youtube::VideoQualityAndFormatPreferences,
-    /// Whether the downloaded files have to be audio-only or normal video
+    /// Whether the downloaded files have to be audio-only/video-only/normal video
     media_selected: youtube::MediaSelection,
-
     /// Whether the link refers to a playlist or a single video
     pub download_target: analyzer::DownloadOption,
 }
 
-// Constructors
 impl DownloadConfig {
     pub(crate) fn new_playlist (
         url: &str,
@@ -54,8 +50,6 @@ impl DownloadConfig {
     /// Builds a command according to the current configuration, which is also returned
     ///
     /// This function is meant for the main video-downloading task
-    ///
-    /// If the video is a part of a playlist, playlist_index is its' index
     pub(crate) fn build_command(&self) -> (process::Command, DownloadConfig) {
         (
             match self.download_target {
@@ -95,11 +89,9 @@ impl DownloadConfig {
         command
     }
 
-    /// playlist_index is the video's index in the playlist, if it is not in a playlist the index is 0
     fn build_yt_video_command(&self) -> process::Command {
         let mut command = process::Command::new("yt-dlp");
 
-        // Setup output directory and naming scheme
         self.choose_output_path(&mut command);
 
         // Makes the id live long enough to be used as an arg for command.
@@ -109,12 +101,10 @@ impl DownloadConfig {
             _ => String::new(),
         };
 
-        // Quality and format selection
         self.choose_format(&mut command, &id);
 
         command.arg("--no-playlist");
 
-        // Add the playlist's url
         command.arg(self.url.clone());
 
         command
@@ -126,7 +116,6 @@ impl DownloadConfig {
     pub fn build_command_for_video(&self, video_id: &str) -> process::Command {
         let mut command = process::Command::new("yt-dlp");
 
-        // Setup output directory and naming scheme
         self.choose_output_path(&mut command);
 
         // Makes the id live long enough to be used as an arg for command.
@@ -136,12 +125,10 @@ impl DownloadConfig {
             _ => String::new(),
         };
 
-        // Quality and format selection
         self.choose_format(&mut command, id.as_str());
 
         command.arg("--no-playlist");
 
-        // Add the video's id
         command.arg(video_id);
 
         command

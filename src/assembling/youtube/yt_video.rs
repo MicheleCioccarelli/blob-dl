@@ -2,7 +2,6 @@ use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 use which::which;
 
-use crate::assembling;
 use crate::assembling::youtube::*;
 use crate::error::BlobResult;
 use crate::ui_prompts::*;
@@ -19,7 +18,7 @@ pub(crate) fn assemble_data(url: &str, playlist_id: usize) -> BlobResult<config:
 
     let chosen_format = format::get_format(&term, url, &media_selected, playlist_id)?;
 
-    let output_path = assembling::get_output_path(&term)?;
+    let output_path = get_output_path(&term)?;
 
     Ok(config::DownloadConfig::new_video(
         url,
@@ -41,11 +40,13 @@ mod format {
     {
         // A list of all the format options that can be picked
         let mut format_options: Vec<&str> = vec![];
+        // Default options
         format_options.push(BEST_QUALITY_PROMPT_SINGLE_VIDEO);
         format_options.push(SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO);
 
         if which("ffmpeg").is_ok() {
             // If ffmpeg is installed in the system
+            // Some features are only available with ffmpeg
             format_options.push(CONVERT_FORMAT_PROMPT_VIDEO_SINGLE_VIDEO);
             format_options.push(YT_FORMAT_PROMPT_SINGLE_VIDEO);
 
@@ -62,6 +63,8 @@ mod format {
                 _ => get_format_from_yt(term, url, media_selected, playlist_id),
             }
         } else {
+            println!("{}", FFMPEG_UNAVAILABLE_WARNING);
+
             format_options.push(YT_FORMAT_PROMPT_SINGLE_VIDEO);
 
             // Set up a prompt for the user
@@ -80,7 +83,7 @@ mod format {
         }
     }
 
-    // Presents the user with the formats youtube provides directly for download, without the need for ffmpeg
+    /// Presents the user with the formats youtube provides directly for download, without the need for ffmpeg
     fn get_format_from_yt(term: &Term, url: &str, media_selected: &MediaSelection, playlist_id: usize)
                           -> BlobResult<VideoQualityAndFormatPreferences>
     {

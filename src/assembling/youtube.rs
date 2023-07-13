@@ -4,11 +4,12 @@ pub mod config;
 
 use crate::error::{BlobdlError, BlobResult};
 use dialoguer::console::Term;
-use dialoguer::{theme::ColorfulTheme, Select};
+use dialoguer::{theme::ColorfulTheme, Select, Input};
 use serde::{Deserialize, Serialize};
 use serde_json;
-use std::fmt;
+use std::{env, fmt};
 
+// Functions used both in yt_video.rs and yt_playlist.rs
 /// Asks the user whether they want to download video files or audio-only
 fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
     let download_formats = &[
@@ -27,17 +28,45 @@ fn get_media_selection(term: &Term) -> Result<MediaSelection, std::io::Error> {
     match media_selection {
         0 => Ok(MediaSelection::FullVideo),
         1 => Ok(MediaSelection::AudioOnly),
-        2 => Ok(MediaSelection::VideoOnly),
-        _ => panic!("Error getting media selection")
+        _ => Ok(MediaSelection::VideoOnly),
     }
 }
+
+/// Asks for an directory to store downloaded file(s) in
+///
+/// The current directory can be selected or one can be typed in
+fn get_output_path(term: &Term) -> BlobResult<String> {
+    let output_path_options = &[
+        "Current directory",
+        "Other [specify]",
+    ];
+
+    let output_path = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Where do you want the downloaded file(s) to be saved?")
+        .default(0)
+        .items(output_path_options)
+        .interact_on(term)?;
+
+    match output_path {
+        // Return the current directory
+        0 => Ok(env::current_dir()?
+            .as_path()
+            .display()
+            .to_string()),
+
+        // Return a directory typed in by the user
+        _ => Ok(Input::with_theme(&ColorfulTheme::default())
+            .with_prompt("Output path:")
+            .interact_text()?),
+    }
+}
+
 
 use spinoff;
 use std::process;
 // Running yt-dlp -j <...>
 use execute::Execute;
 
-// Functions identical for both playlists and videos
 /// Returns the output of <yt-dlp -j url>: a JSON dump of all the available format information for a video
 fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     // Neat animation to entertain the user while the information is being downloaded
@@ -49,17 +78,20 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     // Continue even if you get errors
     command.arg("-i");
     command.arg(url);
+
     // Redirect the output to a variable instead of to the screen
     command.stdout(process::Stdio::piped());
     // Don't show errors and warnings
     command.stderr(process::Stdio::piped());
     let output = command.execute_output();
+
+    // Stop the ui spinner
     sp.stop();
 
     output
 }
 
-// Ask the user what container they want the downloaded file to be recoded to (ytdlp postprocessor) REQUIRES FFMPEG
+/// Ask the user what format they want the downloaded file to be recoded to (yt-dlp postprocessor) REQUIRES FFMPEG
 fn convert_to_format(term: &Term, media_selected: &MediaSelection)
                      -> BlobResult<VideoQualityAndFormatPreferences>
 {
@@ -74,7 +106,6 @@ fn convert_to_format(term: &Term, media_selected: &MediaSelection)
                                           "alac", "flac", "m4a", "mka", "mp3", "ogg", "opus", "vorbis", "wav"],
     };
 
-    // Setting up the prompt
     let user_selection = Select::with_theme(&ColorfulTheme::default())
         .with_prompt("Which container do you want the final file to be in?")
         .default(0)
@@ -84,7 +115,7 @@ fn convert_to_format(term: &Term, media_selected: &MediaSelection)
     Ok(VideoQualityAndFormatPreferences::ConvertTo(format_options[user_selection].to_string()))
 }
 
-/// Serializes the information about the formats available for 1 video
+/// Serializes the information about all the formats available for 1 video
 fn serialize_formats(json_dump: &str) -> BlobResult<VideoSpecs> {
     let result = serde_json::from_str(json_dump);
     match result {
@@ -123,6 +154,17 @@ fn check_format(format: &VideoFormat, media_selected: &MediaSelection) -> bool {
 }
 
 // Common enums and structs
+
+/// Contains the download options for all videos
+#[derive(Debug)]
+struct GenericConfig {
+    chosen_format: VideoQualityAndFormatPreferences,
+    output_path: String,
+    media_selected: MediaSelection,
+    include_indexes: bool,
+}
+
+
 /// Whether the user wants to download video files or audio-only
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) enum MediaSelection {

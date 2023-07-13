@@ -2,7 +2,6 @@ use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 use which::which;
 
-use super::super::*;
 use crate::assembling::youtube::*;
 use crate::error::BlobResult;
 use crate::ui_prompts::*;
@@ -20,7 +19,7 @@ pub fn assemble_data(url: &String) -> BlobResult<config::DownloadConfig> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
-    let media_selected = youtube::get_media_selection(&term)?;
+    let media_selected = get_media_selection(&term)?;
 
     let chosen_format = format::get_format(&term, url, &media_selected)?;
 
@@ -70,11 +69,13 @@ mod format {
 
         // A list of all the format options that can be picked
         let mut format_options: Vec<&str> = vec![];
+        // Default choices
         format_options.push(BEST_QUALITY_PROMPT_PLAYLIST);
         format_options.push(SMALLEST_QUALITY_PROMPT_PLAYLIST);
 
         if which("ffmpeg").is_ok() {
             // If ffmpeg is installed in the system
+            // Some features are only available with ffmpeg
             match media_selected {
                 MediaSelection::AudioOnly => format_options.push(CONVERT_FORMAT_PROMPT_AUDIO),
                 _ => format_options.push(CONVERT_FORMAT_PROMPT_VIDEO_PLAYLIST)
@@ -95,6 +96,7 @@ mod format {
                 _ => get_format_from_yt(term, url, media_selected),
             }
         } else {
+            println!("{}", FFMPEG_UNAVAILABLE_WARNING);
             // ffmpeg isn't installed, so ffmpeg-exclusive features are unavailable (video remuxing)
             format_options.push(YT_FORMAT_PROMPT_PLAYLIST);
 
@@ -157,7 +159,6 @@ mod format {
         let mut all_available_formats = FormatsLibrary::new();
 
         // Compute which formats are common across the entire playlist
-
         let mut intersections: Vec<String> = vec![];
         let mut current_ids: Vec<String> = vec![];
 
@@ -178,6 +179,7 @@ mod format {
                 for format in all_available_formats.videos()[i].formats().iter() {
                     current_ids.push(format.format_id.clone());
                 }
+                // Actually compute the intersection
                 intersections = intersection(&intersections, &current_ids);
             }
         }

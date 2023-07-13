@@ -19,14 +19,13 @@ use crate::assembling::youtube::config;
 pub fn run_and_observe(command: &mut Command, download_config: &config::DownloadConfig, verbosity: &parser::Verbosity) {
     // Run the command and record any errors
     if let Some(errors) = run_command(command, verbosity) {
-        // Some videos could not be downloaded
-
-        // Ask the user which videos they want to try to re-download
+        // Some videos could not be downloaded, ask the user which ones they want to try to re-download
         let user_selection = ask_for_redownload(&errors);
 
         // The list of commands that have to be re-run in case of errors
         let mut to_be_downloaded = Vec::new();
 
+        // Selection 0 and 1 are hard-coded (select all | select nothing)
         if !user_selection.is_empty() {
             if user_selection[0] == 0 {
                 // The user wants to re-download all the videos
@@ -43,7 +42,6 @@ pub fn run_and_observe(command: &mut Command, download_config: &config::Download
                     if i == 0 || i == 1 {
                         continue;
                     }
-
                     // There is a 1:1 correspondence between the number in user_selection and
                     // the index of the video it refers to in errors
                     to_be_downloaded.push(download_config.build_command_for_video(errors[i - 2].video_id().as_str()));
@@ -54,7 +52,6 @@ pub fn run_and_observe(command: &mut Command, download_config: &config::Download
             run_command(&mut com, verbosity);
         }
     } else {
-        // The command ran without any errors!
         #[cfg(debug_assertions)]
         println!("The command ran without any errors!! :)");
     }

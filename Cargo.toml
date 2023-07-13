@@ -1,8 +1,10 @@
 [package]
-author = "Michele Cioccarelli"
+author = "Michele Cioccarelli <cioccarellimi@gmail.com>"
 name = "blob-dl"
-version = "0.1.0"
-description = "Neat wrapper goes brr (short about)"
+version = "1.0.0"
+description = "A cli tool to make downloading youtube content easy, based on yt-dlp"
+categories = ["command-line-utilities"]
+keywords = ["youtube", "ytoutube-dl", "yt-dlp", "video", "playlist"]
 repository = "https://github.com/MicheleCioccarelli/blob-dl"
 edition = "2021"
 

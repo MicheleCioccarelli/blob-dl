@@ -4,11 +4,12 @@ use crate::assembling;
 use crate::error::BlobResult;
 use crate::run;
 
-/// Calls the right wizard according to what the url refers to, then it runs the ytdl-command and handles errors
+/// Calls the builder function according to what the url refers to (video/playlist), then it runs the ytdl-command and handles errors
 pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
+    // Parse what the url refers to
     let download_option = analyzer::analyze_url(config.url());
 
-    // Generate a command according to the user's wishes
+    // Generate a command according to the user's preferences
     let mut command_and_config = assembling::generate_command(config.url(), &download_option?)? ;
 
     if config.show_command() {
