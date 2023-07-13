@@ -56,10 +56,10 @@ impl DownloadConfig {
     /// This function is meant for the main video-downloading task
     ///
     /// If the video is a part of a playlist, playlist_index is its' index
-    pub(crate) fn build_command(&self, playlist_index: usize) -> (process::Command, DownloadConfig) {
+    pub(crate) fn build_command(&self) -> (process::Command, DownloadConfig) {
         (
             match self.download_target {
-                analyzer::DownloadOption::YtVideo(_) => self.build_yt_video_command(playlist_index),
+                analyzer::DownloadOption::YtVideo(_) => self.build_yt_video_command(),
                 analyzer::DownloadOption::YtPlaylist => self.build_yt_playlist_command(),
             },
 
@@ -96,7 +96,7 @@ impl DownloadConfig {
     }
 
     /// playlist_index is the video's index in the playlist, if it is not in a playlist the index is 0
-    fn build_yt_video_command(&self, playlist_index: usize) -> process::Command {
+    fn build_yt_video_command(&self) -> process::Command {
         let mut command = process::Command::new("yt-dlp");
 
         // Setup output directory and naming scheme
@@ -112,9 +112,7 @@ impl DownloadConfig {
         // Quality and format selection
         self.choose_format(&mut command, &id);
 
-        if playlist_index != 0 {
-            command.arg("--playlist-items").arg(playlist_index.to_string());
-        }
+        command.arg("--no-playlist");
 
         // Add the playlist's url
         command.arg(self.url.clone());
@@ -140,6 +138,8 @@ impl DownloadConfig {
 
         // Quality and format selection
         self.choose_format(&mut command, id.as_str());
+
+        command.arg("--no-playlist");
 
         // Add the video's id
         command.arg(video_id);
