@@ -9,20 +9,20 @@ fn main() {
         let config = parser::parse_config();
 
         // If there was an error parsing the command-line arguments, handle it
-        if let Err(err) = config {
-            err.report();
-            return;
-        }
-
-        // Ask for more input, Generate a command, Execute yt-dlp todo make this prettier
-        if let Err(err) = dispatch(&config.unwrap()) {
-            // If there is an error, handle it
-            err.report();
+        match config {
+            Ok(config) => {
+                // Ask for more input, Generate a command, Execute yt-dlp
+                if let Err(err) = dispatch(&config) {
+                    // If there is an error, handle it
+                    err.report();
+                }
+            }
+            Err(err) => {
+                err.report();
+            }
         }
     } else {
         // ytdlp is not installed!
         println!("{}", blob_dl::ui_prompts::YTDLP_NOT_INSTALLED);
     }
-
-    //todo!("See .error() in Clap for neat error messages!");
 }
