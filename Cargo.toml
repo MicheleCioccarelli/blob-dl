@@ -1,7 +1,8 @@
 [package]
 author = "Michele Cioccarelli <cioccarellimi@gmail.com>"
 name = "blob-dl"
-version = "1.0.0"
+version = "0.1.0"
+license = "MIT"
 description = "A cli tool to make downloading youtube content easy, based on yt-dlp"
 categories = ["command-line-utilities"]
 keywords = ["youtube", "ytoutube-dl", "yt-dlp", "video", "playlist"]
