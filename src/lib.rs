@@ -9,9 +9,9 @@ mod error;
 pub mod ui_prompts {
     pub const FFMPEG_UNAVAILABLE_WARNING: &str = "It looks like ffmpeg and ffprobe aren't installed, which means that some of blob-dl's features aren't available!\nPlease install them for a fuller experience";
 
-    pub const LONG_ABOUT: &str = "A cli utility to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!";
+    pub const LONG_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!";
 
-    pub const SHORT_ABOUT: &str = "A cli utility to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!";
+    pub const SHORT_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!";
 
     pub const YTDLP_NOT_INSTALLED: &str = "blob-dl is a wrapper around yt-dlp and cannot function without it.\nPlease install yt-dlp from the official github page: https://github.com/yt-dlp/yt-dlp";
 
