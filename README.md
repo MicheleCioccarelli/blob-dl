@@ -13,8 +13,7 @@ The process can be quite a pain because you will have to either spend your time 
 
 Blob-dl at its core is a very noob-friendly way to use yt-dlp: it asks a series of questions and then generates and executes a command that fits your needs.
 
-See the <a href="Features">Features</a> section for more details on what this program can do
-
+See the [Features](https://github.com/MicheleCioccarelli/blob-dl#features) section for more details on what this program can do
 
 [![asciicast](https://asciinema.org/a/jZUokSc5oDms6vICdNTic1vxh.svg)](https://asciinema.org/a/jZUokSc5oDms6vICdNTic1vxh)
 
