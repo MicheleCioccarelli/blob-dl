@@ -3,11 +3,11 @@ use blob_dl::dispatcher::dispatch;
 use which::which;
 
 fn main() {
-    // tested with yt-dlp 2023.03.04
-    if which("yt-dlp").is_ok() {
-        // Processed command line arguments live here
-        let config = parser::parse_config();
+    // Processed command line arguments live here
+    let config = parser::parse_config();
 
+    // tested with yt-dlp 2023.07.06
+    if which("yt-dlp").is_ok() {
         match config {
             Ok(config) => {
                 // Ask for more input > Generate a command > Execute yt-dlp

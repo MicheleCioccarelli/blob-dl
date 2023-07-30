@@ -211,7 +211,7 @@ fn get_index_preference(term: &Term) -> BlobResult<bool> {
 
     // Ask the user which format they want the downloaded files to be in
     let index_preference = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Do you want the video's index (in the playlist) to be prefixed to its filename?")
+        .with_prompt("Do you want the files to be numbered as in the playlist?")
         .default(0)
         .items(download_formats)
         .interact_on(term)?;
