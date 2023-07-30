@@ -13,7 +13,12 @@ The process can be quite a pain because you will have to either spend your time 
 
 Blob-dl at its core is a very noob-friendly way to use yt-dlp: it asks a series of questions and then generates and executes a command that fits your needs.
 
-See the [Features](#Features "Goto Features") section for more details on what this program can do
+See the <a href="Features">Features</a> section for more details on what this program can do
+
+
+[![asciicast](https://asciinema.org/a/jZUokSc5oDms6vICdNTic1vxh.svg)](https://asciinema.org/a/jZUokSc5oDms6vICdNTic1vxh)
+
+
 # Installation
 Currently, the only ways to install blob-dl are to use the command `cargo install` or to compile the source code yourself 
 ## Dependencies
@@ -40,7 +45,7 @@ The available answers mean these things:
 - `Choose a format to download the video in` doesn't require ffmpeg: it shows a list of formats directly available for download from YouTube without needing to convert things
 
 
-# Features #
+# Features
 
 ### Format conversion
 Blob-dl was designed to download large song playlists directly as audio files, as a result choosing between downloading audio files, normal video files or video-only files is very easy
