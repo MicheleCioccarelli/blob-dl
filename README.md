@@ -1,6 +1,5 @@
 <p align="center">
     <img alt="Blob-dl Logo" src="../assets/blob-dl-logo-v1.png" height="150">
-    <h3 align="center">blob-dl</h3>
   </a>
 </p>
 
@@ -19,9 +18,16 @@ See the [Features](https://github.com/MicheleCioccarelli/blob-dl#features) secti
 
 
 # Installation
-Currently, the only ways to install blob-dl are to use the command `cargo install` or to compile the source code yourself 
+If you are a Rust programmer, blob-dl can be installed with `cargo`
+
+```
+$ cargo install blob-dl
+```
+
+Currently using cargo directly or building blob-dl yourself are the only ways to install blob-dl
+
 ## Dependencies
-blob-dl executes a yt-dlp command, so it cannot function without it.
+blob-dl calls yt-dlp directly, so it cannot function without it.
 If you don't already have it, install yt-dlp [here](https://github.com/yt-dlp/yt-dlp#installation).
 
 You should also consider installing yt-dlp's [recommended dependencies](https://github.com/yt-dlp/yt-dlp#dependencies).
@@ -37,17 +43,19 @@ The available answers mean these things:
 
 - `Best possible quality` tells yt-dlp to automatically choose the "best" quality, for more information see yt-dlp's [wiki](https://github.com/yt-dlp/yt-dlp#format-selection)
 
-- `Smallest file size` is self-explanatory
+- `Smallest file size` uses the format which results in the smallest file size
 
 - `Choose a format to recode the video to` requires ffmpeg: after the video is downloaded, it is converted to a file format of your choosing
 
-- `Choose a format to download the video in` doesn't require ffmpeg: it shows a list of formats directly available for download from YouTube without needing to convert things
+- `Choose a format to download the video in` doesn't require ffmpeg: it shows a list of formats directly available for download from YouTube without needing to convert anything
 
+
+Blob-dl will ask further questions, but they are self-explanatory
 
 # Features
 
 ### Format conversion
-Blob-dl was designed to download large song playlists directly as audio files, as a result choosing between downloading audio files, normal video files or video-only files is very easy
+Blob-dl was designed to download large song playlists directly as audio files. Choosing between downloading audio files, normal video files or video-only files is very easy
 
 ### Error tracking
 
@@ -65,5 +73,5 @@ I was tired of spending hours downloading music videos and converting them to au
 
 
 
-# Notes
+## Notes
 This logo was inspired by [@Primer](https://www.youtube.com/c/PrimerLearning)'s [blob plushie](https://store.dftba.com/collections/primer/products/primer-blob-plushie)
