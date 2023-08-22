@@ -6,6 +6,9 @@
 
 ![Crates.io](https://img.shields.io/crates/d/blob-dl?color=%2325BE5D)
 ![GitHub](https://img.shields.io/badge/license-MIT-blue)
+![GitHub issues](https://img.shields.io/github/issues/MicheleCioccarelli/blob-dl)
+![Crates.io](https://img.shields.io/crates/v/blob-dl)
+
 
 # blob-dl
 `blob-dl` is a command line tool used to download video and audio files from YouTube
