@@ -2,8 +2,8 @@
     <img alt="Blob-dl Logo" src="../assets/blob-dl-logo-v1.png" height="150">
   </a>
 </p>
-        
-![Crates.io (version)](https://img.shields.io/crates/dv/blob-dl/0.1.0?color=%2314FB51)
+
+![Crates.io](https://img.shields.io/crates/d/blob-dl?color=%2325BE5D)
 ![GitHub](https://img.shields.io/badge/license-MIT-blue)
 
 # blob-dl
@@ -21,14 +21,13 @@ See the [Features](https://github.com/MicheleCioccarelli/blob-dl#features) secti
 
 
 # Installation
-If you are a Rust programmer, blob-dl can be installed with `cargo`
+The most straightforward way to install blob-dl is to use [the binaries](https://github.com/MicheleCioccarelli/blob-dl/releases/tag/v1.0.0)
+
+Alternatively, if you are a Rust programmer you can install blob-dl with `cargo`
 
 ```
 $ cargo install blob-dl
 ```
-
-Currently using cargo directly or building blob-dl yourself are the only ways to install blob-dl
-
 ## Dependencies
 blob-dl calls yt-dlp directly, so it cannot function without it.
 If you don't already have it, install yt-dlp [here](https://github.com/yt-dlp/yt-dlp#installation).
