@@ -47,8 +47,18 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
 
             return match user_selection {
                 0 => {
-                    // "&index="'s existence was checked in the previous if statement, so unwrap() is safe
-                    let index = &query[query.find("&index=").unwrap() + "&index=".len()..query.len()];
+                    let index = if let Some(index_location) = query.find("&index=") {
+                        let slice = &query[index_location + "&index=".len() ..];
+
+                        if let Some(second_ampersand_location) = slice.find('&') {
+                            // There are url parameters after &index=..
+                             &slice[..second_ampersand_location]
+                        } else {
+                            slice
+                        }
+                    } else {
+                        panic!("url has &index= but doesn't provide a numerical index")
+                    };
 
                     if let Ok(parsed) = index.parse() {
                         Ok(DownloadOption::YtVideo(parsed))
