@@ -112,7 +112,7 @@ impl YtdlpError {
 
 impl std::fmt::Display for YtdlpError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut result = String::new();
+        let mut result ;
         result = format!("{} {}", "yt-video id:", self.video_id);
         result = format!("{}\n   {} {}\n", result, "Reason:", self.error_msg);
 

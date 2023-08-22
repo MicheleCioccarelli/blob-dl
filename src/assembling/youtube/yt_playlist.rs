@@ -15,7 +15,7 @@ use crate::ui_prompts::*;
 /// - Index inclusion
 ///
 /// Returns a fully configured YtPlaylistConfig, build_command() can be called
-pub fn assemble_data(url: &String) -> BlobResult<config::DownloadConfig> {
+pub fn assemble_data(url: &str) -> BlobResult<config::DownloadConfig> {
     let term = Term::buffered_stderr();
 
     // Whether the user wants to download video files or audio-only
@@ -189,7 +189,7 @@ mod format {
 }
 
 /// Returns an owned intersection Vec
-fn intersection<'a, T: Eq + Clone>(vec1: &'a Vec<T>, vec2: &'a Vec<T>) -> Vec<T> {
+fn intersection<'a, T: Eq + Clone>(vec1: &'a [T], vec2: &'a [T]) -> Vec<T> {
     let mut intersections = vec![];
 
     for (element_1, element_2) in vec1.iter().zip(vec2.iter()) {

@@ -8,6 +8,7 @@ use dialoguer::{theme::ColorfulTheme, Select, Input};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::{env, fmt};
+use colored::Colorize;
 
 // Functions used both in yt_video.rs and yt_playlist.rs
 /// Asks the user whether they want to download video files or audio-only
@@ -70,7 +71,7 @@ use execute::Execute;
 /// Returns the output of <yt-dlp -j url>: a JSON dump of all the available format information for a video
 fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     // Neat animation to entertain the user while the information is being downloaded
-    let sp = spinoff::Spinner::new(spinoff::Spinners::Dots10, "Fetching available formats...", spinoff::Color::Cyan);
+    let mut sp = spinoff::Spinner::new(spinoff::spinners::Dots10, "Fetching available formats...", spinoff::Color::Cyan);
 
     let mut command = process::Command::new("yt-dlp");
     // Get a JSON dump of all the available formats related to this url
@@ -86,7 +87,7 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     let output = command.execute_output();
 
     // Stop the ui spinner
-    sp.stop();
+    sp.success("Formats downloaded successfully".bold().to_string().as_str());
 
     output
 }
@@ -154,17 +155,6 @@ fn check_format(format: &VideoFormat, media_selected: &MediaSelection) -> bool {
 }
 
 // Common enums and structs
-
-/// Contains the download options for all videos
-#[derive(Debug)]
-struct GenericConfig {
-    chosen_format: VideoQualityAndFormatPreferences,
-    output_path: String,
-    media_selected: MediaSelection,
-    include_indexes: bool,
-}
-
-
 /// Whether the user wants to download video files or audio-only
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub(crate) enum MediaSelection {

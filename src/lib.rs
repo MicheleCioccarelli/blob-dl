@@ -37,7 +37,7 @@ pub mod ui_prompts {
 
     pub const USAGE_MSG: &str = "Usage: blob-dl [OPTIONS] [URL]";
 
-    pub const ERROR_RETRY_PROMPT: &str = "The following videos weren't downloaded but retrying might help, choose which videos to re-download [spacebar to select]";
+    pub const ERROR_RETRY_PROMPT: &str = "The following videos weren't downloaded but retrying might help, choose which videos to re-download [space bar to select]";
 
     pub const UNRECOVERABLE_ERROR_PROMPT: &str = "The following videos could not be downloaded due to unrecoverable errors";
 
