@@ -10,16 +10,12 @@
 ![Crates.io](https://img.shields.io/crates/v/blob-dl)
 
 
-# blob-dl
-`blob-dl` is a command line tool used to download video and audio files from YouTube
-
-Have you ever had to download videos from YouTube? 
-The process can be quite a pain because you will have to either spend your time closing pop-ups from a sketchy website or browsing through [`yt-dlp`](https://github.com/yt-dlp/yt-dlp)'s documentation.
+<h1 align="center">blob-dl</h1>
 
 
-`blob-dl` at its core is a very noob-friendly way to use `yt-dlp`: it asks a series of questions and then generates and executes a command that fits your needs.
+`blob-dl` is a command line tool used to download video and audio files from YouTube, it acts as an alternative frontend to [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) and works by asking a series of questions that help it generate and then execute a command that fits your needs.
 
-See the [Features](https://github.com/MicheleCioccarelli/blob-dl#features) section for more details on what this program can do
+See the [Features](https://github.com/MicheleCioccarelli/blob-dl#features) section for more details on what `blob-dl` can do
 
 [![asciicast](https://asciinema.org/a/jZUokSc5oDms6vICdNTic1vxh.svg)](https://asciinema.org/a/jZUokSc5oDms6vICdNTic1vxh)
 
@@ -69,13 +65,16 @@ The available answers mean these things:
 While downloading, `blob-dl` keeps track of any errors thrown by yt-dlp and reports them at the end, the ones caused which can be resolved by re-trying the download can be easily re-downloaded
 
 
-# QA
+# Q&A
 ### Who is this for?
 This program is intended for anyone who needs to download things from YouTube without having to remember yt-dlp's syntax. `blob-dl` can do everything an average user needs
 
 `yt-dlp` power-users with very specific needs probably won't find this program useful
 
 ### Why did I make this?
+Have you ever had to download videos from YouTube? 
+The process can be quite a pain because you will have to either spend your time closing pop-ups from a sketchy website or browsing through [`yt-dlp`](https://github.com/yt-dlp/yt-dlp)'s documentation.
+
 I was tired of spending hours downloading music videos and converting them to audio, so I wrote this program to make everything way easier
 
 
