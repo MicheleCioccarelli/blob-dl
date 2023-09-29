@@ -69,6 +69,8 @@ mod youtube_error_message {
 
     pub const ENCODER_STREAM_ERROR: &str = " Postprocessing: Error selecting an encoder for stream 0:1";
 
+    pub const NONEXISTENT_VIDEO: &str = "Incomplete data received";
+
     // All copyright error messages begin with this
     pub const VIDEO_UNAVAILABLE: &str = " Video unavailable";
 }

@@ -128,16 +128,35 @@ impl YtdlpError {
 
         // Skip ERROR:
         section.next().unwrap();
-        // Skip [...]
-        section.next().unwrap();
 
-        let mut video_id = section.next().unwrap();
-        // Delete the trailing ':'
-        video_id = &video_id[..video_id.len() - 1];
+        let mut video_id;
+
+        //  for normal errors this should be [youtube]
+        let mut youtube = section.next().unwrap();
+
+        let is_normal_error = youtube == "[youtube]";
+        // todo find a decent way to do this
+        let mut strange_err_msg_beginning = "";
+
+        if is_normal_error {
+            // This is a usual error, so the video is is in the next section
+            video_id = section.next().unwrap();
+            // Delete the trailing ':'
+            video_id = &video_id[..video_id.len() - 1];
+        } else {
+            // The video doesn't exist, this happens in errors such as NONEXISTENT_VIDEO (see lib.rs)
+            strange_err_msg_beginning = youtube;
+            video_id = "unavailable";
+        }
 
         // Concatenate together the error message and restore whitespace
         let error_msg = {
             let mut tmp = String::new();
+            // I am ashamed
+            if !is_normal_error {
+                tmp += strange_err_msg_beginning;
+            }
+
             for word in section {
                 tmp = tmp + " " + word;
             }

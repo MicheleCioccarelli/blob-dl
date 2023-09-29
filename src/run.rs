@@ -89,6 +89,7 @@ fn init_error_msg_lut() -> HashMap<&'static str, bool> {
         (NETWORK_FAIL,           true),
         (NO_API_PAGE,            false),
         (ENCODER_STREAM_ERROR,   false),
+        (NONEXISTENT_VIDEO,   false),
     ])
 }
 
