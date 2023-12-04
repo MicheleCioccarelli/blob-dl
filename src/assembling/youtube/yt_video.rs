@@ -40,6 +40,7 @@ mod format {
     {
         // A list of all the format options that can be picked
         let mut format_options: Vec<&str> = vec![];
+
         // Default options
         format_options.push(BEST_QUALITY_PROMPT_SINGLE_VIDEO);
         format_options.push(SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO);
@@ -98,7 +99,7 @@ mod format {
                     // If `url` refers to a playlist the JSON has multiple roots, only parse one
                     .lines()
                     // If the requested video isn't the first in a playlist, only parse its information
-                    .nth(playlist_id)
+                    .nth(playlist_id-1)
                     // Unwrap is safe because playlist_id is non-0 only when there are multiple lines in the json
                     .unwrap()
             )?

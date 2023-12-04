@@ -5,7 +5,7 @@ use crate::error::{BlobdlError, BlobResult};
 
 pub fn parse_config() -> BlobResult<CliConfig> {
     let matches = Command::new("blob-dl")
-        .version("0.1.0")
+        .version("1.0.1")
         .author("cioccarellimi@gmail.com")
         .about(SHORT_ABOUT)
         .long_about(LONG_ABOUT)
