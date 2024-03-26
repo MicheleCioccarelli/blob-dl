@@ -18,7 +18,8 @@ pub(crate) fn assemble_data(url: &str, playlist_id: usize) -> BlobResult<config:
 
     let chosen_format = format::get_format(&term, url, &media_selected, playlist_id)?;
 
-    let output_path = get_output_path(&term)?;
+    // .trim() trims trailing whitespace at the end of the user-specified path (useful is the user is clumsy)
+    let output_path = get_output_path(&term)?.trim().to_string();
 
     Ok(config::DownloadConfig::new_video(
         url,

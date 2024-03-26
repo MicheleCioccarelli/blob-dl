@@ -132,7 +132,7 @@ impl YtdlpError {
         let mut video_id;
 
         //  for normal errors this should be [youtube]
-        let mut youtube = section.next().unwrap();
+        let youtube = section.next().unwrap();
 
         let is_normal_error = youtube == "[youtube]";
         // todo find a decent way to do this
