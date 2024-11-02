@@ -17,7 +17,7 @@ fn main() {
                 print!("{}", "WARNING: ".bold().yellow());
                 println!("{}", blob_dl::ui_prompts::WRONG_YTDLP_VERSION);
             }
-            Err(e) => {
+            Err(_) => {
                 print!("{}", "WARNING: ".bold().yellow());
                 println!("{}", blob_dl::ui_prompts::COMMAND_NOT_SPAWNED);
             },
