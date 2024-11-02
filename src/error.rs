@@ -1,5 +1,4 @@
 use std::io::Write;
-// Import error messages
 use crate::blobdl_error_message::*;
 use crate::ui_prompts::*;
 
@@ -29,43 +28,52 @@ pub enum BlobdlError {
     SerdeError(serde_json::Error),
     IoError(std::io::Error),
     QueryCouldNotBeParsed,
+    PlaylistUrlError,
+
+    // This is a 'soft' error: it only means that the ytdlp version could not be checked and should not stop the program. It is handled in main
+    CommandNotSpawned,
 }
 
 impl BlobdlError {
     // Output an error message according to the error at hand
     pub fn report(&self) {
         eprintln!("\n{}\n", USAGE_MSG);
-        print!("{}: ", "ERROR".red());
+        eprint!("{}: ", "ERROR".red());
 
         let _ = std::io::stdout().flush();
 
         match self {
             BlobdlError::QueryNotFound => eprintln!("{}", BROKEN_URL_ERR),
 
-            BlobdlError::UnknownUrl=> eprintln!("{}", BROKEN_URL_ERR),
+            BlobdlError::UnknownUrl => eprintln!("{}", BROKEN_URL_ERR),
 
-            BlobdlError::UnsupportedWebsite=> eprintln!("{}", UNSUPPORTED_WEBSITE_ERR),
+            BlobdlError::UnsupportedWebsite => eprintln!("{}", UNSUPPORTED_WEBSITE_ERR),
 
-            BlobdlError::DomainNotFound=> eprintln!("{}", BROKEN_URL_ERR),
+            BlobdlError::DomainNotFound => eprintln!("{}", BROKEN_URL_ERR),
 
             // The link appears to be completely broken
-            BlobdlError::UrlParsingError=> eprintln!("{}", BROKEN_URL_ERR),
+            BlobdlError::UrlParsingError => eprintln!("{}", BROKEN_URL_ERR),
 
-            BlobdlError::UnknownIssue=> eprintln!("{}", UNKNOWN_ISSUE_ERR),
+            BlobdlError::UnknownIssue => eprintln!("{}", UNKNOWN_ISSUE_ERR),
 
-            BlobdlError::MissingArgument=> eprintln!("{}", MISSING_ARGUMENT_ERR),
+            BlobdlError::MissingArgument => eprintln!("{}", MISSING_ARGUMENT_ERR),
 
-            BlobdlError::JsonSerializationError=> eprintln!("{}", JSON_SERIALIZATION_ERR),
+            BlobdlError::JsonSerializationError => eprintln!("{}", JSON_SERIALIZATION_ERR),
 
-            BlobdlError::Utf8Error=> eprintln!("{}", UTF8_ERR),
+            BlobdlError::Utf8Error => eprintln!("{}", UTF8_ERR),
 
-            BlobdlError::SerdeError(err)=> eprintln!("{} {}", SERDE_ERR, err),
+            BlobdlError::SerdeError(err) => eprintln!("{} {}", SERDE_ERR, err),
 
-            BlobdlError::IoError(err)=> eprintln!("{} {}", IO_ERR, err),
+            BlobdlError::IoError(err) => eprintln!("{} {}", IO_ERR, err),
 
             BlobdlError::QueryCouldNotBeParsed => eprintln!("{}", URL_QUERY_COULD_NOT_BE_PARSED),
 
             BlobdlError::UrlIndexParsingError => eprintln!("{}", URL_INDEX_PARSING_ERR),
+
+            BlobdlError::PlaylistUrlError => eprintln!("{}", PLAYLIST_URL_ERROR),
+
+            // Early return because this should not be treated as a program-ending error
+            BlobdlError::CommandNotSpawned => return
         }
         eprintln!("{}", SEE_HELP_PAGE);
     }
@@ -139,7 +147,7 @@ impl YtdlpError {
         let mut strange_err_msg_beginning = "";
 
         if is_normal_error {
-            // This is a usual error, so the video is is in the next section
+            // This is a usual error, so the video is in the next section
             video_id = section.next().unwrap();
             // Delete the trailing ':'
             video_id = &video_id[..video_id.len() - 1];

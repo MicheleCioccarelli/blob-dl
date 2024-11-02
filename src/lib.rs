@@ -9,7 +9,7 @@ mod error;
 pub mod ui_prompts {
     pub const FFMPEG_UNAVAILABLE_WARNING: &str = "It looks like ffmpeg and ffprobe aren't installed, which means that some of blob-dl's features aren't available!\nPlease install them for a fuller experience";
 
-    pub const LONG_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!\n\nFor more details check out the github page https://github.com/MicheleCioccarelli/blob-dl";
+    pub const LONG_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!\n\nFor more details check out the github page https://github.com/MicheleCioccarelli/blob-dl\nRecommended yt-dlp version: 2024.10.22";
 
     pub const SHORT_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!\n\nFor more details check out the github page https://github.com/MicheleCioccarelli/blob-dl";
 
@@ -45,6 +45,11 @@ pub mod ui_prompts {
 
     pub const SELECT_ALL: &str = "Select all\n";
     pub const SELECT_NOTHING: &str = "Don't re-download anything\n";
+    
+    pub const WRONG_YTDLP_VERSION: &str = "It looks like you have a yt-dlp version which may not work with blob-dl as expected: you may not be able to fetch formats from youtube.\n\
+    To fix this you can update your yt-dlp installation to the correct version with the command: sudo yt-dlp --update-to 2024.10.22";
+    
+    pub const COMMAND_NOT_SPAWNED: &str = "An instance of ytdlp (used to check which version of the program you have installed) could not be spawned";
 }
 
 // Youtube's error messages
@@ -75,7 +80,7 @@ mod youtube_error_message {
     pub const VIDEO_UNAVAILABLE: &str = " Video unavailable";
 }
 // blob-dl custom error messages
-mod blobdl_error_message {
+pub mod blobdl_error_message {
     pub const BROKEN_URL_ERR: &str = "The url provided wasn't recognized, try using a regular youtube url";
 
     pub const UNSUPPORTED_WEBSITE_ERR: &str = "Currently blob-dl only supports downloading youtube videos or playlists, not content from other websites";
@@ -95,4 +100,6 @@ mod blobdl_error_message {
     pub const URL_QUERY_COULD_NOT_BE_PARSED: &str = "This url's query could not be parsed, try using a regular youtube url";
 
     pub const URL_INDEX_PARSING_ERR: &str = "The video's index in the playlist couldn't be parsed, please report this issue to the github page";
+    
+    pub const PLAYLIST_URL_ERROR: &str = "The index/id for the video that you want to download in the playlist could not be parsed.\nTo download just this video try using a url which links directly to it instead of going through a playlist";
 }

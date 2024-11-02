@@ -1,3 +1,4 @@
+
 use clap::{Arg, Command, ArgMatches, ArgAction};
 
 use crate::ui_prompts::*;
@@ -5,7 +6,7 @@ use crate::error::{BlobdlError, BlobResult};
 
 pub fn parse_config() -> BlobResult<CliConfig> {
     let matches = Command::new("blob-dl")
-        .version("1.0.1")
+        .version("1.0.3")
         .author("cioccarellimi@gmail.com")
         .about(SHORT_ABOUT)
         .long_about(LONG_ABOUT)
@@ -93,5 +94,25 @@ impl CliConfig {
     }
     pub fn show_command(&self) -> bool {
         self.show_command
+    }
+}
+
+/// Check if the user has a version of ytdlp compatible with blob-dl (now it is 2024.10.22)
+pub fn is_ytdlp_compatible() ->Result<bool, BlobdlError> {
+    let version = std::process::Command::new("yt-dlp")
+            .arg("--version")
+            .output();
+    
+    if let Ok(version) = version {
+        let str = std::str::from_utf8(&version.stdout)?;
+
+        if str == "2024.10.22\n" {
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+        
+    } else {
+        Err(BlobdlError::CommandNotSpawned)
     }
 }

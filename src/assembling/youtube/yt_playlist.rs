@@ -59,6 +59,7 @@ mod format {
     }
 
     use crate::assembling::youtube::VideoSpecs;
+    use crate::error::BlobdlError::JsonSerializationError;
     use super::*;
 
     /// Asks the user to choose a download format and quality
@@ -121,6 +122,11 @@ mod format {
     {
         // Get a list of all the formats available for the playlist
         let ytdl_formats = get_ytdlp_formats(url)?;
+
+        // If stdout is empty ytdlp had an error and the formats aren't available
+        if ytdl_formats.stdout.is_empty() {
+            return Err(JsonSerializationError)
+        }
 
         // Filter out formats not available for all the videos
         let (intersections, all_available_formats) = get_common_formats(ytdl_formats)?;

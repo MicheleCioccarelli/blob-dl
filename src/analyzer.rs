@@ -34,7 +34,10 @@ pub fn analyze_url(command_line_url: &str) -> BlobResult<DownloadOption> {
 /// Given a youtube url determines whether it refers to a video/playlist
 fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
     if let Some(query) = yt_url.query() {
-        if query.contains("&index=") {
+        // Also urls can be part of a playlist but not have an index, just an id
+        // example: https://www.youtube.com/watch?v=GNxZ_izoC8I&list=PLl-vhnGPY7cqQ0b_NXy1qyMVsA9LHiPmv
+        // maybe support for this will be added in the future
+        if query.contains("&index="){
             // This video is part of a youtube playlist
             let term = Term::buffered_stderr();
 
@@ -57,7 +60,7 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
                             slice
                         }
                     } else {
-                        panic!("url has &index= but doesn't provide a numerical index")
+                        return Err(BlobdlError::PlaylistUrlError);
                     };
 
                     if let Ok(parsed) = index.parse() {

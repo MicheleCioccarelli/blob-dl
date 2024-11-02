@@ -101,7 +101,7 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
     let mut youtube_dl = command.stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .expect("Failed to start yt-dlp process");
+        .expect("Failed to start yt-dlp process"); // TODO Should take away this expect in a future release
 
     let stdout = BufReader::new(youtube_dl.stdout.take().unwrap());
     let stderr = BufReader::new(youtube_dl.stderr.take().unwrap());
