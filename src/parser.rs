@@ -97,7 +97,7 @@ impl CliConfig {
     }
 }
 
-/// Check if the user has a version of ytdlp compatible with blob-dl (now it is 2024.10.22)
+/// Check if the user has a version of ytdlp compatible with blob-dl (now it is 2024.11.18)
 pub fn is_ytdlp_compatible() ->Result<bool, BlobdlError> {
     let version = std::process::Command::new("yt-dlp")
             .arg("--version")
@@ -106,7 +106,7 @@ pub fn is_ytdlp_compatible() ->Result<bool, BlobdlError> {
     if let Ok(version) = version {
         let str = std::str::from_utf8(&version.stdout)?;
 
-        if str == "2024.10.22\n" {
+        if str == "2024.11.18\n" {
             Ok(true)
         } else {
             Ok(false)

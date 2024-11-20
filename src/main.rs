@@ -8,7 +8,7 @@ fn main() {
     // Processed command line arguments live here
     let config = parser::parse_config();
 
-    // tested with yt-dlp 2023.07.06
+    // tested with yt-dlp 2024.11.18
     if which("yt-dlp").is_ok() {
 
         // check whether yt-dlp's version is compatible with this version of blob-dl

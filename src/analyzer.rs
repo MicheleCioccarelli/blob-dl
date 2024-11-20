@@ -78,7 +78,7 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
         }
 
         // This url is probably referring to a video or a short
-        return Ok(DownloadOption::YtVideo(0));
+        return Ok(DownloadOption::YtVideo(1));
     }
 
     Err(BlobdlError::QueryCouldNotBeParsed)

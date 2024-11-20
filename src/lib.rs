@@ -47,7 +47,7 @@ pub mod ui_prompts {
     pub const SELECT_NOTHING: &str = "Don't re-download anything\n";
     
     pub const WRONG_YTDLP_VERSION: &str = "It looks like you have a yt-dlp version which may not work with blob-dl as expected: you may not be able to fetch formats from youtube.\n\
-    To fix this you can update your yt-dlp installation to the correct version with the command: sudo yt-dlp --update-to 2024.10.22";
+    To fix this you can update your yt-dlp installation to the correct version with the command: sudo yt-dlp --update-to 2024.11.18";
     
     pub const COMMAND_NOT_SPAWNED: &str = "An instance of ytdlp (used to check which version of the program you have installed) could not be spawned";
 }
