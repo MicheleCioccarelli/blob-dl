@@ -38,7 +38,7 @@ pub fn assemble_data(url: &str) -> BlobResult<config::DownloadConfig> {
 }
 
 mod format {
-    /// All of the formats a particular playlist can be downloaded in
+    /// All the formats a particular playlist can be downloaded in
     ///
     /// These are divided in videos
     ///
@@ -160,7 +160,14 @@ mod format {
         Ok(VideoQualityAndFormatPreferences::UniqueFormat(correct_ids[user_selection].clone()))
     }
 
-    // Finds the formats available for all videos in the playlist and the list of all the available formats
+    /// All the formats for all the videos in a playlist
+    #[derive(Serialize, Deserialize, Debug)]
+    struct Playlist {
+        #[serde(rename = "entries")]
+        videos: Vec<Option<VideoSpecs>>
+    }
+    
+    /// Finds the formats available for all videos in the playlist and the list of all the available formats
     fn get_common_formats(json_formats: process::Output) -> BlobResult<(Vec<String>, FormatsLibrary)> {
         // A list of videos, which are Vec of formats
         let mut all_available_formats = FormatsLibrary::new();
@@ -168,7 +175,21 @@ mod format {
         // Compute which formats are common across the entire playlist
         let mut intersections: Vec<String> = vec![];
         let mut current_ids: Vec<String> = vec![];
-
+        
+        let raw_json = std::str::from_utf8(&json_formats.stdout)?;
+        
+        let all_playlist_formats: serde_json::error::Result<Playlist> = serde_json::from_str(raw_json);
+        
+        match all_playlist_formats {
+            Ok(all_playlist_formats) => {
+                // Get intersections and stuff
+                
+                
+            },
+            
+            Err(err) => return Err(BlobdlError::SerdeError(err))
+        }
+        
         // Each line in ytdl_formats contains all the format information for 1 video
         for (i, video_formats_json) in std::str::from_utf8(&json_formats.stdout)?
             .lines()

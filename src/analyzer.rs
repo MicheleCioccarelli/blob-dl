@@ -14,7 +14,7 @@ pub enum DownloadOption {
 /// Analyzes the url provided by the user and deduces whether it
 /// refers to a youtube video or playlist
 pub fn analyze_url(command_line_url: &str) -> BlobResult<DownloadOption> {
-    return if let Ok(url) = Url::parse(command_line_url) {
+    if let Ok(url) = Url::parse(command_line_url) {
         if let Some(domain_name) = url.domain() {
             // All youtube-related urls have "youtu" in them
             if domain_name.contains("youtu") {
@@ -50,6 +50,7 @@ fn inspect_yt_url(yt_url: Url) -> BlobResult<DownloadOption> {
 
             return match user_selection {
                 0 => {
+                    // If only this video needs to be downloaded, calculate its index
                     let index = if let Some(index_location) = query.find("&index=") {
                         let slice = &query[index_location + "&index=".len() ..];
 

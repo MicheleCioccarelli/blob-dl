@@ -75,7 +75,7 @@ fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
 
     let mut command = process::Command::new("yt-dlp");
     // Get a JSON dump of all the available formats related to this url
-    command.arg("-j");
+    command.arg("-J");
     // Continue even if you get errors
     command.arg("-i");
     command.arg(url);
@@ -114,6 +114,11 @@ fn convert_to_format(term: &Term, media_selected: &MediaSelection)
         .interact_on(term)?;
 
     Ok(VideoQualityAndFormatPreferences::ConvertTo(format_options[user_selection].to_string()))
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+struct format {
+    format_id: String,
 }
 
 /// Serializes the information about all the formats available for 1 video
@@ -195,8 +200,8 @@ struct VideoSpecs {
     formats: Vec<VideoFormat>,
 }
 
-#[derive(Debug, Clone)]
 /// What quality and format the user wants a specific video to be downloaded in
+#[derive(Debug, Clone)]
 pub(crate) enum VideoQualityAndFormatPreferences {
     // Code of the selected format
     UniqueFormat(String),
