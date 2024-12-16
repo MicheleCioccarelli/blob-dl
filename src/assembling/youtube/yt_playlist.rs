@@ -185,6 +185,8 @@ mod format {
             Ok(all_playlist_formats) => {
                 for (i, video) in all_playlist_formats.videos.into_iter().enumerate() {
                     if let Some(video) = video {
+                        // Save the format
+                        all_available_formats.add_video(video.clone());
                         // video is a Vector of formats
                         if i == 0 {
                             // In the first iteration every format-id belongs in the intersection
@@ -200,11 +202,13 @@ mod format {
                             // Actually compute the intersection
                             intersections = intersection(&intersections, &all_ids);
                         }
+                        
                     }
                 }
             },
             Err(err) => return Err(BlobdlError::SerdeError(err))
         }
+        
         Ok((intersections, all_available_formats))
     }
 }

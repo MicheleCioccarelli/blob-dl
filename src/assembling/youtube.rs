@@ -169,7 +169,7 @@ pub(crate) enum MediaSelection {
 }
 
 /// All the information about a particular video format
-#[derive(Deserialize, Serialize, Debug, PartialOrd, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, PartialOrd, PartialEq, Clone)]
 struct VideoFormat {
     format_id: String,
     // File extension
@@ -195,7 +195,7 @@ struct VideoFormat {
 }
 
 // A list of all the formats available for a single video
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 struct VideoSpecs {
     formats: Vec<VideoFormat>,
 }
