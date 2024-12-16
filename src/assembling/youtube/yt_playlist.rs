@@ -58,6 +58,7 @@ mod format {
         }
     }
 
+    use std::fmt::format;
     use crate::assembling::youtube::VideoSpecs;
     use crate::error::BlobdlError::JsonSerializationError;
     use super::*;
@@ -174,44 +175,36 @@ mod format {
 
         // Compute which formats are common across the entire playlist
         let mut intersections: Vec<String> = vec![];
-        let mut current_ids: Vec<String> = vec![];
+        let mut all_ids: Vec<String> = vec![];
         
         let raw_json = std::str::from_utf8(&json_formats.stdout)?;
         
         let all_playlist_formats: serde_json::error::Result<Playlist> = serde_json::from_str(raw_json);
-        
+
         match all_playlist_formats {
             Ok(all_playlist_formats) => {
-                // Get intersections and stuff
-                
-                
+                for (i, video) in all_playlist_formats.videos.into_iter().enumerate() {
+                    if let Some(video) = video {
+                        // video is a Vector of formats
+                        if i == 0 {
+                            // In the first iteration every format-id belongs in the intersection
+                            for format in video.formats {
+                                intersections.push(format.format_id.to_string());
+                                all_ids.push(format.format_id.to_string());
+                            }
+                        } else {
+                            // For all other videos just add their format to the list of all formats
+                            for format in video.formats {
+                                all_ids.push(format.format_id.to_string());
+                            }
+                            // Actually compute the intersection
+                            intersections = intersection(&intersections, &all_ids);
+                        }
+                    }
+                }
             },
-            
             Err(err) => return Err(BlobdlError::SerdeError(err))
         }
-        
-        // Each line in ytdl_formats contains all the format information for 1 video
-        for (i, video_formats_json) in std::str::from_utf8(&json_formats.stdout)?
-            .lines()
-            .enumerate() {
-            let serialized_video = serialize_formats(video_formats_json)?;
-            // Add the current video's formats to the list of all formats
-            all_available_formats.add_video(serialized_video);
-
-            if i == 0 {
-                // In the first iteration the intersection is all the ids
-                for format in all_available_formats.videos()[i].formats().iter() {
-                    intersections.push(format.format_id.clone());
-                }
-            } else {
-                for format in all_available_formats.videos()[i].formats().iter() {
-                    current_ids.push(format.format_id.clone());
-                }
-                // Actually compute the intersection
-                intersections = intersection(&intersections, &current_ids);
-            }
-        }
-
         Ok((intersections, all_available_formats))
     }
 }
