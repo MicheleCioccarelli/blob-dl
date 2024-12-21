@@ -8,7 +8,7 @@ use colored::Colorize;
 use crate::youtube_error_message::*;
 use crate::ui_prompts::*;
 use crate::parser;
-use crate::error::YtdlpError;
+use crate::error::{BlobdlError, YtdlpError};
 use crate::assembling::youtube::config;
 
 /// Executes the yt-dlp command and analyzes its output.
@@ -113,26 +113,32 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
         parser::Verbosity::Quiet   => {
             // This has to be run or the command does nothing
             for line in stdout.lines().chain(stderr.lines()) {
-                let line = line.unwrap();
-
-                // Keep track of errors without displaying anything
-                if line.contains("ERROR:") {
-                    errors.push(YtdlpError::from_error_output(&line));
+                if let Ok(line) = line {
+                    // Keep track of errors without displaying anything
+                    if line.contains("ERROR:") {
+                        errors.push(YtdlpError::from_error_output(&line));
+                    }
+                } else {
+                    // The current line had some problems (non UTF-8 characters, ...)
+                    // Since this is the quiet mode, don't do anything
                 }
+
             }
         },
 
         parser::Verbosity::Default => {
             for line in stdout.lines().chain(stderr.lines()) {
-                let line = line.unwrap();
-
-                // Only show download/error lines
-                if line.contains("[download]") {
-                    println!("{}", line);
-                } else if line.contains("ERROR:") {
-                    errors.push(YtdlpError::from_error_output(&line));
-                    // Color error messages red
-                    println!("{}", line.red());
+                if let Ok(line) = line {
+                    // Only show download/error lines
+                    if line.contains("[download]") {
+                        println!("{}", line);
+                    } else if line.contains("ERROR:") {
+                        errors.push(YtdlpError::from_error_output(&line));
+                        // Color error messages red
+                        println!("{}", line.red());
+                    }
+                } else {
+                    eprintln!("{}", "This line couldn't be rendered as UTF-8".yellow());
                 }
             }
         },
@@ -140,14 +146,16 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
         parser::Verbosity::Verbose => {
             // Print to the console everything that yt-dlp is doing
             for line in stdout.lines().chain(stderr.lines()) {
-                let line = line.unwrap();
-
-                if line.contains("ERROR:") {
-                    errors.push(YtdlpError::from_error_output(&line));
-                    // Color error messages red
-                    println!("{}", line.red());
+                if let Ok(line) = line {
+                    if line.contains("ERROR:") {
+                        errors.push(YtdlpError::from_error_output(&line));
+                        // Color error messages red
+                        println!("{}", line.red());
+                    } else {
+                        println!("{}", line);
+                    }
                 } else {
-                    println!("{}", line);
+                    eprintln!("{}", "This line couldn't be rendered as UTF-8".yellow());
                 }
             }
         }
