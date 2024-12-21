@@ -105,6 +105,9 @@ impl DownloadConfig {
 
         command.arg("--no-playlist");
 
+        // If they are available also download subtitles
+        command.arg("--embed-subs");
+
         command.arg(self.url.clone());
 
         command
@@ -185,6 +188,8 @@ impl DownloadConfig {
                         command.arg("--recode-video").arg(f.as_str());
                     }
                 }
+                // If they are available also download subtitles
+                command.arg("--embed-subs");
             }
 
             youtube::MediaSelection::AudioOnly => {
@@ -223,6 +228,8 @@ impl DownloadConfig {
                         command.arg("--recode-video").arg(f.as_str());
                     }
                 }
+                // If they are available also download subtitles
+                command.arg("--embed-subs");
             }
         };
     }
