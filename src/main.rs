@@ -7,6 +7,7 @@ use colored::Colorize;
 fn main() {
     // Processed command line arguments live here
     let config = parser::parse_config();
+    println!("##DEBUG## {:?}", config);
 
     // tested with yt-dlp 2024.11.18
     if which("yt-dlp").is_ok() {

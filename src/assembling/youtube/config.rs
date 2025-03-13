@@ -6,7 +6,7 @@ use std::process;
 #[derive(Debug, Clone)]
 pub struct DownloadConfig {
     url: String,
-
+    
     output_path: String,
     /// Whether to include a file's index (in the playlist it is downloaded from) in its name
     include_indexes: bool,

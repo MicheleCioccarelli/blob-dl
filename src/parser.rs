@@ -1,5 +1,9 @@
 
-use clap::{Arg, Command, ArgMatches, ArgAction};
+use clap::{Arg, ArgMatches};
+
+use std::path::PathBuf;
+
+use clap::{arg, command, value_parser, ArgAction, Command};
 
 use crate::ui_prompts::*;
 use crate::error::{BlobdlError, BlobResult};
@@ -31,11 +35,32 @@ pub fn parse_config() -> BlobResult<CliConfig> {
                 .short('s')
                 .action(ArgAction::SetTrue),
         )
+        .arg(
+            Arg::new("generate-config")
+                .help("Saves your downloading preferences in a config file. For more information refer to blob-dl's GitHub page")
+                .long("generate-config")
+                .short('g')
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("use-config-file")
+                .help("Use the preferences from a config file instead of asking questions. This command will look for a config file in blob-dl's default location")
+                .long("use-config")
+                .short('c')
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            arg!(
+                -l --"locate-config-file" <FILE> "Use the preferences from a config file. This command will look for a config file in the path you provide"
+            )
+                .required(false)
+                .value_parser(value_parser!(PathBuf)),
+        )
         .arg(Arg::new("URL")
             .help("Link to the youtube video/playlist that you want to download")
         )
         .get_matches();
-
+    
     CliConfig::from(matches)
 }
 
@@ -47,6 +72,18 @@ pub enum Verbosity {
     Quiet,
 }
 
+#[derive(Debug)]
+pub enum ConfigFilePreferences {
+    /// Don't do anything related to config files
+    NoConfig,
+    /// Search for the config file in blob-dl's default location
+    DefaultConfig,
+    /// Search for the config file in a user-defined directory
+    CustomConfig(PathBuf),
+    /// Create a config file based on the user's answers and place it in blob-dl's default location
+    GenerateConfig,
+}
+
 /// Holds all the information that can be fetched as a command line argument
 #[derive(Debug)]
 pub struct CliConfig {
@@ -55,6 +92,8 @@ pub struct CliConfig {
     verbosity: Verbosity,
     // Whether to print to the console the final command which is the run by yt-dlp
     show_command: bool,
+
+    config_file_preference: ConfigFilePreferences,
 }
 
 impl CliConfig {
@@ -79,10 +118,22 @@ impl CliConfig {
         };
         let show_command = matches.get_flag("show-command");
 
+        // The user is supposed to only use one of these at a time
+        let mut config_file_preference = ConfigFilePreferences::NoConfig;
+        if let Some(path) = matches.get_one::<PathBuf>("locate-config-file") {
+            config_file_preference = ConfigFilePreferences::CustomConfig(path.clone());
+        };
+        if matches.get_flag("generate-config") {
+            config_file_preference = ConfigFilePreferences::GenerateConfig;
+        } else if matches.get_flag("use-config-file") {
+            config_file_preference = ConfigFilePreferences::DefaultConfig;
+        }
+
         Ok(CliConfig {
             url,
             verbosity,
             show_command,
+            config_file_preference
         })
     }
 
@@ -94,6 +145,9 @@ impl CliConfig {
     }
     pub fn show_command(&self) -> bool {
         self.show_command
+    }
+    pub fn config_file_preference(&self) -> &ConfigFilePreferences {
+        &self.config_file_preference
     }
 }
 
