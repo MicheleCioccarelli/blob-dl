@@ -4,6 +4,8 @@ use which::which;
 use blob_dl::parser::is_ytdlp_compatible;
 use colored::Colorize;
 
+// TODO Start using cmd+<
+
 fn main() {
     // Processed command line arguments live here
     let config = parser::parse_config();

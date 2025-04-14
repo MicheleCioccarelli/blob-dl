@@ -6,6 +6,9 @@ use crate::run;
 
 /// Calls the builder function according to what the url refers to (video/playlist), then it runs the ytdl-command and handles errors
 pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
+    // Handle config-file preferences
+    
+    
     // Parse what the url refers to
     let download_option = analyzer::analyze_url(config.url());
 

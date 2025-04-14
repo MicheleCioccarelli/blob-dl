@@ -161,7 +161,7 @@ fn check_format(format: &VideoFormat, media_selected: &MediaSelection) -> bool {
 
 // Common enums and structs
 /// Whether the user wants to download video files or audio-only
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, Deserialize, Serialize)]
 pub(crate) enum MediaSelection {
     FullVideo,
     VideoOnly,
@@ -201,7 +201,7 @@ struct VideoSpecs {
 }
 
 /// What quality and format the user wants a specific video to be downloaded in
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) enum VideoQualityAndFormatPreferences {
     // Code of the selected format
     UniqueFormat(String),

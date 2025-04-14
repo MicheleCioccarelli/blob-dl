@@ -102,4 +102,19 @@ pub mod blobdl_error_message {
     pub const URL_INDEX_PARSING_ERR: &str = "The video's index in the playlist couldn't be parsed, please report this issue to the github page";
     
     pub const PLAYLIST_URL_ERROR: &str = "The index/id for the video that you want to download in the playlist could not be parsed.\nTo download just this video try using a url which links directly to it instead of going through a playlist";
+
+    // POST_CONFIG_FILE_ERRORS
+    pub const URL_NOT_PROVIDED_ERROR: &str = "You didn't provide a url for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
+
+    pub const FORMAT_PREFERENCE_NOT_PROVIDED_ERROR: &str = "You didn't provide a format preference for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
+
+    pub const OUTPUT_PATH_NOT_PROVIDED_ERROR: &str = "You didn't provide an output path for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
+    
+    pub const INCLUDE_INDEXES_NOT_PROVIDED_ERROR: &str = "You didn't specify whether indexes should be included in the title of the videos you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
+
+    pub const DOWNLOAD_TARGET_NOT_PROVIDED_ERROR: &str = "There was an issue figuring out the download target (whether your link refers to a single video or playlist).\nTo report this error please visit the GitHub page";
+
+    pub const MEDIA_SELECTION_NOT_PROVIDED_ERROR: &str = "You didn't provide a media selection for the video you want to download (media selection means whether you want to download audio only/video only/full video). The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
+
+    pub const CHOSEN_FORMAT_NOT_PROVIDED_ERROR: &str = "You didn't provide a download format for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
 }

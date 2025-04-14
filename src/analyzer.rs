@@ -1,10 +1,10 @@
 use url::Url;
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
-
+use serde::{Deserialize, Serialize};
 use crate::error::{BlobdlError, BlobResult};
 
-#[derive(Debug, PartialOrd, PartialEq, Clone)]
+#[derive(Debug, PartialOrd, PartialEq, Clone, Deserialize, Serialize)]
 pub enum DownloadOption {
     /// If the url refers to a video in a playlist and the user only wants to download the single video, YtVideo's value is the video's index in the playlist
     YtVideo(usize),

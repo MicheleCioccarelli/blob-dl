@@ -18,7 +18,7 @@ pub(crate) fn generate_command(url: &str, download_option: &analyzer::DownloadOp
     match unchecked_config {
         Ok(safe) => {
             // Everything went smoothly, now generate a yt-dlp command
-            let (command, local_config) = safe.build_command();
+            let (command, local_config) = safe.build_command()?;
             Ok((command, local_config))
         }
         // Propagate the errors

@@ -29,9 +29,16 @@ pub enum BlobdlError {
     IoError(std::io::Error),
     QueryCouldNotBeParsed,
     PlaylistUrlError,
-
     // This is a 'soft' error: it only means that the ytdlp version could not be checked and should not stop the program. It is handled in main
     CommandNotSpawned,
+    // Somehow when building a Command the url turned up as None, it has to do with config files
+    UrlNotProvided,
+    FormatPreferenceNotProvided,
+    OutputPathNotProvided,
+    DownloadTargetNotProvided,
+    IncludeIndexesNotProvided,
+    MediaSelectedNotProvided,
+    ChosenFormatNotProvided,
 }
 
 impl BlobdlError {
@@ -73,7 +80,21 @@ impl BlobdlError {
             BlobdlError::PlaylistUrlError => eprintln!("{}", PLAYLIST_URL_ERROR),
 
             // Early return because this should not be treated as a program-ending error
-            BlobdlError::CommandNotSpawned => return
+            BlobdlError::CommandNotSpawned => return,
+
+            BlobdlError::UrlNotProvided => eprintln!("{}", URL_NOT_PROVIDED_ERROR),
+            
+            BlobdlError::FormatPreferenceNotProvided => eprintln!("{}", FORMAT_PREFERENCE_NOT_PROVIDED_ERROR),
+            
+            BlobdlError::OutputPathNotProvided => eprintln!("{}", OUTPUT_PATH_NOT_PROVIDED_ERROR),
+            
+            BlobdlError::DownloadTargetNotProvided => eprintln!("{}", DOWNLOAD_TARGET_NOT_PROVIDED_ERROR),    
+            
+            BlobdlError::IncludeIndexesNotProvided => eprintln!("{}", INCLUDE_INDEXES_NOT_PROVIDED_ERROR),    
+            
+            BlobdlError::MediaSelectedNotProvided => eprintln!("{}", MEDIA_SELECTION_NOT_PROVIDED_ERROR),
+            
+            BlobdlError::ChosenFormatNotProvided => eprintln!("{}", CHOSEN_FORMAT_NOT_PROVIDED_ERROR),
         }
         eprintln!("{}", SEE_HELP_PAGE);
     }
