@@ -21,6 +21,18 @@ pub struct DownloadConfig {
 }
 
 impl DownloadConfig {
+    // Creates a DownloadConfig with all fields set to None
+    pub(crate) fn empty() -> DownloadConfig {
+        DownloadConfig {
+            url: None,
+            output_path: None,
+            include_indexes: None,
+            chosen_format: None,
+            media_selected: None,
+            download_target: None,
+        }
+    }
+    
     pub(crate) fn new_playlist (
         url: &str,
         output_path: String,

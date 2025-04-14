@@ -39,6 +39,8 @@ pub enum BlobdlError {
     IncludeIndexesNotProvided,
     MediaSelectedNotProvided,
     ChosenFormatNotProvided,
+    
+    ConfigFileNotFound
 }
 
 impl BlobdlError {
@@ -95,11 +97,12 @@ impl BlobdlError {
             BlobdlError::MediaSelectedNotProvided => eprintln!("{}", MEDIA_SELECTION_NOT_PROVIDED_ERROR),
             
             BlobdlError::ChosenFormatNotProvided => eprintln!("{}", CHOSEN_FORMAT_NOT_PROVIDED_ERROR),
+            
+            BlobdlError::ConfigFileNotFound => eprintln!("{}", CONFIG_FILE_NOT_FOUND_ERR),
         }
         eprintln!("{}", SEE_HELP_PAGE);
     }
 }
-
 
 // Implementing conversions and boilerplate
 impl std::fmt::Display for BlobdlError {

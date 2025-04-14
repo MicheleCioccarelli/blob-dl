@@ -1,13 +1,33 @@
 use crate::analyzer;
 use crate::parser;
 use crate::assembling;
-use crate::error::BlobResult;
+use crate::error::{BlobResult, BlobdlError};
 use crate::run;
+
+use directories::ProjectDirs;
+use std::fs::{self};
+use std::path::PathBuf;
+use std::io::Write;
+
+use crate::assembling::youtube;
+use crate::parser::ConfigFilePreferences;
 
 /// Calls the builder function according to what the url refers to (video/playlist), then it runs the ytdl-command and handles errors
 pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
-    // Handle config-file preferences
-    
+    // A dummy object is created with data from the config file. Once execution
+    // reaches the point where questions need to be asked to the user, data which is already
+    // present in the dummy object is used instead of being asked the user directly
+    let dummy_config = match config.config_file_preference() {
+        // There is no config file
+        ConfigFilePreferences::NoConfig => youtube::config::DownloadConfig::empty(),
+        // The config file is in blob-dl's default location
+        ConfigFilePreferences::DefaultConfig => {
+            let path = get_config_path().ok_or(BlobdlError::ConfigFileNotFound)?;
+            
+            read_config(path).ok_or(BlobdlError::JsonSerializationError)?
+        }
+        _ => todo!()
+    }
     
     // Parse what the url refers to
     let download_option = analyzer::analyze_url(config.url());
@@ -25,3 +45,36 @@ pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
     Ok(())
 }
 
+// Functions to handle config files
+/// Get the (default) location of the config file, it depends on what operating system blob-dl is running on
+fn get_config_path() -> Option<PathBuf> {
+    ProjectDirs::from("", "", "blob-dl")
+        .map(|dirs| dirs.config_dir().join("config.json"))
+}
+
+/// This will create a new config file (or overwrite an old one) with the DownloadConfig that is passed in.
+/// 
+/// The path needs to also be passed in because the user could put their config file in an unexpected place and
+/// say where it is via a command line argument
+fn write_config(path: PathBuf, download_config: &youtube::config::DownloadConfig) -> BlobResult<()> {
+    if let Some(parent) = path.parent() {
+        // If a config file has never been created, this creates all the necessary directories
+        // such as "~/.config/blob-dl/ ..."
+        fs::create_dir_all(parent)?;
+    }
+
+    let parsed_json = serde_json::to_string_pretty(download_config)?;
+
+    // If the file already exists, all its contents are wiped
+    let mut file = fs::File::create(path)?;
+    file.write_all(parsed_json.as_bytes())?;
+
+    Ok(())
+}
+
+/// Create a DownloadConfig object from the contents of the config file
+// TODO Tell the user if this returns None (no config file was found, but blob-dl will still work as normal)
+fn read_config(config_file_path: PathBuf) -> Option<youtube::config::DownloadConfig> {
+    let contents = fs::read_to_string(config_file_path).ok()?;
+    serde_json::from_str(&contents).ok()?
+}

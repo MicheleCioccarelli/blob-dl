@@ -93,7 +93,7 @@ pub struct CliConfig {
     // Whether to print to the console the final command which is the run by yt-dlp
     show_command: bool,
 
-    config_file_preference: ConfigFilePreferences,
+    pub config_file_preference: ConfigFilePreferences,
 }
 
 impl CliConfig {

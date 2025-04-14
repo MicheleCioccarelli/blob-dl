@@ -109,7 +109,7 @@ pub mod blobdl_error_message {
     pub const FORMAT_PREFERENCE_NOT_PROVIDED_ERROR: &str = "You didn't provide a format preference for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
 
     pub const OUTPUT_PATH_NOT_PROVIDED_ERROR: &str = "You didn't provide an output path for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
-    
+
     pub const INCLUDE_INDEXES_NOT_PROVIDED_ERROR: &str = "You didn't specify whether indexes should be included in the title of the videos you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
 
     pub const DOWNLOAD_TARGET_NOT_PROVIDED_ERROR: &str = "There was an issue figuring out the download target (whether your link refers to a single video or playlist).\nTo report this error please visit the GitHub page";
@@ -117,4 +117,6 @@ pub mod blobdl_error_message {
     pub const MEDIA_SELECTION_NOT_PROVIDED_ERROR: &str = "You didn't provide a media selection for the video you want to download (media selection means whether you want to download audio only/video only/full video). The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
 
     pub const CHOSEN_FORMAT_NOT_PROVIDED_ERROR: &str = "You didn't provide a download format for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
+
+    pub const CONFIG_FILE_NOT_FOUND_ERR: &str = "No valid home directory path could be retrieved from the operating system. (this problem has to do with the default location of your config file)";
 }
