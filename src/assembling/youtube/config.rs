@@ -2,6 +2,7 @@ use crate::assembling::youtube;
 use crate::analyzer;
 use std::process;
 use serde::{Deserialize, Serialize};
+use crate::analyzer::DownloadOption;
 use crate::error::{BlobResult, BlobdlError};
 
 /// Contains all the information needed to download a youtube video or playlist
@@ -56,6 +57,7 @@ impl DownloadConfig {
         chosen_format: youtube::VideoQualityAndFormatPreferences,
         output_path: String,
         media_selected: youtube::MediaSelection,
+        playlist_index: usize,
     )
         -> DownloadConfig
     {
@@ -65,7 +67,7 @@ impl DownloadConfig {
             output_path: Some(output_path), 
             media_selected: Some(media_selected),
             include_indexes: Some(false), 
-            download_target: Some(analyzer::DownloadOption::YtVideo(0)) }
+            download_target: Some(analyzer::DownloadOption::YtVideo(playlist_index)) }
     }
 }
 
@@ -140,6 +142,11 @@ impl DownloadConfig {
             self.choose_format(&mut command, &id)?;
 
             command.arg("--no-playlist");
+            
+            if let Some(DownloadOption::YtVideo(index)) = &self.download_target {
+                command.arg("--playlist-items");
+                command.arg(format!("{}", index));
+            }
 
             // If they are available also download subtitles
             command.arg("--embed-subs");
@@ -149,7 +156,7 @@ impl DownloadConfig {
             } else {
                 return Err(BlobdlError::UrlNotProvided);
             }
-
+            
             Ok(command)
         } else {
             Err(BlobdlError::FormatPreferenceNotProvided)

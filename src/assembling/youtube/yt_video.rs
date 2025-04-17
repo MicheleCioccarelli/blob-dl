@@ -1,6 +1,7 @@
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 use which::which;
+use crate::analyzer;
 use crate::assembling::youtube;
 use crate::assembling::youtube::*;
 use crate::error::BlobResult;
@@ -41,11 +42,20 @@ pub(crate) fn assemble_data(url: &str, playlist_id: usize, user_config: youtube:
         output_path = get_output_path(&term)?.trim().to_string();
     }
     
+    let playlist_index;
+    if let Some(analyzer::DownloadOption::YtVideo(index)) = user_config.download_target {
+        // If the user for some reason specified a playlist index in the config file (they would deserve a confusion award)
+        playlist_index = index;
+    } else {
+        playlist_index = playlist_id;
+    }
+    
     Ok(config::DownloadConfig::new_video(
         url,
         chosen_format,
         output_path,
         media_selected,
+        playlist_index,
     ))
 }
 
