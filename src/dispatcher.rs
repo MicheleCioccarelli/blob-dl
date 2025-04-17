@@ -14,6 +14,9 @@ use crate::parser::ConfigFilePreferences;
 
 /// Calls the builder function according to what the url refers to (video/playlist), then it runs the ytdl-command and handles errors
 pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
+    // Whether a new config file should be generated
+    let mut should_generate_config = false;
+    
     // A dummy object is created with data from the config file. Once execution
     // reaches the point where questions need to be asked to the user, data which is already
     // present in the dummy object is used instead of being asked the user directly
@@ -23,11 +26,15 @@ pub fn dispatch(config: &parser::CliConfig) -> BlobResult<()> {
         // The config file is in blob-dl's default location
         ConfigFilePreferences::DefaultConfig => {
             let path = get_config_path().ok_or(BlobdlError::ConfigFileNotFound)?;
-            
-            read_config(path).ok_or(BlobdlError::JsonSerializationError)?
+            read_config(&path)?
         }
-        _ => todo!()
-    }
+        ConfigFilePreferences::CustomConfig(custom_path) => read_config(&custom_path)?,
+        
+        ConfigFilePreferences::GenerateConfig => {
+            should_generate_config = true;
+            youtube::config::DownloadConfig::empty()
+        }
+    };
     
     // Parse what the url refers to
     let download_option = analyzer::analyze_url(config.url());
@@ -74,7 +81,7 @@ fn write_config(path: PathBuf, download_config: &youtube::config::DownloadConfig
 
 /// Create a DownloadConfig object from the contents of the config file
 // TODO Tell the user if this returns None (no config file was found, but blob-dl will still work as normal)
-fn read_config(config_file_path: PathBuf) -> Option<youtube::config::DownloadConfig> {
-    let contents = fs::read_to_string(config_file_path).ok()?;
-    serde_json::from_str(&contents).ok()?
+fn read_config(config_file_path: &PathBuf) -> BlobResult<youtube::config::DownloadConfig> {
+    let contents = fs::read_to_string(config_file_path)?;
+    serde_json::from_str(&contents).map_err(|err| {BlobdlError::SerdeError(err)})
 }

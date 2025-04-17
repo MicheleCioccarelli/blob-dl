@@ -40,7 +40,7 @@ pub enum BlobdlError {
     MediaSelectedNotProvided,
     ChosenFormatNotProvided,
     
-    ConfigFileNotFound
+    ConfigFileNotFound,
 }
 
 impl BlobdlError {
@@ -121,6 +121,12 @@ impl From<std::io::Error> for BlobdlError {
 impl From<std::str::Utf8Error> for BlobdlError {
     fn from(_: std::str::Utf8Error) -> Self {
         BlobdlError::Utf8Error
+    }
+}
+
+impl From<serde_json::Error> for BlobdlError {
+    fn from(err: serde_json::Error) -> BlobdlError {
+        BlobdlError::SerdeError(err)
     }
 }
 
