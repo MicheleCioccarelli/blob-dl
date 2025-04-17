@@ -6,18 +6,18 @@ use crate::error::{BlobResult, BlobdlError};
 
 /// Contains all the information needed to download a youtube video or playlist
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DownloadConfig {
-    url: Option<String>,
+pub(crate) struct DownloadConfig {
+    pub(crate) url: Option<String>,
     
-    output_path: Option<String>,
+    pub(crate) output_path: Option<String>,
     /// Whether to include a file's index (in the playlist it is downloaded from) in its name
-    include_indexes: Option<bool>,
+    pub(crate) include_indexes: Option<bool>,
     /// The quality and format the user wants the downloaded files to be in
-    chosen_format: Option<youtube::VideoQualityAndFormatPreferences>,
+    pub(crate) chosen_format: Option<youtube::VideoQualityAndFormatPreferences>,
     /// Whether the downloaded files have to be audio-only/video-only/normal video
-    media_selected: Option<youtube::MediaSelection>,
+    pub(crate) media_selected: Option<youtube::MediaSelection>,
     /// Whether the link refers to a playlist or a single video
-    pub download_target: Option<analyzer::DownloadOption>,
+    pub(crate) download_target: Option<analyzer::DownloadOption>,
 }
 
 impl DownloadConfig {
@@ -100,7 +100,7 @@ impl DownloadConfig {
         command.arg("--yes-playlist");
 
         // Setup output directory and naming scheme
-        self.choose_output_path(&mut command);
+        self.choose_output_path(&mut command)?;
 
         // Makes the id live long enough to be used as an arg for command.
         // If it was fetched from the next match arm the temporary &str would not outlive command
@@ -110,7 +110,7 @@ impl DownloadConfig {
         };
 
         // Quality and format selection
-        self.choose_format(&mut command, id.as_str());
+        self.choose_format(&mut command, id.as_str())?;
 
         if let Some(url) = self.url.clone() {
 
@@ -126,7 +126,7 @@ impl DownloadConfig {
     fn build_yt_video_command(&self) -> BlobResult<process::Command> {
         let mut command = process::Command::new("yt-dlp");
 
-        self.choose_output_path(&mut command);
+        self.choose_output_path(&mut command)?;
 
         if let Some(chosen_format) = &self.chosen_format {
 
@@ -137,7 +137,7 @@ impl DownloadConfig {
                 _ => String::new(),
             };
 
-            self.choose_format(&mut command, &id);
+            self.choose_format(&mut command, &id)?;
 
             command.arg("--no-playlist");
 
@@ -162,7 +162,7 @@ impl DownloadConfig {
     pub fn build_command_for_video(&self, video_id: &str) -> BlobResult<process::Command> {
         let mut command = process::Command::new("yt-dlp");
 
-        self.choose_output_path(&mut command);
+        self.choose_output_path(&mut command)?;
 
         if let Some(chosen_format) = &self.chosen_format {
 
@@ -173,7 +173,7 @@ impl DownloadConfig {
                 _ => String::new(),
             };
 
-            self.choose_format(&mut command, id.as_str());
+            self.choose_format(&mut command, id.as_str())?;
 
             command.arg("--no-playlist");
 

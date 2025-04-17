@@ -8,7 +8,7 @@ use colored::Colorize;
 use crate::youtube_error_message::*;
 use crate::ui_prompts::*;
 use crate::parser;
-use crate::error::{BlobResult, BlobdlError, YtdlpError};
+use crate::error::{BlobResult, YtdlpError};
 use crate::assembling::youtube::config;
 
 /// Executes the yt-dlp command and analyzes its output.
@@ -66,7 +66,7 @@ fn is_recoverable(error: &YtdlpError, table: &HashMap<&'static str, bool>) -> bo
         return false;
     }
     if let Some(result) = table.get(error.error_msg().as_str()) {
-        if *result == false {
+        if !(*result) {
             // The error is documented and unrecoverable
             false
         } else {
@@ -132,13 +132,23 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
         parser::Verbosity::Default => {
             for line in stdout.lines().chain(stderr.lines()) {
                 if let Ok(line) = line {
-                    // Only show download/error lines
+                    // Filter what should be shown to the user
                     if line.contains("[download]") {
+                        println!("{}{}", "[download]".green(), &line[10..]);
+                    } else if line.contains("Deleting existing file ") {
                         println!("{}", line);
-                    } else if line.contains("ERROR:") {
+                    } else if line.contains("[info]") {
+                        println!("{}{}", "[info]".cyan(), &line[6..]);
+                    } else if line.contains("[VideoConvertor]") {
+                        print!("{}{}", "[VideoConvertor]".purple(), &line[16..]);
+                    }
+                    else if line.contains("ERROR:") {
                         errors.push(YtdlpError::from_error_output(&line));
                         // Color error messages red
                         println!("{}", line.red());
+                    } else if line.contains("Usage: yt-dlp [OPTIONS] URL [URL...]") {
+                        // The user messed with config files and blob-dl generated an invalid command for yt-dlp
+                        println!("{}", "blob-dl generated a yt-dlp command that wasn't valid, This was probably a result of errors present in a config file".red());
                     }
                 } else {
                     eprintln!("{}", "This line couldn't be rendered as UTF-8".yellow());

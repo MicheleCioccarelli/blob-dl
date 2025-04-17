@@ -9,9 +9,9 @@ mod error;
 pub mod ui_prompts {
     pub const FFMPEG_UNAVAILABLE_WARNING: &str = "It looks like ffmpeg and ffprobe aren't installed, which means that some of blob-dl's features aren't available!\nPlease install them for a fuller experience";
 
-    pub const LONG_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!\n\nFor more details check out the github page https://github.com/MicheleCioccarelli/blob-dl\nRecommended yt-dlp version: 2024.10.22";
+    pub const LONG_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!\n\nFor more details check out the github page https://github.com/MicheleCioccarelli/blob-dl\nRecommended yt-dlp version: 2025.03.31";
 
-    pub const SHORT_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!\n\nFor more details check out the github page https://github.com/MicheleCioccarelli/blob-dl";
+    pub const SHORT_ABOUT: &str = "A command line tool used to make downloading youtube videos in various formats easy\nIf you are having problems passing a URL as an argument, try wrapping it in quotes (\"\")!\n\nFor more details check out the github page https://github.com/MicheleCioccarelli/blob-dl\nRecommended yt-dlp version: 2025.03.31";
 
     pub const YTDLP_NOT_INSTALLED: &str = "blob-dl is a wrapper around yt-dlp and cannot function without it.\nPlease install yt-dlp from the official github page: https://github.com/yt-dlp/yt-dlp";
 
@@ -47,7 +47,7 @@ pub mod ui_prompts {
     pub const SELECT_NOTHING: &str = "Don't re-download anything\n";
     
     pub const WRONG_YTDLP_VERSION: &str = "It looks like you have a yt-dlp version which may not work with blob-dl as expected: you may not be able to fetch formats from youtube.\n\
-    To fix this you can update your yt-dlp installation to the correct version with the command: sudo yt-dlp --update-to 2024.11.18";
+    To fix this you can update your yt-dlp installation to the correct version with the command: sudo yt-dlp --update-to 2025.03.31";
     
     pub const COMMAND_NOT_SPAWNED: &str = "An instance of ytdlp (used to check which version of the program you have installed) could not be spawned";
 }

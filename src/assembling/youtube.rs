@@ -117,7 +117,7 @@ fn convert_to_format(term: &Term, media_selected: &MediaSelection)
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-struct format {
+struct Format {
     format_id: String,
 }
 

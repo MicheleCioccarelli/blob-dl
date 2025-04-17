@@ -3,7 +3,7 @@ use clap::{Arg, ArgMatches};
 
 use std::path::PathBuf;
 
-use clap::{arg, command, value_parser, ArgAction, Command};
+use clap::{arg, value_parser, ArgAction, Command};
 
 use crate::ui_prompts::*;
 use crate::error::{BlobdlError, BlobResult};
@@ -37,7 +37,7 @@ pub fn parse_config() -> BlobResult<CliConfig> {
         )
         .arg(
             Arg::new("generate-config")
-                .help("Saves your downloading preferences in a config file. For more information refer to blob-dl's GitHub page")
+                .help("Saves your downloading preferences in a config file. It will be located in blob-dl's default config file location (see the github page for more info)")
                 .long("generate-config")
                 .short('g')
                 .action(ArgAction::SetTrue),
@@ -151,7 +151,7 @@ impl CliConfig {
     }
 }
 
-/// Check if the user has a version of ytdlp compatible with blob-dl (now it is 2024.11.18)
+/// Check if the user has a version of ytdlp compatible with blob-dl (now it is 22025.03.31)
 pub fn is_ytdlp_compatible() ->Result<bool, BlobdlError> {
     let version = std::process::Command::new("yt-dlp")
             .arg("--version")
@@ -160,7 +160,7 @@ pub fn is_ytdlp_compatible() ->Result<bool, BlobdlError> {
     if let Ok(version) = version {
         let str = std::str::from_utf8(&version.stdout)?;
 
-        if str == "2024.11.18\n" {
+        if str == "2025.03.31\n" {
             Ok(true)
         } else {
             Ok(false)

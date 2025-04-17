@@ -1,7 +1,7 @@
 use dialoguer::console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 use which::which;
-
+use crate::assembling::youtube;
 use crate::assembling::youtube::*;
 use crate::error::BlobResult;
 use crate::ui_prompts::*;
@@ -10,17 +10,37 @@ use crate::ui_prompts::*;
 /// to start downloading a youtube video
 ///
 /// Takes in the command line arguments list
-pub(crate) fn assemble_data(url: &str, playlist_id: usize) -> BlobResult<config::DownloadConfig> {
+/// 
+/// User config is the information present in a config file. It has user preferences on things like which file format they prefer
+/// knowing this blob-dl can avoid asking redundant questions
+/// 
+pub(crate) fn assemble_data(url: &str, playlist_id: usize, user_config: youtube::config::DownloadConfig) -> BlobResult<config::DownloadConfig> {
     let term = Term::buffered_stderr();
 
-    // Whether the user wants to download video files or audio-only
-    let media_selected = get_media_selection(&term)?;
+    
+    let media_selected;
+    if let Some(media) = user_config.media_selected {
+        media_selected = media;
+    } else {
+        // Whether the user wants to download video files or audio-only
+        media_selected = get_media_selection(&term)?;
+    }
+    
+    let chosen_format;
+    if let Some(format) = user_config.chosen_format {
+        chosen_format = format;
+    } else {
+        chosen_format = format::get_format(&term, url, &media_selected, playlist_id)?;
+    }
 
-    let chosen_format = format::get_format(&term, url, &media_selected, playlist_id)?;
-
-    // .trim() trims trailing whitespace at the end of the user-specified path (useful is the user is clumsy)
-    let output_path = get_output_path(&term)?.trim().to_string();
-
+    let output_path;
+    if let Some(path) = user_config.output_path {
+        output_path = path;
+    } else {
+        // .trim() trims trailing whitespace at the end of the user-specified path (useful is the user is clumsy)
+        output_path = get_output_path(&term)?.trim().to_string();
+    }
+    
     Ok(config::DownloadConfig::new_video(
         url,
         chosen_format,

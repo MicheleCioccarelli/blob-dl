@@ -1,10 +1,10 @@
-use dialoguer::console::Term;
-use dialoguer::{theme::ColorfulTheme, Select};
-use which::which;
-
+use crate::assembling::youtube;
 use crate::assembling::youtube::*;
 use crate::error::BlobResult;
 use crate::ui_prompts::*;
+use dialoguer::console::Term;
+use dialoguer::{theme::ColorfulTheme, Select};
+use which::which;
 
 /// This is a wizard for downloading a youtube playlist
 ///
@@ -15,19 +15,44 @@ use crate::ui_prompts::*;
 /// - Index inclusion
 ///
 /// Returns a fully configured YtPlaylistConfig, build_command() can be called
-pub fn assemble_data(url: &str) -> BlobResult<config::DownloadConfig> {
+/// 
+/// User config is the information present in a config file. It has user preferences on things like which file format they prefer
+/// knowing this blob-dl can avoid asking redundant questions
+/// 
+pub(crate) fn assemble_data(url: &str, user_config: youtube::config::DownloadConfig) -> BlobResult<config::DownloadConfig> {
     let term = Term::buffered_stderr();
 
-    // Whether the user wants to download video files or audio-only
-    let media_selected = get_media_selection(&term)?;
+    let media_selected;
+    if let Some(media) = user_config.media_selected {
+        // if a media selection was already present in the config file, use that
+        media_selected = media;
+    } else {
+        // Whether the user wants to download video files or audio-only
+        media_selected = get_media_selection(&term)?;
+    }
 
-    let chosen_format = format::get_format(&term, url, &media_selected)?;
+    let chosen_format;
+    if let Some(format) = user_config.chosen_format {
+        chosen_format = format;
+    } else {
+        chosen_format = format::get_format(&term, url, &media_selected)?;
+    }
 
+    let output_path;
     // .trim() trims trailing whitespace at the end of the user-specified path (useful is the user is clumsy)
-    let output_path = get_output_path(&term)?.trim().to_string();
+    if let Some(path) = user_config.output_path {
+        output_path = path;
+    } else {
+        output_path = get_output_path(&term)?.trim().to_string();
+    }
 
-    let include_indexes = get_index_preference(&term)?;
-
+    let include_indexes;
+    if let Some(indexes) = user_config.include_indexes {
+        include_indexes = indexes;
+    } else {
+        include_indexes = get_index_preference(&term)?;
+    }
+    
     Ok(config::DownloadConfig::new_playlist(
         url,
         output_path,
@@ -58,10 +83,9 @@ mod format {
         }
     }
 
-    use std::fmt::format;
+    use super::*;
     use crate::assembling::youtube::VideoSpecs;
     use crate::error::BlobdlError::JsonSerializationError;
-    use super::*;
 
     /// Asks the user to choose a download format and quality
     ///

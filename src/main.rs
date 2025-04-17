@@ -4,21 +4,20 @@ use which::which;
 use blob_dl::parser::is_ytdlp_compatible;
 use colored::Colorize;
 
-// TODO Start using cmd+<
-
 fn main() {
     // Processed command line arguments live here
     let config = parser::parse_config();
     println!("##DEBUG## {:?}", config);
 
-    // tested with yt-dlp 2024.11.18
+    // tested with yt-dlp 2025.03.31
     if which("yt-dlp").is_ok() {
 
         // check whether yt-dlp's version is compatible with this version of blob-dl
         match is_ytdlp_compatible() {
             Ok(false) => {
-                print!("{}", "WARNING: ".bold().yellow());
-                println!("{}", blob_dl::ui_prompts::WRONG_YTDLP_VERSION);
+                // This was annoying, might add this back in a future update
+                //print!("{}", "WARNING: ".bold().yellow());
+                //println!("{}", blob_dl::ui_prompts::WRONG_YTDLP_VERSION);
             }
             Err(_) => {
                 print!("{}", "WARNING: ".bold().yellow());

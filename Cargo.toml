@@ -1,5 +1,4 @@
 [package]
-author = "Michele Cioccarelli <cioccarellimi@gmail.com>"
 name = "blob-dl"
 version = "1.0.2"
 license = "MIT"
