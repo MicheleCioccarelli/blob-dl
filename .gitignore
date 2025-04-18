@@ -5,3 +5,5 @@ debug/
 
 # Clion configs
 .idea/
+
+.DS_Store
