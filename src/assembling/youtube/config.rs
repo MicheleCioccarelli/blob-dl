@@ -17,7 +17,7 @@ pub(crate) struct DownloadConfig {
     pub(crate) chosen_format: Option<youtube::VideoQualityAndFormatPreferences>,
     /// Whether the downloaded files have to be audio-only/video-only/normal video
     pub(crate) media_selected: Option<youtube::MediaSelection>,
-    /// Whether the link refers to a playlist or a single video
+    /// Whether the link refers to a p laylist or a single video
     pub(crate) download_target: Option<analyzer::DownloadOption>,
 }
 

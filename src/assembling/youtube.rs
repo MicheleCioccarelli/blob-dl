@@ -68,7 +68,7 @@ use std::process;
 // Running yt-dlp -j <...>
 use execute::Execute;
 
-/// Returns the output of <yt-dlp -j url>: a JSON dump of all the available format information for a video
+/// Returns the output of <yt-dlp -J url>: a JSON dump of all the available format information for a video
 fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
     // Neat animation to entertain the user while the information is being downloaded
     let mut sp = spinoff::Spinner::new(spinoff::spinners::Dots10, "Fetching available formats...", spinoff::Color::Cyan);

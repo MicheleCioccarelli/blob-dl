@@ -51,7 +51,7 @@ pub fn parse_config() -> BlobResult<CliConfig> {
         )
         .arg(
             arg!(
-                -l --"locate-config-file" <FILE> "Use the preferences from a config file. This command will look for a config file in the path you provide"
+                -l --"locate-config-file" <FILEPATH> "Use the preferences from a config file. This command will look for a config file in the path you provide"
             )
                 .required(false)
                 .value_parser(value_parser!(PathBuf)),

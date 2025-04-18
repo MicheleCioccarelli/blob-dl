@@ -41,7 +41,7 @@ pub(crate) fn assemble_data(url: &str, playlist_id: usize, user_config: youtube:
         // .trim() trims trailing whitespace at the end of the user-specified path (useful is the user is clumsy)
         output_path = get_output_path(&term)?.trim().to_string();
     }
-    
+
     let playlist_index;
     if let Some(analyzer::DownloadOption::YtVideo(index)) = user_config.download_target {
         // If the user for some reason specified a playlist index in the config file (they would deserve a confusion award)

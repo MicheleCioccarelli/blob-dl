@@ -92,7 +92,8 @@ fn init_error_msg_lut() -> HashMap<&'static str, bool> {
         (NETWORK_FAIL,           true),
         (NO_API_PAGE,            false),
         (ENCODER_STREAM_ERROR,   false),
-        (NONEXISTENT_VIDEO,   false),
+        (NONEXISTENT_VIDEO,      false),
+        (NONEXISTENT_FORMAT,     false),
     ])
 }
 
@@ -140,7 +141,7 @@ fn run_command(command: &mut Command, verbosity: &parser::Verbosity) -> Option<V
                     } else if line.contains("[info]") {
                         println!("{}{}", "[info]".cyan(), &line[6..]);
                     } else if line.contains("[VideoConvertor]") {
-                        print!("{}{}", "[VideoConvertor]".purple(), &line[16..]);
+                        println!("{}{}", "[VideoConvertor]".purple(), &line[16..]);
                     }
                     else if line.contains("ERROR:") {
                         errors.push(YtdlpError::from_error_output(&line));
