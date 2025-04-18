@@ -73,7 +73,7 @@ With `blob-dl` you can download whole playlists in one go, you can also choose a
 
 While downloading, `blob-dl` keeps track of any errors thrown by yt-dlp and reports them at the end, the ones caused which can be resolved by re-trying the download can be easily re-downloaded
 
-## Conifguration files
+## Configuration files
 If you find yourself downloading videos using the same settings often and always answering the same questions has
 started to annoy you it's time to use a config file!
 
@@ -157,9 +157,6 @@ It expects a string and the available options are: `FullVideo` `AudioOnly` `Vide
 
 `download_target` is whether you are downloading a single video or a full playlist.
 It expects a string, the options are `YtPlaylist` (which should be used in most circumstances, even when downloading a normal video) and  `YtVideo(index)` which is only needed when you are downloading a single video from a playlist, needing to specify its index in it.
-
-
-# ADD FEATURE THAT TELLS YOU WHERE SHIT IS
 
 # Q&A
 ### Who is this for?

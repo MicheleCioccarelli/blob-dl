@@ -8,7 +8,7 @@ use directories::ProjectDirs;
 use std::fs::{self};
 use std::path::PathBuf;
 use std::io::Write;
-
+use colored::Colorize;
 use crate::assembling::youtube;
 use crate::parser::ConfigFilePreferences;
 
@@ -28,9 +28,12 @@ pub fn dispatch(cli_config: &parser::CliConfig) -> BlobResult<()> {
             let path = get_config_path().ok_or(BlobdlError::ConfigFileNotFound)?;
             read_config(&path)?
         }
-        ConfigFilePreferences::CustomConfig(custom_path) => read_config(custom_path)?,
+        ConfigFilePreferences::CustomConfig(custom_path) => {
+            read_config(custom_path)?
+        },
         
         ConfigFilePreferences::GenerateConfig => {
+            println!("{} A config file based on your answers will be generated", "[blob-dl]".purple());
             should_generate_config = true;
             youtube::config::DownloadConfig::empty()
         }
@@ -51,7 +54,8 @@ pub fn dispatch(cli_config: &parser::CliConfig) -> BlobResult<()> {
         if let Some(path) = get_config_path() {
             let mut tmp = command_and_download_config.1.clone();
             tmp.url = None;
-            write_config(path, &tmp)?;
+            write_config(path.clone(), &tmp)?;
+            println!("{} Successfully created a config file in {}", "[blob-dl]".purple(), path.display());
         } else {
             eprintln!("blob-dl couldn't create a config file");
         }
