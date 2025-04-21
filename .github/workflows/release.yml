@@ -45,6 +45,29 @@ on:
       - '**[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
+
+    build-on-my-mac:
+    name: Build on Self-Hosted Mac
+    runs-on: [self-hosted, macOS, x64]  # Adjust tags as per your runner
+    if: ${{ github.event_name == 'workflow_dispatch' }}  # Optional: Only run when manually triggered
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      - name: Install dist
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.28.0/cargo-dist-installer.sh | sh
+      - name: Build with dist
+        run: |
+          dist build --output-format=json
+
+
   # Run 'dist plan' (or host) to determine what tasks we need to do
   plan:
     runs-on: "ubuntu-20.04"
