@@ -1,53 +1,57 @@
-name: Build for Windows, macOS, and Linux
+name: Build and Release
 
 on:
   push:
     tags:
-      - 'v*.*.*'  # Trigger on version tags (e.g., v1.0.0)
+      - 'v*'  # Runs on version tags like v1.0.0
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # We will use Ubuntu for the job, but build for different platforms
-
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        arch: [x86_64]
-      fail-fast: false  # Do not stop on the first failure; run for all platforms
+        os: [ubuntu-20.04, macos-latest, windows-latest]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.os == 'windows-latest' && 'x86_64-pc-windows-msvc' || (matrix.os == 'macos-latest' && 'x86_64-apple-darwin' || 'x86_64-unknown-linux-gnu') }}
-          profile: minimal
+    - name: Set up Rust
+      uses: actions/setup-rust@v1
+      with:
+        rust-version: stable
 
-      - name: Install dependencies (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
+    - name: Install dependencies (Linux/macOS only)
+      if: runner.os != 'Windows'
+      run: |
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
           sudo apt-get update
-          sudo apt-get install -y libssl-dev pkg-config
+          sudo apt-get install -y build-essential
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install build-essential
+        fi
 
-      - name: Install dependencies (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install openssl pkg-config
+    - name: Install dependencies (Windows only)
+      if: runner.os == 'Windows'
+      run: |
+        # PowerShell script for Windows
+        Write-Host "Installing dependencies for Windows..."
+        # Add any Windows-specific steps you need here.
+        # Example: winget install <package-name>
 
-      - name: Install dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install openssl
+    - name: Build the project
+      run: cargo build --release
 
-      - name: Build the project
-        run: cargo build --release --target ${{ matrix.os == 'windows-latest' && 'x86_64-pc-windows-msvc' || (matrix.os == 'macos-latest' && 'x86_64-apple-darwin' || 'x86_64-unknown-linux-gnu') }}
+    - name: Run tests (optional)
+      run: cargo test
 
-      - name: Upload artifacts
-        if: matrix.os == 'ubuntu-latest'  # Change this for the OS where you want to upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: my_project-${{ matrix.os }}-${{ matrix.arch }}
-          path: target/${{ matrix.os == 'windows-latest' && 'x86_64-pc-windows-msvc' || (matrix.os == 'macos-latest' && 'x86_64-apple-darwin' || 'x86_64-unknown-linux-gnu') }}/release/my_project
+    - name: Create release artifact
+      run: |
+        dist build --release --target $RUNNER_OS --output-format=json
+        echo "Artifacts created successfully"
+
+    - name: Upload release artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: my-release-artifacts
+        path: target/release/*

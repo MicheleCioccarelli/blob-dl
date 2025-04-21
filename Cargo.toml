@@ -1,6 +1,6 @@
 [package]
 name = "blob-dl"
-version = "1.1.4"
+version = "1.1.6"
 license = "MIT"
 description = "A cli tool to make downloading youtube content easy, based on yt-dlp"
 categories = ["command-line-utilities"]
