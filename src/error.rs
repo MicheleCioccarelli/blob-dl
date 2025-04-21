@@ -41,12 +41,13 @@ pub enum BlobdlError {
     ChosenFormatNotProvided,
     
     ConfigFileNotFound,
+    JsonGenerationError,
 }
 
 impl BlobdlError {
     // Output an error message according to the error at hand
     pub fn report(&self) {
-        eprintln!("\n{}\n", USAGE_MSG);
+        //eprintln!("\n{}\n", USAGE_MSG);
         eprint!("{}: ", "ERROR".red());
 
         let _ = std::io::stdout().flush();
@@ -99,6 +100,8 @@ impl BlobdlError {
             BlobdlError::ChosenFormatNotProvided => eprintln!("{}", CHOSEN_FORMAT_NOT_PROVIDED_ERROR),
             
             BlobdlError::ConfigFileNotFound => eprintln!("{}", CONFIG_FILE_NOT_FOUND_ERR),
+            
+            BlobdlError::JsonGenerationError => eprintln!("{}", JSON_GENERATION_ERR),
         }
         eprintln!("{}", SEE_HELP_PAGE);
     }

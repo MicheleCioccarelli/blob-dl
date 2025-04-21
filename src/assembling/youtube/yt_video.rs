@@ -17,7 +17,6 @@ use crate::ui_prompts::*;
 /// 
 pub(crate) fn assemble_data(url: &str, playlist_id: usize, user_config: youtube::config::DownloadConfig) -> BlobResult<config::DownloadConfig> {
     let term = Term::buffered_stderr();
-
     
     let media_selected;
     if let Some(media) = user_config.media_selected {
@@ -29,7 +28,19 @@ pub(crate) fn assemble_data(url: &str, playlist_id: usize, user_config: youtube:
     
     let chosen_format;
     if let Some(format) = user_config.chosen_format {
-        chosen_format = format;
+        // With config files it is possible to "force" blob-dl to try to use ffmpeg
+        if let VideoQualityAndFormatPreferences::ConvertTo(_) = format {
+            // The user wants their files to be converted to another format
+            if !which("ffmpeg").is_ok() {
+                // The conversion cannot be performed because ffmpeg is not installed
+                chosen_format = format::get_format(&term, url, &media_selected, playlist_id)?;
+            } else {
+                // ffmpeg is installed so what was specified in the config file can be used
+                chosen_format = format;
+            }
+        } else {
+            chosen_format = format;
+        }
     } else {
         chosen_format = format::get_format(&term, url, &media_selected, playlist_id)?;
     }
@@ -82,6 +93,7 @@ mod format {
             format_options.push(CONVERT_FORMAT_PROMPT_VIDEO_SINGLE_VIDEO);
             format_options.push(YT_FORMAT_PROMPT_SINGLE_VIDEO);
 
+            
             // Set up a prompt for the user
             let user_selection = Select::with_theme(&ColorfulTheme::default())
                 .with_prompt("Which quality or format do you want to apply to the video?")
@@ -131,8 +143,6 @@ mod format {
                     .lines()
                     // If the requested video isn't the first in a playlist, only parse its information
                     .nth(playlist_id-1)
-                    // Unwrap is safe because playlist_id is non-0 only when there are multiple lines in the json
-                    .unwrap()
             )?
         };
 

@@ -74,8 +74,8 @@ fn is_recoverable(error: &YtdlpError, table: &HashMap<&'static str, bool>) -> bo
             true
         }
     } else {
-        // By default undocumented errors are flagged as recoverable
-        true
+        // By default undocumented errors are flagged as unrecoverable
+        false
     }
 }
 

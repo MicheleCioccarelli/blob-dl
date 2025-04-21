@@ -33,8 +33,21 @@ pub(crate) fn assemble_data(url: &str, user_config: youtube::config::DownloadCon
 
     let chosen_format;
     if let Some(format) = user_config.chosen_format {
-        chosen_format = format;
+        // With config files it is possible to "force" blob-dl to try to use ffmpeg
+        if let VideoQualityAndFormatPreferences::ConvertTo(_) = format {
+            // The user wants their files to be converted to another format
+            if !which("ffmpeg").is_ok() {
+                // The conversion cannot be performed because ffmpeg is not installed
+                chosen_format = format::get_format(&term, url, &media_selected)?;
+            } else {
+                // ffmpeg is installed so what was specified in the config file can be used
+                chosen_format = format;
+            }
+        } else {
+            chosen_format = format;
+        }
     } else {
+        // Config file didn't say anything about file formats
         chosen_format = format::get_format(&term, url, &media_selected)?;
     }
 

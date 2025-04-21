@@ -21,7 +21,7 @@
 The idea behind this program is to remove all the tedious work of researching which flags you need to pass to `yt-dlp` to make it do what you want.
 When you use blob-dl you only need to know the url of what you want to download, and it'll figure out the rest.
 
-- See the [Features](https://github.com/MicheleCioccarelli/blob-dl#features) section for more details on what `blob-dl` can do
+- See the [Features](#Features) section for more details on what `blob-dl` can do
 
 [![asciicast](https://asciinema.org/a/jZUokSc5oDms6vICdNTic1vxh.svg)](https://asciinema.org/a/jZUokSc5oDms6vICdNTic1vxh)
 
@@ -127,7 +127,7 @@ filename: `config.json`
     "download_target": "YtPlaylist"
 }
 ```
-Each of these fields can be set to "null". If that is the case blob-dl will ask you a question related to what you've left out
+Each of these fields can be set to null. If that is the case blob-dl will ask you a question related to what you've left out
 
 `url` is ignored by blob-dl, so you can leave this always null
 

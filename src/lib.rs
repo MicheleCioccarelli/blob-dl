@@ -1,9 +1,11 @@
 pub mod parser;
-pub mod assembling;
-pub mod analyzer;
-pub mod dispatcher;
+mod assembling;
+mod analyzer;
+mod dispatcher;
 mod run;
 mod error;
+
+pub mod app;
 
 // Things blob-dl regularly tells the user
 pub mod ui_prompts {
@@ -23,7 +25,7 @@ pub mod ui_prompts {
 
     pub const SMALLEST_QUALITY_PROMPT_SINGLE_VIDEO: &str = "Smallest file size";
 
-    pub const YT_FORMAT_PROMPT_PLAYLIST: &str = "Choose a format to download to every video in (only formats available for all videos are shown)";
+    pub const YT_FORMAT_PROMPT_PLAYLIST: &str = "Choose a format to download every video in (only the formats which are available for all videos are shown)";
 
     pub const YT_FORMAT_PROMPT_SINGLE_VIDEO: &str = "Choose a format to download the video in";
 
@@ -41,7 +43,7 @@ pub mod ui_prompts {
 
     pub const UNRECOVERABLE_ERROR_PROMPT: &str = "The following videos could not be downloaded due to unrecoverable errors";
 
-    pub const DEBUG_REPORT_PROMPT: &str = "By default new errors are flagged as recoverable, if any unrecoverable errors are flagged incorrectly please report them to the github page";
+    pub const DEBUG_REPORT_PROMPT: &str = "By default new errors are flagged as unrecoverable, if any recoverable errors are flagged incorrectly please report them to the github page";
 
     pub const SELECT_ALL: &str = "Select all\n";
     pub const SELECT_NOTHING: &str = "Don't re-download anything\n";
@@ -53,6 +55,7 @@ pub mod ui_prompts {
 }
 
 // Youtube's error messages
+// THESE SHOULD NOT BE MODIFIED, they are supposed to match exactly youtube's error messages
 mod youtube_error_message {
     pub const PRIVATE_VIDEO: &str = " Private video. Sign in if you've been granted access to this video";
 
@@ -81,9 +84,11 @@ mod youtube_error_message {
     // All copyright error messages begin with this
     pub const VIDEO_UNAVAILABLE: &str = " Video unavailable";
 }
+
+
 // blob-dl custom error messages
 pub mod blobdl_error_message {
-    pub const BROKEN_URL_ERR: &str = "The url provided wasn't recognized, try using a regular youtube url";
+    pub const BROKEN_URL_ERR: &str = "The URL you provided wasn't recognized, try using a regular youtube URL";
 
     pub const UNSUPPORTED_WEBSITE_ERR: &str = "Currently blob-dl only supports downloading youtube videos or playlists, not content from other websites";
 
@@ -93,20 +98,20 @@ pub mod blobdl_error_message {
 
     pub const JSON_SERIALIZATION_ERR: &str = "There was a problem serializing this video's format information";
 
-    pub const UTF8_ERR: &str = "This video's format information contained non-UTF8 characters and broke the parser, best and worst quality should still work!";
+    pub const UTF8_ERR: &str = "This video's format information contained non-UTF8 characters and broke the parser, best and smallest quality should still work!";
 
-    pub const SERDE_ERR: &str = "Serde ran into a problem when serializing this video's format information: ";
+    pub const SERDE_ERR: &str = "Serde ran into a problem when serializing this video's format information.\nThis most likely happened because the video you are trying to download is private/copyright claimed\nJson-y reason:";
 
     pub const IO_ERR: &str = "There was an IO error: ";
 
-    pub const URL_QUERY_COULD_NOT_BE_PARSED: &str = "This url's query could not be parsed, try using a regular youtube url";
+    pub const URL_QUERY_COULD_NOT_BE_PARSED: &str = "This URL's query could not be parsed, try using a regular youtube URL";
 
     pub const URL_INDEX_PARSING_ERR: &str = "The video's index in the playlist couldn't be parsed, please report this issue to the github page";
     
-    pub const PLAYLIST_URL_ERROR: &str = "The index/id for the video that you want to download in the playlist could not be parsed.\nTo download just this video try using a url which links directly to it instead of going through a playlist";
+    pub const PLAYLIST_URL_ERROR: &str = "The index/id for the video that you want to download in the playlist could not be parsed.\nTo download just this video try using a URL which links directly to it instead of going through a playlist";
 
     // POST_CONFIG_FILE_ERRORS
-    pub const URL_NOT_PROVIDED_ERROR: &str = "You didn't provide a url for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
+    pub const URL_NOT_PROVIDED_ERROR: &str = "You didn't provide a URL for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
 
     pub const FORMAT_PREFERENCE_NOT_PROVIDED_ERROR: &str = "You didn't provide a format preference for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
 
@@ -121,4 +126,8 @@ pub mod blobdl_error_message {
     pub const CHOSEN_FORMAT_NOT_PROVIDED_ERROR: &str = "You didn't provide a download format for the video you want to download. The issue most likely has to do with a configuration file.\nTo report this error or learn more about config files please visit the GitHub page";
 
     pub const CONFIG_FILE_NOT_FOUND_ERR: &str = "No valid home directory path could be retrieved from the operating system. (this problem has to do with the default location of your config file)";
+    
+    pub const FFMPEG_NOT_AVAILABLE_CONFIG_WARNING: &str = "You are using a config file which tells blob-dl to convert the files you download to a specific format. Doing this requires ffmpeg, which is not installed on your system";
+    
+    pub const JSON_GENERATION_ERR: &str = "yt-dlp didn't generate the json needed to parse formats for your video.\nThis most likely happened because the video you are trying to download is private/copyright claimed\nIf you are running the recommended version of yt-dlp please report this to the GitHub page.";
 }

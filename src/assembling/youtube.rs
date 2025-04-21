@@ -67,6 +67,7 @@ use spinoff;
 use std::process;
 // Running yt-dlp -j <...>
 use execute::Execute;
+use crate::error::BlobdlError::JsonGenerationError;
 
 /// Returns the output of <yt-dlp -J url>: a JSON dump of all the available format information for a video
 fn get_ytdlp_formats(url: &str) -> Result<process::Output, std::io::Error> {
@@ -122,11 +123,15 @@ struct Format {
 }
 
 /// Serializes the information about all the formats available for 1 video
-fn serialize_formats(json_dump: &str) -> BlobResult<VideoSpecs> {
-    let result = serde_json::from_str(json_dump);
-    match result {
-        Ok(cool) => Ok(cool),
-        Err(err) => Err(BlobdlError::SerdeError(err))
+fn serialize_formats(json_dump: Option<&str>) -> BlobResult<VideoSpecs> {
+    if let Some(json) = json_dump {
+        let result = serde_json::from_str(json);
+        match result {
+            Ok(cool) => Ok(cool),
+            Err(err) => Err(BlobdlError::SerdeError(err))
+        }
+    } else {
+        Err(JsonGenerationError)
     }
 }
 
