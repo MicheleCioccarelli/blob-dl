@@ -1,13 +1,13 @@
-# I'm going insane
 name: Build for Windows, macOS, and Linux
+
 on:
   push:
     tags:
-      - 'v*.*.*'  # Trigger on version tags
+      - 'v*.*.*'  # Trigger on version tags (e.g., v1.0.0)
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # We will use Ubuntu for the job, but build for different platforms
 
     strategy:
       matrix:
